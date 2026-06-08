@@ -47,7 +47,69 @@ function mapColor(v,m){if(v==null)return '#cbd5e1';if(m==='score')return v>=45?'
 function metricLabel(m){return {score:'Composite priority score',ytd:'2026 rainfall anomaly',latestRain:'Latest rainfall anomaly',ndvi:'NDVI anomaly',vhi:'VHI',asi:'ASI crop stress'}[m]}
 function metricDisplay(d,m){let v=metricVal(d,m);if(v==null)return 'No data';return ['score','vhi'].includes(m)?fmt(v):pct(v)}
 let map,geoLayer,legendControl;
-function initMap(){map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);legendControl=L.control({position:'bottomright'});legendControl.onAdd=()=>{let div=L.DomUtil.create('div','map-legend');div.id='mapLegend';return div};legendControl.addTo(map);fetch('https://raw.githubusercontent.com/wmgeolab/geoBoundaries/9469f09/releaseData/gbOpen/PNG/ADM1/geoBoundaries-PNG-ADM1_simplified.geojson').then(r=>r.json()).then(g=>{geoLayer=L.geoJSON(g,{style:styleFeature,onEachFeature:onEach}).addTo(map);map.fitBounds(geoLayer.getBounds(),{padding:[12,12]});updateLegend()}).catch(()=>{document.getElementById('map').innerHTML='<div style="padding:20px">The boundary layer could not load. Check the internet connection or GitHub raw access.</div>'});document.getElementById('mapMetric').addEventListener('change',()=>{geoLayer&&geoLayer.setStyle(styleFeature);updateLegend()})}
+function initMap() {
+  map = L.map('map', { scrollWheelZoom: false }).setView([-6.2, 145.2], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  legendControl = L.control({ position: 'bottomright' });
+
+  legendControl.onAdd = () => {
+    let div = L.DomUtil.create('div', 'map-legend');
+    div.id = 'mapLegend';
+    return div;
+  };
+
+  legendControl.addTo(map);
+
+  const boundaryUrl =
+    'https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/9469f09/releaseData/gbOpen/PNG/ADM1/geoBoundaries-PNG-ADM1_simplified.geojson';
+
+  fetch(boundaryUrl)
+    .then(async response => {
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error('Boundary file could not be downloaded.');
+      }
+
+      if (text.startsWith('version https://git-lfs.github.com')) {
+        throw new Error('Git LFS pointer returned instead of GeoJSON.');
+      }
+
+      return JSON.parse(text);
+    })
+    .then(geojson => {
+      geoLayer = L.geoJSON(geojson, {
+        style: styleFeature,
+        onEachFeature: onEach
+      }).addTo(map);
+
+      map.fitBounds(geoLayer.getBounds(), {
+        padding: [12, 12]
+      });
+
+      updateLegend();
+    })
+    .catch(error => {
+      document.getElementById('map').innerHTML =
+        '<div style="padding:20px">' +
+        '<b>The provincial boundary layer could not load.</b><br>' +
+        'This is most likely a GitHub boundary-file access issue, not a problem with the dashboard data.<br><br>' +
+        error.message +
+        '</div>';
+    });
+
+  document.getElementById('mapMetric').addEventListener('change', () => {
+    if (geoLayer) {
+      geoLayer.setStyle(styleFeature);
+    }
+    updateLegend();
+  });
+}
 function styleFeature(f){let name=f.properties.shapeName||f.properties.name||f.properties.NAME_1;let d=matchProvince(name);let m=document.getElementById('mapMetric').value;return {color:'#475569',weight:1,fillColor:mapColor(metricVal(d,m),m),fillOpacity:.72}}
 function onEach(f,l){let name=f.properties.shapeName||f.properties.name||f.properties.NAME_1||'Province';let d=matchProvince(name);l.on({mouseover:e=>{e.target.setStyle({weight:3,color:'#111827'});},mouseout:e=>geoLayer.resetStyle(e.target),click:e=>{let m=document.getElementById('mapMetric').value;if(d){l.bindPopup(`<b>${d.province}</b><br><span class="pill ${cls(d.priority)}">${d.priority}</span><br>${metricLabel(m)}: <b>${metricDisplay(d,m)}</b><hr>Score: ${fmt(d.score)}<br>YTD rain: ${pct(d.ytd)}<br>Latest rain: ${pct(d.latestRain)}<br>NDVI: ${pct(d.ndvi)}<br>VHI: ${fmt(d.vhi)}<br>ASI: ${pct(d.asi)}<br><br><i>${plainMeaning(d)}</i>`).openPopup()}else{l.bindPopup(`<b>${name}</b><br>No matching uploaded GIEWS/ASIS province record. This may be a newer province boundary not present in the uploaded ADM1 table.`).openPopup()}}})}
 function updateLegend(){let m=document.getElementById('mapMetric').value;let rows=m==='score'?[['#b91c1c','45+ higher priority'],['#ea580c','35–44 moderate priority'],['#facc15','25–34 watch'],['#86efac','Below 25 lower concern'],['#cbd5e1','No matched data']]:m==='asi'?[['#b91c1c','10%+ crop stress'],['#ea580c','5–10% crop stress'],['#facc15','1–5% crop stress'],['#86efac','Below 1%'],['#cbd5e1','No data']]:m==='vhi'?[['#b91c1c','Below 0.45 poor'],['#ea580c','0.45–0.50 low'],['#facc15','0.50–0.55 watch'],['#86efac','0.55+ better'],['#cbd5e1','No data']]:[['#b91c1c','≤ -40% very dry/stressed'],['#ea580c','-20% to -40% below normal'],['#facc15','0% to -20% slightly below'],['#86efac','Above normal / positive'],['#cbd5e1','No data']];document.getElementById('mapLegend').innerHTML='<b>'+metricLabel(m)+'</b><br>'+rows.map(r=>`<span class="swatch" style="background:${r[0]}"></span>${r[1]}`).join('<br>')}
