@@ -1,390 +1,47 @@
 <!doctype html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
 <title>PNG El Niño Drought & Frost Risk Dashboard</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+<link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap' rel='stylesheet'>
+<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>
 <style>
-:root{
-  --g:#155e3f;
-  --g2:#21835d;
-  --ink:#172033;
-  --muted:#667085;
-  --bg:#f6f7fb;
-  --card:#fff;
-  --line:#d9dee8;
-  --soft:#f8fafc;
-  --red:#991b1b;
-  --orange:#9a3412;
-  --yellow:#854d0e;
-  --green:#166534;
-  --shadow:0 8px 24px #10182814;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;padding:34px 22px}
-.wrap,main{max-width:1240px;margin:auto}
-h1{margin:.3rem 0 0;font-size:clamp(30px,5vw,56px);line-height:1.05}
-h2{margin:0 0 8px;font-size:22px}
-h3{margin:14px 0 8px;font-size:17px}
-.tag{color:#d9f99d;text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:13px}
-.sub{max-width:1000px;line-height:1.55;font-size:17px}
-main{padding:20px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.tab,.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer}
-.tab.active,.btn.primary{background:var(--g);border-color:var(--g);color:#fff}
-.panel{display:none}
-.panel.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--shadow)}
-.full{grid-column:1/-1}
-.half{grid-column:span 6}
-.third{grid-column:span 4}
-.kpi{grid-column:span 3}
-.wide{grid-column:span 8}
-.side{grid-column:span 4}
-.kpi b{font-size:25px;display:block;margin-top:4px}
-.muted{color:var(--muted);font-size:14px}
-.small{font-size:13px;color:var(--muted);line-height:1.45}
-.note{border-left:4px solid var(--green);background:#f0fdf4;border-radius:10px;padding:12px;line-height:1.5}
-.warn{border-left:4px solid #b45309;background:#fff7ed;border-radius:10px;padding:12px;line-height:1.5}
-.explain{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:13px;line-height:1.5;margin:10px 0}
-.pill{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800}
-.High{background:#fee2e2;color:var(--red)}
-.Moderate{background:#ffedd5;color:var(--orange)}
-.Watch{background:#fef9c3;color:var(--yellow)}
-.Lower{background:#dcfce7;color:var(--green)}
-.Frost{background:#e0f2fe;color:#075985}
-.Combined{background:#ede9fe;color:#5b21b6}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:9px;border-bottom:1px solid #edf0f5;text-align:left;vertical-align:top}
-th{background:var(--soft);position:sticky;top:0}
-select{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
-.tablewrap{overflow:auto;max-height:470px}
-canvas{max-height:380px}
-#map{height:590px;border-radius:14px;border:1px solid var(--line);background:#e5e7eb}
-.mapbar{display:grid;grid-template-columns:1fr 240px 240px;gap:12px;align-items:end}
-.map-legend{background:#fff;padding:10px;border-radius:10px;box-shadow:0 2px 10px #0002;line-height:1.35}
-.swatch{display:inline-block;width:14px;height:14px;border:1px solid #777;margin-right:6px;vertical-align:middle}
-.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.metric div{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
-.metric b{font-size:20px;display:block}
-.source{font-size:12px;color:var(--muted);margin-top:8px}
-.static-map{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);background:#e5e7eb;display:block}
-.static-map-frame{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:10px}
-@media(max-width:950px){
-  .kpi,.wide,.side,.half,.third{grid-column:1/-1}
-  .mapbar,.metric{grid-template-columns:1fr}
-  #map{height:500px}
-}
+:root{--primary:#0f3d2e;--primary2:#17694f;--accent:#d97706;--danger:#991b1b;--orange:#9a3412;--yellow:#854d0e;--green:#166534;--ink:#111827;--muted:#667085;--bg:#f4f7f6;--card:#fff;--line:#d8e0df;--soft:#f8fafc;--shadow:0 8px 24px rgba(16,24,40,.08);--shadow2:0 18px 45px rgba(16,24,40,.14)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at top left,#eef8f3 0,#f4f7f6 34%,#f7f8fb 100%);color:var(--ink);letter-spacing:-.01em}.wrap,main{max-width:1240px;margin:auto}.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f3d2e 0%,#17694f 55%,#204f3d 100%);color:#fff;padding:46px 22px 42px}.hero:after{content:'';position:absolute;right:-140px;top:-120px;width:420px;height:420px;border-radius:999px;background:rgba(255,255,255,.08)}.hero .wrap{position:relative;z-index:1}.tag{color:#d9f99d;text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:13px}h1{margin:.3rem 0 0;font-size:clamp(32px,5vw,58px);line-height:1.03;letter-spacing:-.055em;max-width:940px}h2{margin:0 0 8px;font-size:22px}h3{margin:14px 0 8px;font-size:17px}.sub{max-width:900px;line-height:1.55;font-size:18px;color:#edfdf5}.hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.hero-meta span{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;color:#f4fff8}
+main{padding:20px}.tabs{position:sticky;top:0;z-index:900;background:rgba(244,247,246,.86);backdrop-filter:blur(10px);display:flex;gap:8px;flex-wrap:wrap;padding:10px 0 14px;margin-bottom:16px;border-bottom:1px solid rgba(216,224,223,.7)}.tab,.btn{border:1px solid rgba(15,61,46,.14);background:#fff;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer;transition:.16s;box-shadow:0 1px 2px rgba(16,24,40,.04)}.tab:hover,.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}.tab.active,.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border-color:var(--primary);color:#fff;box-shadow:0 10px 24px rgba(15,61,46,.22)}.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid rgba(15,61,46,.10);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.full{grid-column:1/-1}.half{grid-column:span 6}.third{grid-column:span 4}.kpi{grid-column:span 3;position:relative;overflow:hidden;background:linear-gradient(180deg,#fff,#f9fbfb);padding:20px}.wide{grid-column:span 8}.side{grid-column:span 4}.kpi:before{content:'';position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent))}.kpi .muted{text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:800}.kpi b{font-size:32px;display:block;margin-top:4px;letter-spacing:-.04em;color:#102a22}.muted{color:var(--muted);font-size:14px}.small,.source{font-size:13px;color:var(--muted);line-height:1.45}.note,.warn,.explain{border-radius:14px;padding:13px;line-height:1.5;margin:10px 0}.note{border-left:4px solid var(--green);background:linear-gradient(135deg,#f0fdf4,#f8fffb)}.warn{border-left:4px solid #b45309;background:linear-gradient(135deg,#fff7ed,#fffdfa)}.explain{background:#f8fafc;border:1px solid #e5e7eb}.pill,.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}.High{background:#fee2e2;color:var(--danger)}.Moderate{background:#ffedd5;color:var(--orange)}.Watch{background:#fef9c3;color:var(--yellow)}.Lower{background:#dcfce7;color:var(--green)}.Frost{background:#e0f2fe;color:#075985}.Combined{background:#ede9fe;color:#5b21b6}.badge{background:#ecfdf5;color:var(--primary);border:1px solid #bbf7d0}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}th,td{padding:10px;border-bottom:1px solid #edf0f5;text-align:left;vertical-align:top}th{background:#f1f5f4;color:#344054;font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;position:sticky;top:0}tbody tr:hover td{background:#f8fafc}select{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.tablewrap{overflow:auto;max-height:470px}canvas{max-height:380px}.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric div{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px}.metric b{font-size:20px;display:block}.mapbar{display:grid;grid-template-columns:1fr 240px 240px;gap:12px;align-items:end}#map{height:590px;border-radius:20px;border:1px solid rgba(15,61,46,.16);background:#e5e7eb;box-shadow:var(--shadow2)}.map-legend{background:#fff;padding:10px;border-radius:10px;box-shadow:0 2px 10px #0002;line-height:1.35}.swatch{display:inline-block;width:14px;height:14px;border:1px solid #777;margin-right:6px;vertical-align:middle}.leaflet-container{font-family:Inter,Arial,sans-serif}.leaflet-popup-content-wrapper{border-radius:14px;box-shadow:var(--shadow2)}.map-product{border:1px solid rgba(15,61,46,.12);border-radius:20px;overflow:hidden;background:#fff;box-shadow:var(--shadow2)}.map-product-header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#fff,#f3faf7)}.map-product-header h3{margin:0}.eyebrow{display:block;margin-bottom:6px;color:var(--primary2);text-transform:uppercase;letter-spacing:.12em;font-weight:800;font-size:12px}.static-map{width:100%;height:auto;display:block}.footer{max-width:1240px;margin:28px auto 0;padding:22px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line)}@media(max-width:950px){.kpi,.wide,.side,.half,.third{grid-column:1/-1}.mapbar,.metric{grid-template-columns:1fr}#map{height:500px}.footer{display:block}.hero-meta span{width:100%;justify-content:center}}
 </style>
 </head>
-
 <body>
-<header>
-  <div class="wrap">
-    <div class="tag">FAO PNG climate risk decision support</div>
-    <h1>PNG El Niño Drought & Frost Risk Dashboard</h1>
-    <p class="sub">A decision-support dashboard for monitoring drought stress, frost susceptibility, combined JJA multi-hazard exposure, and priority areas for agricultural field verification across Papua New Guinea.</p>
-  </div>
-</header>
-
+<header class='hero'><div class='wrap'><div class='tag'>FAO PNG climate risk decision support</div><h1>PNG El Niño Drought & Frost Risk Dashboard</h1><p class='sub'>Decision-support platform for agricultural climate risk monitoring, field verification, and operational planning across Papua New Guinea.</p><div class='hero-meta'><span>JJA 2026 focus</span><span>Province / ADM1 level</span><span>Drought + Frost + Exposure</span><span>Screening and early warning tool</span></div></div></header>
 <main>
-<div class="tabs">
-  <button class="tab active" data-panel="overview">Overview</button>
-  <button class="tab" data-panel="mapPanel">Interactive Map</button>
-  <button class="tab" data-panel="drought">ASIS Drought Stress</button>
-  <button class="tab" data-panel="frost">Scenario 1: Frost</button>
-  <button class="tab" data-panel="combined">Scenario 2: Combined JJA Hazard</button>
-  <button class="tab" data-panel="exposure">Population Exposure</button>
-  <button class="tab" data-panel="response">Operational Response</button>
-</div>
-
-<section id="overview" class="panel active">
-  <div class="grid">
-    <section class="card full">
-      <h2>Executive interpretation</h2>
-      <div class="warn"><b>Interpretation note:</b> This dashboard supports early warning, prioritisation, and field verification planning. It does not replace official declarations by mandated national authorities, nor does it replace DAL, NARI, NDC, provincial, or district-level field assessment.</div>
-      <p>The analysis shows two related but different risk patterns. <b>Frost susceptibility</b> is concentrated mainly in high-altitude agricultural basins, especially Enga and surrounding Highlands provinces. The <b>combined JJA El Niño hazard</b> shifts operational attention toward provinces where frost and drought-related stresses overlap or where drought stress dominates.</p>
-    </section>
-
-    <section class="card kpi"><span class="muted">Frost high-risk footprint</span><b id="kpiFrostArea"></b><span class="muted">km²</span></section>
-    <section class="card kpi"><span class="muted">Combined JJA hazard</span><b id="kpiJjaArea"></b><span class="muted">km²</span></section>
-    <section class="card kpi"><span class="muted">Top frost province</span><b id="kpiTopFrost"></b><span class="muted" id="kpiTopFrostVal"></span></section>
-    <section class="card kpi"><span class="muted">Top JJA hazard province</span><b id="kpiTopJja"></b><span class="muted" id="kpiTopJjaVal"></span></section>
-
-    <section class="card wide">
-      <h2>Multi-risk province explorer</h2>
-      <div class="toolbar">
-        <div style="min-width:260px">
-          <label class="muted">Select province</label>
-          <select id="provinceSelect"></select>
-        </div>
-        <button class="btn primary" id="printBtn">Print current brief</button>
-        <button class="btn" id="csvBtn">Download combined CSV</button>
-      </div>
-      <div id="provinceBrief"></div>
-    </section>
-
-    <section class="card side">
-      <h2>National exposure snapshot</h2>
-      <div class="metric">
-        <div><span class="muted">Frost households</span><b id="natFrostHH"></b></div>
-        <div><span class="muted">Frost population</span><b id="natFrostPop"></b></div>
-        <div><span class="muted">Frost communities</span><b id="natFrostCom"></b></div>
-        <div><span class="muted">JJA households</span><b id="natJjaHH"></b></div>
-        <div><span class="muted">JJA population</span><b id="natJjaPop"></b></div>
-        <div><span class="muted">JJA communities</span><b id="natJjaCom"></b></div>
-      </div>
-      <p class="small">Exposure estimates are planning approximations and require field confirmation.</p>
-    </section>
-
-    <section class="card half"><h2>Top frost footprint provinces</h2><canvas id="frostTopChart"></canvas></section>
-    <section class="card half"><h2>Top combined JJA hazard provinces</h2><canvas id="jjaTopChart"></canvas></section>
-  </div>
-</section>
-
-<section id="mapPanel" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>Interactive provincial map</h2>
-      <div class="mapbar">
-        <div class="explain"><b>About this map:</b> This interactive view brings the main provincial risk indicators into one place. Choose a scenario and indicator to compare patterns across provinces, then select a province to view its current drought, frost, or combined hazard values. The provincial boundary is based on the PNG NSO ADM1 boundary prepared from the national GEE asset.</div>
-        <div>
-          <label class="muted">Scenario</label>
-          <select id="mapScenario">
-            <option value="asis">ASIS drought stress</option>
-            <option value="frost">Scenario 1: Frost susceptibility</option>
-            <option value="jja">Scenario 2: Combined JJA hazard</option>
-          </select>
-        </div>
-        <div>
-          <label class="muted">Metric</label>
-          <select id="mapMetric"></select>
-        </div>
-      </div>
-      <div id="map"></div>
-      <div class="source">Boundary source: <b>PNG NSO ADM1 provincial boundary</b>, exported from <b>projects/png-nfms/assets/adm1_nso_province</b>. Province values are joined by province name and known naming aliases.</div>
-    </section>
-  </div>
-</section>
-
-<section id="drought" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>ASIS drought and agricultural stress</h2>
-      <p class="note"><b>Purpose of this tab:</b> This section provides the current drought and agricultural stress screening view. It combines rainfall anomaly, NDVI anomaly, Vegetation Health Index (VHI), Agricultural Stress Index (ASI), and a composite priority score to identify provinces that should be followed up through field reports and local verification.</p><p>The values should be read as early-warning signals. A rainfall deficit may appear before crops show visible stress, while vegetation and ASI indicators help show whether dry conditions are beginning to affect agricultural areas.</p>
-    </section>
-    <section class="card wide"><h2>Composite priority score</h2><canvas id="asisScoreChart"></canvas></section>
-    <section class="card side">
-      <h2>Drought indicator guide</h2>
-      <p><b>Rainfall anomaly</b> shows rainfall below or above normal.</p>
-      <p><b>NDVI anomaly</b> shows vegetation greenness compared with normal.</p>
-      <p><b>VHI</b> combines vegetation condition and temperature stress.</p>
-      <p><b>ASI</b> estimates crop area under stress.</p>
-    </section>
-    <section class="card full">
-      <h2>Priority ranking table</h2>
-      <div class="tablewrap">
-        <table id="asisTable">
-          <thead><tr><th>Rank</th><th>Province</th><th>Priority</th><th>Score</th><th>YTD rain %</th><th>Latest rain %</th><th>NDVI %</th><th>VHI</th><th>ASI %</th><th>Plain-language meaning</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section id="frost" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>Scenario 1: Frost Susceptibility Framework, JJA focus</h2>
-      <p class="note"><b>Purpose of this tab:</b> Scenario 1 shows the baseline frost susceptibility footprint for the June-July-August dry season. It highlights high-altitude agricultural zones where cold air pooling and very low night-time land surface temperatures can create frost risk for crops such as kaukau, vegetables, and other highland staples.</p><p>This scenario is useful for preparedness planning in highland basins and valley floors, especially where frost can damage crops suddenly and where seed-stock protection, mulching, crop cover, or early harvesting advice may be needed.</p>
-    </section>
-
-    <section class="card full">
-      <h2>Static Map 1: PNG Frost Susceptibility Framework</h2>
-      <div class="static-map-frame">
-        <img class="static-map" src="PNG Frost Susceptibility Map.png" alt="PNG Frost Susceptibility Framework Map">
-      </div>
-      <p class="source">Static map file: <b>PNG Frost Susceptibility Map.png</b></p>
-    </section>
-
-    <section class="card half"><h2>Frost footprint by province</h2><canvas id="frostChart"></canvas></section>
-    <section class="card half">
-      <h2>Strategic frost interpretation</h2>
-      <p>Enga dominates the frost-only footprint, followed by Hela, Morobe, Central, Western Highlands, Southern Highlands, West Sepik, Jiwaka, Eastern Highlands and Northern/Oro.</p>
-      <div class="warn"><b>Operational reading:</b> Frost preparedness should prioritise seed-stock protection, crop cover/mulching advisories, early harvesting protocols, and food relief pre-positioning in high-altitude agricultural basins.</div>
-    </section>
-
-    <section class="card full">
-      <h2>Frost exposure table</h2>
-      <div class="tablewrap">
-        <table id="frostTable">
-          <thead><tr><th>Rank</th><th>Province</th><th>High-risk area km²</th><th>Est. households</th><th>Est. population</th><th>Est. communities</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section id="combined" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>Scenario 2: Integrated El Niño Hazard Matrix, Frost + Drought</h2>
-      <p class="note"><b>Purpose of this tab:</b> Scenario 2 combines the frost susceptibility signal with rainfall-deficit and drought-related stress for the June-July-August period. This provides a more operational view of El Niño hazard because it captures both highland frost exposure and wider dry-season agricultural stress.</p><p>The combined hazard view helps identify where response planning should focus first, especially where high-risk areas overlap with populated agricultural corridors and village systems.</p>
-    </section>
-
-    <section class="card full">
-      <h2>Static Map 2: Integrated El Niño Hazard Matrix</h2>
-      <div class="static-map-frame">
-        <img class="static-map" src="PNG_Combined_ElNino_Hazard_JJA.png" alt="PNG Combined El Niño Hazard JJA Map">
-      </div>
-      <p class="source">Static map file: <b>PNG_Combined_ElNino_Hazard_JJA.png</b></p>
-    </section>
-
-    <section class="card half"><h2>Combined JJA hazard area</h2><canvas id="jjaChart"></canvas></section>
-    <section class="card half"><h2>Frost-only vs combined hazard</h2><canvas id="compareChart"></canvas></section>
-
-    <section class="card full">
-      <h2>Combined JJA hazard table</h2>
-      <div class="tablewrap">
-        <table id="jjaTable">
-          <thead><tr><th>Rank</th><th>Province</th><th>JJA hazard km²</th><th>Est. households</th><th>Est. population</th><th>Est. communities</th><th>Baseline frost km²</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section id="exposure" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>Population, household and community exposure</h2>
-      <p class="warn"><b>Purpose of this tab:</b> This section translates mapped hazard footprints into planning estimates for households, population, and communities that may require closer attention. The figures support prioritisation and resource allocation, but they should be verified against field reports, updated census information, crop calendars, market conditions, and water-source status.</p>
-      <div class="tablewrap">
-        <table id="exposureTable">
-          <thead><tr><th>Province</th><th>Frost km²</th><th>Frost population</th><th>Frost communities</th><th>JJA km²</th><th>JJA population</th><th>JJA communities</th><th>Planning reading</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-</section>
-
-<section id="response" class="panel">
-  <div class="grid">
-    <section class="card full">
-      <h2>Operational response framework</h2>
-      <p class="note"><b>Purpose of this tab:</b> This section converts the mapping results into practical response options for government and partner planning. It separates the highlands frost-risk areas, lowland and coastal drought-prone areas, and mid-altitude transition zones so that each risk group can be matched with appropriate field action.</p>
-      <table>
-        <thead><tr><th>Risk group</th><th>Primary footprint</th><th>Recommended action</th></tr></thead>
-        <tbody>
-          <tr><td><span class="pill High">Highlands core</span></td><td>Enga, Western Highlands, Southern Highlands, Hela, Chimbu and high-altitude basins above 2,200 m.</td><td>Seed-stock protection, frost-resilient multiplication hubs, mulch/crop cover advisory, early harvesting protocols, food relief pre-positioning.</td></tr>
-          <tr><td><span class="pill Moderate">Lowlands and coast</span></td><td>Western, Gulf, Milne Bay islands, NCD rain-shadow corridors and emerging coastal drought areas.</td><td>Water distribution, small-scale irrigation, drought-tolerant crops, field reports on water sources and market prices.</td></tr>
-          <tr><td><span class="pill Watch">Mid-altitude slopes</span></td><td>Eastern Highlands, Chimbu and transition zones around 1,200 to 1,800 m.</td><td>Diversify into cassava/yam, soil moisture retention, crop monitoring and local advisory messages.</td></tr>
-        </tbody>
-      </table>
-    </section>
-    <section class="card full">
-      <h2>Field verification checklist</h2>
-      <table>
-        <thead><tr><th>Check</th><th>What to collect</th></tr></thead>
-        <tbody>
-          <tr><td>Crop condition</td><td>Photos, GPS points, crop type, damage level, garden age.</td></tr>
-          <tr><td>Water availability</td><td>Water-source status, distance to water, quality concerns, drying streams.</td></tr>
-          <tr><td>Food access</td><td>Meal changes, wild foods, market prices, local shortages.</td></tr>
-          <tr><td>Hazard type</td><td>Separate drought damage, frost burn, pests, fire, and flood effects.</td></tr>
-        </tbody>
-      </table>
-    </section>
-  </div>
-</section>
-</main>
-
+<div class='tabs'><button class='tab active' data-panel='overview'>Overview</button><button class='tab' data-panel='mapPanel'>Interactive Map</button><button class='tab' data-panel='drought'>ASIS Drought Stress</button><button class='tab' data-panel='frost'>Scenario 1: Frost</button><button class='tab' data-panel='combined'>Scenario 2: Combined JJA Hazard</button><button class='tab' data-panel='exposure'>Population Exposure</button><button class='tab' data-panel='response'>Operational Response</button></div>
+<section id='overview' class='panel active'><div class='grid'><section class='card full'><span class='eyebrow'>Executive summary</span><h2>Current interpretation</h2><div class='warn'><b>Interpretation note:</b> This dashboard supports early warning, prioritisation and field verification planning. It does not replace official declarations or field assessment by mandated national authorities and provincial teams.</div><p>The analysis shows two related but different risk patterns. <b>Frost susceptibility</b> is concentrated mainly in high-altitude agricultural basins, especially Enga and surrounding Highlands provinces. The <b>combined JJA El Niño hazard</b> shifts operational attention toward provinces where frost and drought-related stresses overlap or where drought stress dominates.</p></section><section class='card kpi'><span class='muted'>Frost high-risk footprint</span><b id='kpiFrostArea'></b><span class='muted'>km²</span></section><section class='card kpi'><span class='muted'>Combined JJA hazard</span><b id='kpiJjaArea'></b><span class='muted'>km²</span></section><section class='card kpi'><span class='muted'>Top frost province</span><b id='kpiTopFrost'></b><span class='muted' id='kpiTopFrostVal'></span></section><section class='card kpi'><span class='muted'>Top JJA hazard province</span><b id='kpiTopJja'></b><span class='muted' id='kpiTopJjaVal'></span></section><section class='card wide'><h2>Multi-risk province explorer</h2><div class='toolbar'><div style='min-width:260px'><label class='muted'>Select province</label><select id='provinceSelect'></select></div><button class='btn primary' id='printBtn'>Print current brief</button><button class='btn' id='csvBtn'>Download combined CSV</button></div><div id='provinceBrief'></div></section><section class='card side'><h2>National exposure snapshot</h2><div class='metric'><div><span class='muted'>Frost households</span><b id='natFrostHH'></b></div><div><span class='muted'>Frost population</span><b id='natFrostPop'></b></div><div><span class='muted'>Frost communities</span><b id='natFrostCom'></b></div><div><span class='muted'>JJA households</span><b id='natJjaHH'></b></div><div><span class='muted'>JJA population</span><b id='natJjaPop'></b></div><div><span class='muted'>JJA communities</span><b id='natJjaCom'></b></div></div><p class='small'>Exposure estimates are planning approximations and require field confirmation.</p></section><section class='card half'><h2>Top frost footprint provinces</h2><canvas id='frostTopChart'></canvas></section><section class='card half'><h2>Top combined JJA hazard provinces</h2><canvas id='jjaTopChart'></canvas></section></div></section>
+<section id='mapPanel' class='panel'><div class='grid'><section class='card full'><h2>Interactive provincial map</h2><div class='mapbar'><div class='explain'><b>About this map:</b> This interactive view brings the main provincial risk indicators into one place. Select a scenario and indicator to compare patterns across provinces, then click a province to view its current drought, frost, or combined hazard values. The boundary is based on the PNG NSO ADM1 provincial layer prepared from the national GEE asset.</div><div><label class='muted'>Scenario</label><select id='mapScenario'><option value='asis'>ASIS drought stress</option><option value='frost'>Scenario 1: Frost susceptibility</option><option value='jja'>Scenario 2: Combined JJA hazard</option></select></div><div><label class='muted'>Metric</label><select id='mapMetric'></select></div></div><div id='map'></div><div class='source'>Boundary source: <b>PNG NSO ADM1 provincial boundary</b>, exported from <b>projects/png-nfms/assets/adm1_nso_province</b>. Province values are joined by province name and known naming aliases.</div></section></div></section>
+<section id='drought' class='panel'><div class='grid'><section class='card full'><span class='eyebrow'>Scenario 0</span><h2>ASIS drought and agricultural stress</h2><p class='note'><b>Purpose of this tab:</b> This section provides the current drought and agricultural stress screening view. It combines rainfall anomaly, NDVI anomaly, Vegetation Health Index, Agricultural Stress Index and a composite priority score to identify provinces that should be followed up through field reports and local verification.</p><p>The values should be read as early-warning signals. Rainfall deficit may appear before crops show visible stress, while vegetation and ASI indicators help show whether dry conditions are beginning to affect agricultural areas.</p></section><section class='card wide'><h2>Composite priority score</h2><canvas id='asisScoreChart'></canvas></section><section class='card side'><h2>Drought indicator guide</h2><p><b>Rainfall anomaly</b> shows rainfall below or above normal.</p><p><b>NDVI anomaly</b> shows vegetation greenness compared with normal.</p><p><b>VHI</b> combines vegetation condition and temperature stress.</p><p><b>ASI</b> estimates crop area under stress.</p></section><section class='card full'><h2>Priority ranking table</h2><div class='tablewrap'><table id='asisTable'><thead><tr><th>Rank</th><th>Province</th><th>Priority</th><th>Score</th><th>YTD rain %</th><th>Latest rain %</th><th>NDVI %</th><th>VHI</th><th>ASI %</th><th>Plain-language meaning</th></tr></thead><tbody></tbody></table></div></section></div></section>
+<section id='frost' class='panel'><div class='grid'><section class='card full'><span class='eyebrow'>Scenario 1</span><h2>Frost Susceptibility Framework, JJA focus</h2><p class='note'><b>Purpose of this tab:</b> Scenario 1 shows the baseline frost susceptibility footprint for the June-July-August dry season. It highlights high-altitude agricultural zones where cold air pooling and very low night-time land surface temperatures can create frost risk for crops such as kaukau, vegetables, and other highland staples.</p><p>This scenario is useful for preparedness planning in highland basins and valley floors, especially where frost can damage crops suddenly and where seed-stock protection, mulching, crop cover, or early harvesting advice may be needed.</p></section><section class='card full'><div class='map-product'><div class='map-product-header'><div><span class='eyebrow'>Static Map 1</span><h3>PNG Frost Susceptibility Framework</h3></div><span class='badge'>Scenario 1 · JJA focus</span></div><img class='static-map' src='PNG Frost Susceptibility Map.png' alt='PNG Frost Susceptibility Framework Map'></div><p class='source'>Map output: <b>PNG Frost Susceptibility Map.png</b></p></section><section class='card half'><h2>Frost footprint by province</h2><canvas id='frostChart'></canvas></section><section class='card half'><h2>Strategic frost interpretation</h2><p>Enga dominates the frost-only footprint, followed by Hela, Morobe, Central, Western Highlands, Southern Highlands, West Sepik, Jiwaka, Eastern Highlands and Northern/Oro.</p><div class='warn'><b>Operational reading:</b> Frost preparedness should prioritise seed-stock protection, crop cover/mulching advisories, early harvesting protocols and food relief pre-positioning in high-altitude agricultural basins.</div></section><section class='card full'><h2>Frost exposure table</h2><div class='tablewrap'><table id='frostTable'><thead><tr><th>Rank</th><th>Province</th><th>High-risk area km²</th><th>Est. households</th><th>Est. population</th><th>Est. communities</th></tr></thead><tbody></tbody></table></div></section></div></section>
+<section id='combined' class='panel'><div class='grid'><section class='card full'><span class='eyebrow'>Scenario 2</span><h2>Integrated El Niño Hazard Matrix, Frost + Drought</h2><p class='note'><b>Purpose of this tab:</b> Scenario 2 combines the frost susceptibility signal with rainfall-deficit and drought-related stress for the June-July-August period. This provides a more operational view of El Niño hazard because it captures both highland frost exposure and wider dry-season agricultural stress.</p><p>The combined hazard view helps identify where response planning should focus first, especially where high-risk areas overlap with populated agricultural corridors and village systems.</p></section><section class='card full'><div class='map-product'><div class='map-product-header'><div><span class='eyebrow'>Static Map 2</span><h3>Integrated El Niño Hazard Matrix</h3></div><span class='badge'>Scenario 2 · Frost + drought</span></div><img class='static-map' src='PNG_Combined_ElNino_Hazard_JJA.png' alt='PNG Combined El Niño Hazard JJA Map'></div><p class='source'>Map output: <b>PNG_Combined_ElNino_Hazard_JJA.png</b></p></section><section class='card half'><h2>Combined JJA hazard area</h2><canvas id='jjaChart'></canvas></section><section class='card half'><h2>Frost-only vs combined hazard</h2><canvas id='compareChart'></canvas></section><section class='card full'><h2>Combined JJA hazard table</h2><div class='tablewrap'><table id='jjaTable'><thead><tr><th>Rank</th><th>Province</th><th>JJA hazard km²</th><th>Est. households</th><th>Est. population</th><th>Est. communities</th><th>Baseline frost km²</th></tr></thead><tbody></tbody></table></div></section></div></section>
+<section id='exposure' class='panel'><div class='grid'><section class='card full'><span class='eyebrow'>Exposure layer</span><h2>Population, household and community exposure</h2><p class='warn'><b>Purpose of this tab:</b> This section translates mapped hazard footprints into planning estimates for households, population, and communities that may require closer attention. The figures support prioritisation and resource allocation, but they should be verified against field reports, updated census information, crop calendars, market conditions and water-source status.</p><div class='tablewrap'><table id='exposureTable'><thead><tr><th>Province</th><th>Frost km²</th><th>Frost population</th><th>Frost communities</th><th>JJA km²</th><th>JJA population</th><th>JJA communities</th><th>Planning reading</th></tr></thead><tbody></tbody></table></div></section></div></section>
+<section id='response' class='panel'><div class='grid'><section class='card full'><span class='eyebrow'>Operational planning</span><h2>Operational response framework</h2><p class='note'><b>Purpose of this tab:</b> This section converts the mapping results into practical response options for government and partner planning. It separates the highlands frost-risk areas, lowland and coastal drought-prone areas, and mid-altitude transition zones so each risk group can be matched with appropriate field action.</p><table><thead><tr><th>Risk group</th><th>Primary footprint</th><th>Recommended action</th></tr></thead><tbody><tr><td><span class='pill High'>Highlands core</span></td><td>Enga, Western Highlands, Southern Highlands, Hela, Chimbu and high-altitude basins above 2,200 m.</td><td>Seed-stock protection, frost-resilient multiplication hubs, mulch/crop cover advisory, early harvesting protocols, food relief pre-positioning.</td></tr><tr><td><span class='pill Moderate'>Lowlands and coast</span></td><td>Western, Gulf, Milne Bay islands, NCD rain-shadow corridors and emerging coastal drought areas.</td><td>Water distribution, small-scale irrigation, drought-tolerant crops, field reports on water sources and market prices.</td></tr><tr><td><span class='pill Watch'>Mid-altitude slopes</span></td><td>Eastern Highlands, Chimbu and transition zones around 1,200 to 1,800 m.</td><td>Diversify into cassava/yam, soil moisture retention, crop monitoring and local advisory messages.</td></tr></tbody></table></section><section class='card full'><h2>Field verification checklist</h2><table><thead><tr><th>Check</th><th>What to collect</th></tr></thead><tbody><tr><td>Crop condition</td><td>Photos, GPS points, crop type, damage level, garden age.</td></tr><tr><td>Water availability</td><td>Water-source status, distance to water, quality concerns, drying streams.</td></tr><tr><td>Food access</td><td>Meal changes, wild foods, market prices, local shortages.</td></tr><tr><td>Hazard type</td><td>Separate drought damage, frost burn, pests, fire, and flood effects.</td></tr></tbody></table></section></div></section>
+</main><footer class='footer'><div><b>PNG El Niño Drought & Frost Risk Dashboard</b><br>Prepared for agricultural climate risk screening, field verification and operational planning.</div><div>Boundary: PNG NSO ADM1 / PNG NFMS GEE asset<br>Version: June 2026 · Province-level decision support</div></footer>
 <script>
-const ASIS=[
-  ['Central',46.3,'Moderate priority',-49.5,-57.4,-0.8,0.626,0.117],
-  ['West Sepik',46.1,'Moderate priority',-16.5,-15.0,-7.4,0.530,12.245],
-  ['National Capital District',45.6,'Moderate priority',null,null,-15.1,0.324,4.545],
-  ['Enga',43.9,'Moderate priority',-31.3,-21.8,-1.3,0.514,7.692],
-  ['Western',36.1,'Watch',4.1,-60.4,-9.5,0.508,0.741],
-  ['Madang',35.8,'Watch',-34.9,-14.1,10.8,0.506,1.709],
-  ['Morobe',32.9,'Watch',-32.8,30.6,6.6,0.469,1.217],
-  ['East Sepik',32.7,'Watch',-17.3,1.7,14.3,0.513,10.861],
-  ['Northern',32.6,'Watch',-21.0,-51.2,-0.7,0.536,0],
-  ['Gulf',32.3,'Watch',-13.5,-44.5,-5.2,0.540,0],
-  ['Southern Highlands',30.3,'Watch',-30.6,-6.5,-1.8,0.531,0],
-  ['Eastern Highlands',29.4,'Watch',-23.5,20.1,5.2,0.472,3.139],
-  ['Chimbu',27.3,'Watch',-27.1,30.0,11.4,0.481,0],
-  ['Western Highlands',26.1,'Watch',-26.7,30.4,2.2,0.498,0],
-  ['West New Britain',25.4,'Watch',-17.2,-43.0,17.6,0.574,0],
-  ['Milne Bay',18.8,'Lower current concern',33.0,-67.9,8.8,0.601,0],
-  ['Bougainville',8.7,'Lower current concern',11.4,-5.8,28.3,0.540,0],
-  ['Manus',8.4,'Lower current concern',null,null,21.7,0.523,0],
-  ['East New Britain',3.3,'Lower current concern',23.0,29.0,11.3,0.604,0],
-  ['New Ireland',0.0,'Lower current concern',null,null,9.2,0.667,0]
-].map(r=>({province:r[0],score:r[1],priority:r[2],ytd:r[3],latestRain:r[4],ndvi:r[5],vhi:r[6],asi:r[7]}));
-
-const FROST=[
-  ['Enga',4243.485,38191,229148,458],['Hela',1214.778,10933,65598,131],['Morobe',875.633,7881,47284,95],['Central',638.096,5743,34457,69],['Western Highlands',461.160,4150,24903,50],['Southern Highlands',420.047,3780,22683,45],['West Sepik',379.143,3412,20474,41],['Jiwaka',363.290,3270,19618,39],['Eastern Highlands',359.038,3231,19388,39],['Northern',356.132,3205,19231,38],['Chimbu',302.991,2727,16362,33],['East Sepik',220.135,1981,11887,24],['Madang',177.907,1601,9607,19],['Western',82.223,740,4440,9],['Milne Bay',6.002,54,324,1],['Bougainville',3.363,30,182,0],['Gulf',1.299,12,70,0]
-].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4]}));
-
-const JJA=[
-  ['Southern Highlands',151.504,13635,81812,164,420.047],['Morobe',70.349,6331,37988,76,875.633],['Eastern Highlands',58.263,5244,31462,63,359.038],['Hela',57.057,5135,30811,62,1214.778],['Central',51.354,4622,27731,55,638.096],['Madang',33.886,3050,18299,37,177.907],['Enga',33.964,3057,18341,37,4243.485],['Gulf',29.168,2625,15751,32,1.299],['West Sepik',27.039,2434,14601,29,379.143],['Western Highlands',26.880,2419,14515,29,461.160],['Western',23.751,2138,12825,26,82.223],['Chimbu',19.317,1739,10431,21,302.991],['West New Britain',15.418,1388,8325,17,0],['Northern',10.491,944,5666,11,356.132],['Jiwaka',9.659,869,5216,10,363.290],['East Sepik',8.167,735,4410,9,220.135],['Bougainville',1.216,109,657,1,3.363],['Milne Bay',0.158,14,85,0,6.002]
-].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4],frostArea:r[5]}));
-
-const CENTROIDS={Central:[-9.15,147.55],Enga:[-5.55,143.65],Hela:[-5.95,142.95],Morobe:[-6.8,146.9],'Western Highlands':[-5.75,144.5],'Southern Highlands':[-6.25,143.35],'West Sepik':[-3.85,141.75],Jiwaka:[-5.55,144.75],'Eastern Highlands':[-6.25,145.65],Northern:[-8.8,148.3],Chimbu:[-6.0,144.95],'East Sepik':[-4.15,143.65],Madang:[-5.2,145.7],Western:[-7.3,142.0],'Milne Bay':[-10.3,150.4],Bougainville:[-6.2,155.4],Gulf:[-7.8,145.0],'National Capital District':[-9.45,147.18],'West New Britain':[-5.75,150.05],Manus:[-2.1,147.0],'East New Britain':[-4.5,152.1],'New Ireland':[-3.3,151.6]};
-
-const fmt=x=>x==null?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
-const fmt3=x=>x==null?'No data':Number(x).toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3});
-const pct=x=>x==null?'No data':Number(x).toFixed(1)+'%';
-const cls=s=>String(s||'').split(' ')[0];
-const norm=s=>(s||'').toLowerCase().replace(/province|autonomous|region|district|capital|national/g,'').replace(/[^a-z]/g,'');
+const ASIS=[['Central',46.3,'Moderate priority',-49.5,-57.4,-0.8,.626,.117],['West Sepik',46.1,'Moderate priority',-16.5,-15,-7.4,.530,12.245],['National Capital District',45.6,'Moderate priority',null,null,-15.1,.324,4.545],['Enga',43.9,'Moderate priority',-31.3,-21.8,-1.3,.514,7.692],['Western',36.1,'Watch',4.1,-60.4,-9.5,.508,.741],['Madang',35.8,'Watch',-34.9,-14.1,10.8,.506,1.709],['Morobe',32.9,'Watch',-32.8,30.6,6.6,.469,1.217],['East Sepik',32.7,'Watch',-17.3,1.7,14.3,.513,10.861],['Northern',32.6,'Watch',-21,-51.2,-.7,.536,0],['Gulf',32.3,'Watch',-13.5,-44.5,-5.2,.540,0],['Southern Highlands',30.3,'Watch',-30.6,-6.5,-1.8,.531,0],['Eastern Highlands',29.4,'Watch',-23.5,20.1,5.2,.472,3.139],['Chimbu',27.3,'Watch',-27.1,30,11.4,.481,0],['Western Highlands',26.1,'Watch',-26.7,30.4,2.2,.498,0],['West New Britain',25.4,'Watch',-17.2,-43,17.6,.574,0],['Milne Bay',18.8,'Lower current concern',33,-67.9,8.8,.601,0],['Bougainville',8.7,'Lower current concern',11.4,-5.8,28.3,.540,0],['Manus',8.4,'Lower current concern',null,null,21.7,.523,0],['East New Britain',3.3,'Lower current concern',23,29,11.3,.604,0],['New Ireland',0,'Lower current concern',null,null,9.2,.667,0]].map(r=>({province:r[0],score:r[1],priority:r[2],ytd:r[3],latestRain:r[4],ndvi:r[5],vhi:r[6],asi:r[7]}));
+const FROST=[['Enga',4243.485,38191,229148,458],['Hela',1214.778,10933,65598,131],['Morobe',875.633,7881,47284,95],['Central',638.096,5743,34457,69],['Western Highlands',461.160,4150,24903,50],['Southern Highlands',420.047,3780,22683,45],['West Sepik',379.143,3412,20474,41],['Jiwaka',363.290,3270,19618,39],['Eastern Highlands',359.038,3231,19388,39],['Northern',356.132,3205,19231,38],['Chimbu',302.991,2727,16362,33],['East Sepik',220.135,1981,11887,24],['Madang',177.907,1601,9607,19],['Western',82.223,740,4440,9],['Milne Bay',6.002,54,324,1],['Bougainville',3.363,30,182,0],['Gulf',1.299,12,70,0]].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4]}));
+const JJA=[['Southern Highlands',151.504,13635,81812,164,420.047],['Morobe',70.349,6331,37988,76,875.633],['Eastern Highlands',58.263,5244,31462,63,359.038],['Hela',57.057,5135,30811,62,1214.778],['Central',51.354,4622,27731,55,638.096],['Madang',33.886,3050,18299,37,177.907],['Enga',33.964,3057,18341,37,4243.485],['Gulf',29.168,2625,15751,32,1.299],['West Sepik',27.039,2434,14601,29,379.143],['Western Highlands',26.880,2419,14515,29,461.160],['Western',23.751,2138,12825,26,82.223],['Chimbu',19.317,1739,10431,21,302.991],['West New Britain',15.418,1388,8325,17,0],['Northern',10.491,944,5666,11,356.132],['Jiwaka',9.659,869,5216,10,363.290],['East Sepik',8.167,735,4410,9,220.135],['Bougainville',1.216,109,657,1,3.363],['Milne Bay',.158,14,85,0,6.002]].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4],frostArea:r[5]}));
+const CENTROIDS={Central:[-9.15,147.55],Enga:[-5.55,143.65],Hela:[-5.95,142.95],Morobe:[-6.8,146.9],'Western Highlands':[-5.75,144.5],'Southern Highlands':[-6.25,143.35],'West Sepik':[-3.85,141.75],Jiwaka:[-5.55,144.75],'Eastern Highlands':[-6.25,145.65],Northern:[-8.8,148.3],Chimbu:[-6,144.95],'East Sepik':[-4.15,143.65],Madang:[-5.2,145.7],Western:[-7.3,142],'Milne Bay':[-10.3,150.4],Bougainville:[-6.2,155.4],Gulf:[-7.8,145],'National Capital District':[-9.45,147.18],'West New Britain':[-5.75,150.05],Manus:[-2.1,147],'East New Britain':[-4.5,152.1],'New Ireland':[-3.3,151.6]};
+const fmt=x=>x==null?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0}),fmt3=x=>x==null?'No data':Number(x).toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}),pct=x=>x==null?'No data':Number(x).toFixed(1)+'%',cls=s=>String(s||'').split(' ')[0],norm=s=>(s||'').toLowerCase().replace(/province|autonomous|region|district|capital|national/g,'').replace(/[^a-z]/g,'');
 const alias={sandaun:'West Sepik',westsepik:'West Sepik',eastsepik:'East Sepik',ncd:'National Capital District',nationalcapital:'National Capital District',nationalcapitaldistrict:'National Capital District',oro:'Northern',northern:'Northern',simbu:'Chimbu',chimbu:'Chimbu',bougainville:'Bougainville',northernsolomons:'Bougainville',westernhighlands:'Western Highlands',southernhighlands:'Southern Highlands',eastnewbritain:'East New Britain',westnewbritain:'West New Britain',newireland:'New Ireland',milnebay:'Milne Bay',gulf:'Gulf',western:'Western',enga:'Enga',madang:'Madang',morobe:'Morobe',easternhighlands:'Eastern Highlands',manus:'Manus',central:'Central',jiwaka:'Jiwaka'};
-const index=a=>Object.fromEntries(a.map(r=>[norm(r.province),r]));
-const ai=index(ASIS),fi=index(FROST),ji=index(JJA);
-function match(n,idx){let k=norm(n);return idx[k]||idx[norm(alias[k])]||null}
-function asisMeaning(r){let p=[];if(r.ytd!=null&&r.ytd<-25)p.push('large rainfall deficit so far in 2026');if(r.latestRain!=null&&r.latestRain<-40)p.push('very dry latest dekad');if(r.ndvi!=null&&r.ndvi<-5)p.push('vegetation less green than usual');if(r.vhi!=null&&r.vhi<0.50)p.push('low vegetation health');if(r.asi!=null&&r.asi>5)p.push('notable crop-area stress signal');return (p.length?p:['mixed or weaker current warning signals']).join('; ')+'.'}
-function chart(id,type,labels,data,label,opts={}){return new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label,data}]},options:Object.assign({responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}},opts)})}
-function fillTable(id,rows,fn){document.querySelector('#'+id+' tbody').innerHTML=rows.map(fn).join('')}
-function provinceRows(p){return{asis:match(p,ai),frost:match(p,fi),jja:match(p,ji)}}
-function showProvince(p){let r=provinceRows(p);document.getElementById('provinceBrief').innerHTML=`<div class="explain"><h3>${p}</h3><table><tr><th>Scenario</th><th>Key result</th><th>Planning reading</th></tr><tr><td>ASIS drought</td><td>${r.asis?`Score ${r.asis.score}, ${r.asis.priority}; ASI ${pct(r.asis.asi)}; latest rain ${pct(r.asis.latestRain)}`:'No ASIS record'}</td><td>${r.asis?asisMeaning(r.asis):'Check local reports and updated ASIS data.'}</td></tr><tr><td>Frost susceptibility</td><td>${r.frost?`${fmt3(r.frost.area)} km²; est. population ${fmt(r.frost.population)}`:'No high-risk frost footprint'}</td><td>${r.frost&&r.frost.area>300?'Prioritise frost preparedness and seed-stock protection.':'Routine frost monitoring or localised checks.'}</td></tr><tr><td>Combined JJA hazard</td><td>${r.jja?`${fmt3(r.jja.area)} km²; est. population ${fmt(r.jja.population)}`:'No combined hazard footprint'}</td><td>${r.jja&&r.jja.area>=50?'Immediate multi-hazard field verification priority.':r.jja?'Monitor and verify village-level reports.':'Routine monitoring.'}</td></tr></table></div>`}
-function initOverview(){const fa=FROST.reduce((s,r)=>s+r.area,0),ja=JJA.reduce((s,r)=>s+r.area,0),fh=FROST.reduce((s,r)=>s+r.households,0),fp=FROST.reduce((s,r)=>s+r.population,0),fc=FROST.reduce((s,r)=>s+r.communities,0),jh=JJA.reduce((s,r)=>s+r.households,0),jp=JJA.reduce((s,r)=>s+r.population,0),jc=JJA.reduce((s,r)=>s+r.communities,0);document.getElementById('kpiFrostArea').textContent=fmt3(fa);document.getElementById('kpiJjaArea').textContent=fmt3(ja);document.getElementById('kpiTopFrost').textContent=FROST[0].province;document.getElementById('kpiTopFrostVal').textContent=fmt3(FROST[0].area)+' km²';document.getElementById('kpiTopJja').textContent=JJA[0].province;document.getElementById('kpiTopJjaVal').textContent=fmt3(JJA[0].area)+' km²';document.getElementById('natFrostHH').textContent=fmt(fh);document.getElementById('natFrostPop').textContent=fmt(fp);document.getElementById('natFrostCom').textContent=fmt(fc);document.getElementById('natJjaHH').textContent=fmt(jh);document.getElementById('natJjaPop').textContent=fmt(jp);document.getElementById('natJjaCom').textContent=fmt(jc);let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort();let sel=document.getElementById('provinceSelect');sel.innerHTML=ps.map(p=>`<option>${p}</option>`).join('');sel.onchange=e=>showProvince(e.target.value);sel.value='Southern Highlands';showProvince('Southern Highlands');chart('frostTopChart','bar',FROST.slice(0,10).reverse().map(r=>r.province),FROST.slice(0,10).reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'});chart('jjaTopChart','bar',JJA.slice(0,10).reverse().map(r=>r.province),JJA.slice(0,10).reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'})}
-function initDrought(){fillTable('asisTable',ASIS,(r,i)=>`<tr><td>${i+1}</td><td><b>${r.province}</b></td><td><span class="pill ${cls(r.priority)}">${r.priority}</span></td><td>${r.score.toFixed(1)}</td><td>${pct(r.ytd)}</td><td>${pct(r.latestRain)}</td><td>${pct(r.ndvi)}</td><td>${r.vhi.toFixed(3)}</td><td>${pct(r.asi)}</td><td>${asisMeaning(r)}</td></tr>`);chart('asisScoreChart','bar',[...ASIS].reverse().map(r=>r.province),[...ASIS].reverse().map(r=>r.score),'Priority score',{indexAxis:'y',scales:{x:{beginAtZero:true,max:60}}})}
-function initFrost(){fillTable('frostTable',FROST,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td></tr>`);chart('frostChart','bar',[...FROST].reverse().map(r=>r.province),[...FROST].reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'})}
-function initCombined(){fillTable('jjaTable',JJA,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td><td>${fmt3(r.frostArea)}</td></tr>`);chart('jjaChart','bar',[...JJA].reverse().map(r=>r.province),[...JJA].reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'});new Chart(document.getElementById('compareChart'),{type:'bar',data:{labels:JJA.slice(0,12).map(r=>r.province),datasets:[{label:'JJA hazard km²',data:JJA.slice(0,12).map(r=>r.area)},{label:'Baseline frost km²',data:JJA.slice(0,12).map(r=>r.frostArea)}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}})}
-function initExposure(){let ps=[...new Set([...FROST,...JJA].map(r=>r.province))].sort();document.querySelector('#exposureTable tbody').innerHTML=ps.map(p=>{let r=provinceRows(p),fa=r.frost?.area||0,ja=r.jja?.area||0,read=ja>=50?'Immediate multi-hazard verification priority':fa>=300?'Strong frost preparedness priority':ja>0?'Monitor and verify local reports':'Routine monitoring';return`<tr><td><b>${p}</b></td><td>${fmt3(fa)}</td><td>${r.frost?fmt(r.frost.population):'0'}</td><td>${r.frost?fmt(r.frost.communities):'0'}</td><td>${fmt3(ja)}</td><td>${r.jja?fmt(r.jja.population):'0'}</td><td>${r.jja?fmt(r.jja.communities):'0'}</td><td>${read}</td></tr>`}).join('')}
-
-let map,geo,markers,legend,mapStarted=false;
-const mapOptions={
-  asis:[['score','Composite priority score'],['ytd','2026 rainfall anomaly'],['latestRain','Latest rainfall anomaly'],['ndvi','NDVI anomaly'],['vhi','VHI'],['asi','ASI crop stress']],
-  frost:[['area','Frost high-risk area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities']],
-  jja:[['area','JJA combined hazard area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities'],['frostArea','Baseline frost area']]
-};
-function mapDataset(){let s=document.getElementById('mapScenario').value;return s==='asis'?ai:s==='frost'?fi:ji}
-function updateMapMetrics(){let s=document.getElementById('mapScenario').value;document.getElementById('mapMetric').innerHTML=mapOptions[s].map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}
-function mapLabel(s,m){return(mapOptions[s].find(o=>o[0]===m)||[m,m])[1]}
-function mapColor(v,s,m){if(v==null)return'#cbd5e1';if(s==='asis'){if(m==='score')return v>=45?'#b91c1c':v>=35?'#ea580c':v>=25?'#facc15':'#86efac';if(m==='asi')return v>=10?'#b91c1c':v>=5?'#ea580c':v>=1?'#facc15':'#86efac';if(m==='vhi')return v<.45?'#b91c1c':v<.5?'#ea580c':v<.55?'#facc15':'#86efac';return v<=-40?'#b91c1c':v<=-20?'#ea580c':v<0?'#facc15':'#86efac'}if(s==='frost')return v>=1000?'#7f1d1d':v>=300?'#dc2626':v>=50?'#f97316':v>0?'#facc15':'#dcfce7';return v>=50?'#7f1d1d':v>=20?'#dc2626':v>=5?'#f97316':v>0?'#facc15':'#dcfce7'}
-function getFeatureName(f){return f.properties.PROVNAME||f.properties.provname||f.properties.ADM1_NAME||f.properties.ADM1_EN||f.properties.shapeName||f.properties.name||f.properties.NAME_1||'Province'}
-function styleFeature(f){let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,d=match(getFeatureName(f),mapDataset());return{color:'#475569',weight:1,fillColor:mapColor(d?d[m]:null,s,m),fillOpacity:.72}}
-function popupHtml(name,d,s,m){if(!d)return`<b>${name}</b><br>No matched data record for this scenario.`;let val=d[m]==null?'No data':(['area','frostArea'].includes(m)?fmt3(d[m])+' km²':s==='asis'&&!['score','vhi'].includes(m)?pct(d[m]):fmt(d[m]));let pill=s==='asis'?cls(d.priority):s==='frost'?'Frost':'Combined';let title=s==='asis'?d.priority:mapLabel(s,m);return`<b>${d.province}</b><br><span class="pill ${pill}">${title}</span><br>${mapLabel(s,m)}: <b>${val}</b><hr><small>${s==='asis'?asisMeaning(d):'Compare with the charts and exposure table for planning context.'}</small>`}
-function updateLegend(){let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,rows=s==='asis'?[['#b91c1c','Highest concern'],['#ea580c','Moderate'],['#facc15','Watch'],['#86efac','Lower'],['#cbd5e1','No data']]:[['#7f1d1d','Very high'],['#dc2626','High'],['#f97316','Moderate'],['#facc15','Low'],['#dcfce7','Zero'],['#cbd5e1','No data']];let el=document.getElementById('mapLegend');if(el)el.innerHTML='<b>'+mapLabel(s,m)+'</b><br>'+rows.map(r=>`<span class="swatch" style="background:${r[0]}"></span>${r[1]}`).join('<br>')}
-function refreshMap(){if(!mapStarted)return;if(geo)geo.setStyle(styleFeature);drawFallbackMarkers();updateLegend()}
-function drawFallbackMarkers(){if(!map)return;if(markers){markers.remove();markers=null}if(geo)return;let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,idx=mapDataset();markers=L.layerGroup();Object.keys(CENTROIDS).forEach(name=>{let d=match(name,idx);let c=CENTROIDS[name];let v=d?d[m]:null;let marker=L.circleMarker(c,{radius:10,color:'#334155',weight:1,fillColor:mapColor(v,s,m),fillOpacity:.85});marker.bindPopup(popupHtml(name,d,s,m));marker.addTo(markers)});markers.addTo(map)}
-function initMap(){if(mapStarted)return;mapStarted=true;updateMapMetrics();map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);legend=L.control({position:'bottomright'});legend.onAdd=()=>{let d=L.DomUtil.create('div','map-legend');d.id='mapLegend';return d};legend.addTo(map);fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary file returned '+r.status);return r.json()}).then(g=>{geo=L.geoJSON(g,{style:styleFeature,onEachFeature:(f,l)=>{let n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>geo.resetStyle(e.target),click:()=>{let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value;l.bindPopup(popupHtml(n,match(n,mapDataset()),s,m)).openPopup()}})}}).addTo(map);map.fitBounds(geo.getBounds(),{padding:[12,12]});refreshMap()}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);drawFallbackMarkers();updateLegend()});document.getElementById('mapScenario').addEventListener('change',()=>{updateMapMetrics();refreshMap()});document.getElementById('mapMetric').addEventListener('change',refreshMap);setTimeout(()=>map.invalidateSize(),150)}
-function downloadCSV(){let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort(),rows=[['Province','ASIS_score','ASIS_priority','YTD_rain_pct','Latest_rain_pct','NDVI_pct','VHI','ASI_pct','Frost_area_km2','Frost_population','JJA_area_km2','JJA_population']];ps.forEach(p=>{let r=provinceRows(p);rows.push([p,r.asis?.score??'',r.asis?.priority??'',r.asis?.ytd??'',r.asis?.latestRain??'',r.asis?.ndvi??'',r.asis?.vhi??'',r.asis?.asi??'',r.frost?.area??0,r.frost?.population??0,r.jja?.area??0,r.jja?.population??0])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='png_elnino_dashboard_combined_data.csv';a.click();URL.revokeObjectURL(a.href)}
-function initTabs(){document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.panel).classList.add('active');if(b.dataset.panel==='mapPanel'){initMap();setTimeout(()=>map.invalidateSize(),150)}}))}
-function init(){initTabs();initOverview();initDrought();initFrost();initCombined();initExposure();document.getElementById('printBtn').addEventListener('click',()=>window.print());document.getElementById('csvBtn').addEventListener('click',downloadCSV)}
-document.addEventListener('DOMContentLoaded',init);
+const index=a=>Object.fromEntries(a.map(r=>[norm(r.province),r])),ai=index(ASIS),fi=index(FROST),ji=index(JJA);function match(n,idx){let k=norm(n);return idx[k]||idx[norm(alias[k])]||null}function asisMeaning(r){let p=[];if(r.ytd!=null&&r.ytd<-25)p.push('large rainfall deficit so far in 2026');if(r.latestRain!=null&&r.latestRain<-40)p.push('very dry latest dekad');if(r.ndvi!=null&&r.ndvi<-5)p.push('vegetation less green than usual');if(r.vhi!=null&&r.vhi<.5)p.push('low vegetation health');if(r.asi!=null&&r.asi>5)p.push('notable crop-area stress signal');return(p.length?p:['mixed or weaker current warning signals']).join('; ')+'.'}
+function chart(id,type,labels,data,label,opts={}){return new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label,data}]},options:Object.assign({responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}},opts)})}function fillTable(id,rows,fn){document.querySelector('#'+id+' tbody').innerHTML=rows.map(fn).join('')}function provinceRows(p){return{asis:match(p,ai),frost:match(p,fi),jja:match(p,ji)}}function showProvince(p){let r=provinceRows(p);document.getElementById('provinceBrief').innerHTML=`<div class='explain'><h3>${p}</h3><table><tr><th>Scenario</th><th>Key result</th><th>Planning reading</th></tr><tr><td>ASIS drought</td><td>${r.asis?`Score ${r.asis.score}, ${r.asis.priority}; ASI ${pct(r.asis.asi)}; latest rain ${pct(r.asis.latestRain)}`:'No ASIS record'}</td><td>${r.asis?asisMeaning(r.asis):'Check local reports and updated ASIS data.'}</td></tr><tr><td>Frost susceptibility</td><td>${r.frost?`${fmt3(r.frost.area)} km²; est. population ${fmt(r.frost.population)}`:'No high-risk frost footprint'}</td><td>${r.frost&&r.frost.area>300?'Prioritise frost preparedness and seed-stock protection.':'Routine frost monitoring or localised checks.'}</td></tr><tr><td>Combined JJA hazard</td><td>${r.jja?`${fmt3(r.jja.area)} km²; est. population ${fmt(r.jja.population)}`:'No combined hazard footprint'}</td><td>${r.jja&&r.jja.area>=50?'Immediate multi-hazard field verification priority.':r.jja?'Monitor and verify village-level reports.':'Routine monitoring.'}</td></tr></table></div>`}
+function initOverview(){const fa=FROST.reduce((s,r)=>s+r.area,0),ja=JJA.reduce((s,r)=>s+r.area,0),fh=FROST.reduce((s,r)=>s+r.households,0),fp=FROST.reduce((s,r)=>s+r.population,0),fc=FROST.reduce((s,r)=>s+r.communities,0),jh=JJA.reduce((s,r)=>s+r.households,0),jp=JJA.reduce((s,r)=>s+r.population,0),jc=JJA.reduce((s,r)=>s+r.communities,0);kpiFrostArea.textContent=fmt3(fa);kpiJjaArea.textContent=fmt3(ja);kpiTopFrost.textContent=FROST[0].province;kpiTopFrostVal.textContent=fmt3(FROST[0].area)+' km²';kpiTopJja.textContent=JJA[0].province;kpiTopJjaVal.textContent=fmt3(JJA[0].area)+' km²';natFrostHH.textContent=fmt(fh);natFrostPop.textContent=fmt(fp);natFrostCom.textContent=fmt(fc);natJjaHH.textContent=fmt(jh);natJjaPop.textContent=fmt(jp);natJjaCom.textContent=fmt(jc);let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort();provinceSelect.innerHTML=ps.map(p=>`<option>${p}</option>`).join('');provinceSelect.onchange=e=>showProvince(e.target.value);provinceSelect.value='Southern Highlands';showProvince('Southern Highlands');chart('frostTopChart','bar',FROST.slice(0,10).reverse().map(r=>r.province),FROST.slice(0,10).reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'});chart('jjaTopChart','bar',JJA.slice(0,10).reverse().map(r=>r.province),JJA.slice(0,10).reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'})}
+function initDrought(){fillTable('asisTable',ASIS,(r,i)=>`<tr><td>${i+1}</td><td><b>${r.province}</b></td><td><span class='pill ${cls(r.priority)}'>${r.priority}</span></td><td>${r.score.toFixed(1)}</td><td>${pct(r.ytd)}</td><td>${pct(r.latestRain)}</td><td>${pct(r.ndvi)}</td><td>${r.vhi.toFixed(3)}</td><td>${pct(r.asi)}</td><td>${asisMeaning(r)}</td></tr>`);chart('asisScoreChart','bar',[...ASIS].reverse().map(r=>r.province),[...ASIS].reverse().map(r=>r.score),'Priority score',{indexAxis:'y',scales:{x:{beginAtZero:true,max:60}}})}function initFrost(){fillTable('frostTable',FROST,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td></tr>`);chart('frostChart','bar',[...FROST].reverse().map(r=>r.province),[...FROST].reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'})}function initCombined(){fillTable('jjaTable',JJA,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td><td>${fmt3(r.frostArea)}</td></tr>`);chart('jjaChart','bar',[...JJA].reverse().map(r=>r.province),[...JJA].reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'});new Chart(compareChart,{type:'bar',data:{labels:JJA.slice(0,12).map(r=>r.province),datasets:[{label:'JJA hazard km²',data:JJA.slice(0,12).map(r=>r.area)},{label:'Baseline frost km²',data:JJA.slice(0,12).map(r=>r.frostArea)}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}})}function initExposure(){let ps=[...new Set([...FROST,...JJA].map(r=>r.province))].sort();document.querySelector('#exposureTable tbody').innerHTML=ps.map(p=>{let r=provinceRows(p),fa=r.frost?.area||0,ja=r.jja?.area||0,read=ja>=50?'Immediate multi-hazard verification priority':fa>=300?'Strong frost preparedness priority':ja>0?'Monitor and verify local reports':'Routine monitoring';return`<tr><td><b>${p}</b></td><td>${fmt3(fa)}</td><td>${r.frost?fmt(r.frost.population):'0'}</td><td>${r.frost?fmt(r.frost.communities):'0'}</td><td>${fmt3(ja)}</td><td>${r.jja?fmt(r.jja.population):'0'}</td><td>${r.jja?fmt(r.jja.communities):'0'}</td><td>${read}</td></tr>`}).join('')}
+let map,geo,markers,legend,mapStarted=false;const mapOptions={asis:[['score','Composite priority score'],['ytd','2026 rainfall anomaly'],['latestRain','Latest rainfall anomaly'],['ndvi','NDVI anomaly'],['vhi','VHI'],['asi','ASI crop stress']],frost:[['area','Frost high-risk area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities']],jja:[['area','JJA combined hazard area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities'],['frostArea','Baseline frost area']]};function mapDataset(){let s=mapScenario.value;return s==='asis'?ai:s==='frost'?fi:ji}function updateMapMetrics(){let s=mapScenario.value;mapMetric.innerHTML=mapOptions[s].map(o=>`<option value='${o[0]}'>${o[1]}</option>`).join('')}function mapLabel(s,m){return(mapOptions[s].find(o=>o[0]===m)||[m,m])[1]}function mapColor(v,s,m){if(v==null)return'#cbd5e1';if(s==='asis'){if(m==='score')return v>=45?'#b91c1c':v>=35?'#ea580c':v>=25?'#facc15':'#86efac';if(m==='asi')return v>=10?'#b91c1c':v>=5?'#ea580c':v>=1?'#facc15':'#86efac';if(m==='vhi')return v<.45?'#b91c1c':v<.5?'#ea580c':v<.55?'#facc15':'#86efac';return v<=-40?'#b91c1c':v<=-20?'#ea580c':v<0?'#facc15':'#86efac'}if(s==='frost')return v>=1000?'#7f1d1d':v>=300?'#dc2626':v>=50?'#f97316':v>0?'#facc15':'#dcfce7';return v>=50?'#7f1d1d':v>=20?'#dc2626':v>=5?'#f97316':v>0?'#facc15':'#dcfce7'}function getFeatureName(f){return f.properties.shapeName||f.properties.name||f.properties.NAME_1||f.properties.ADM1_EN||f.properties.province||'Province'}function styleFeature(f){let s=mapScenario.value,m=mapMetric.value,d=match(getFeatureName(f),mapDataset());return{color:'#475569',weight:1,fillColor:mapColor(d?d[m]:null,s,m),fillOpacity:.72}}function popupHtml(name,d,s,m){if(!d)return`<b>${name}</b><br>No matched data record for this scenario.`;let val=d[m]==null?'No data':(['area','frostArea'].includes(m)?fmt3(d[m])+' km²':s==='asis'&&!['score','vhi'].includes(m)?pct(d[m]):fmt(d[m]));let pill=s==='asis'?cls(d.priority):s==='frost'?'Frost':'Combined';let title=s==='asis'?d.priority:mapLabel(s,m);return`<b>${d.province}</b><br><span class='pill ${pill}'>${title}</span><br>${mapLabel(s,m)}: <b>${val}</b><hr><small>${s==='asis'?asisMeaning(d):'Select other metrics to compare area, population, households and communities.'}</small>`}function updateLegend(){let s=mapScenario.value,m=mapMetric.value,rows=s==='asis'?[['#b91c1c','Highest concern'],['#ea580c','Moderate'],['#facc15','Watch'],['#86efac','Lower'],['#cbd5e1','No data']]:[['#7f1d1d','Very high'],['#dc2626','High'],['#f97316','Moderate'],['#facc15','Low'],['#dcfce7','Zero'],['#cbd5e1','No data']];let el=document.getElementById('mapLegend');if(el)el.innerHTML='<b>'+mapLabel(s,m)+'</b><br>'+rows.map(r=>`<span class='swatch' style='background:${r[0]}'></span>${r[1]}`).join('<br>')}function drawFallbackMarkers(){if(!map)return;if(markers){markers.remove();markers=null}if(geo)return;let s=mapScenario.value,m=mapMetric.value,idx=mapDataset();markers=L.layerGroup();Object.keys(CENTROIDS).forEach(name=>{let d=match(name,idx),c=CENTROIDS[name],v=d?d[m]:null;L.circleMarker(c,{radius:10,color:'#334155',weight:1,fillColor:mapColor(v,s,m),fillOpacity:.85}).bindPopup(popupHtml(name,d,s,m)).addTo(markers)});markers.addTo(map)}function refreshMap(){if(!mapStarted)return;if(geo)geo.setStyle(styleFeature);drawFallbackMarkers();updateLegend()}function initMap(){if(mapStarted)return;mapStarted=true;updateMapMetrics();map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);legend=L.control({position:'bottomright'});legend.onAdd=()=>{let d=L.DomUtil.create('div','map-legend');d.id='mapLegend';return d};legend.addTo(map);fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary service returned '+r.status);return r.json()}).then(g=>{geo=L.geoJSON(g,{style:styleFeature,onEachFeature:(f,l)=>{let n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>geo.resetStyle(e.target),click:()=>{let s=mapScenario.value,m=mapMetric.value;l.bindPopup(popupHtml(n,match(n,mapDataset()),s,m)).openPopup()}})}}).addTo(map);map.fitBounds(geo.getBounds(),{padding:[12,12]});refreshMap()}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);drawFallbackMarkers();updateLegend()});mapScenario.addEventListener('change',()=>{updateMapMetrics();refreshMap()});mapMetric.addEventListener('change',refreshMap);setTimeout(()=>map.invalidateSize(),150)}
+function downloadCSV(){let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort(),rows=[['Province','ASIS_score','ASIS_priority','YTD_rain_pct','Latest_rain_pct','NDVI_pct','VHI','ASI_pct','Frost_area_km2','Frost_population','JJA_area_km2','JJA_population']];ps.forEach(p=>{let r=provinceRows(p);rows.push([p,r.asis?.score??'',r.asis?.priority??'',r.asis?.ytd??'',r.asis?.latestRain??'',r.asis?.ndvi??'',r.asis?.vhi??'',r.asis?.asi??'',r.frost?.area??0,r.frost?.population??0,r.jja?.area??0,r.jja?.population??0])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='png_elnino_dashboard_combined_data.csv';a.click();URL.revokeObjectURL(a.href)}function initTabs(){document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.panel).classList.add('active');if(b.dataset.panel==='mapPanel'){initMap();setTimeout(()=>map.invalidateSize(),150)}}))}function init(){initTabs();initOverview();initDrought();initFrost();initCombined();initExposure();printBtn.addEventListener('click',()=>window.print());csvBtn.addEventListener('click',downloadCSV)}document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
