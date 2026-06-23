@@ -155,7 +155,7 @@ canvas{max-height:380px}
     <section class="card full">
       <h2>Interactive provincial map</h2>
       <div class="mapbar">
-        <div class="explain"><b>How to use this map:</b> select a scenario and metric, then click a province. The map uses the local NSO ADM1 boundary exported from the GEE asset <b>projects/png-nfms/assets/adm1_nso_province</b>. If the boundary fails to load, it falls back to clickable provincial centroid markers, because naturally browsers need a backup plan.</div>
+        <div class="explain"><b>About this map:</b> This interactive view brings the main provincial risk indicators into one place. Choose a scenario and indicator to compare patterns across provinces, then select a province to view its current drought, frost, or combined hazard values. The provincial boundary is based on the PNG NSO ADM1 boundary prepared from the national GEE asset.</div>
         <div>
           <label class="muted">Scenario</label>
           <select id="mapScenario">
@@ -170,7 +170,7 @@ canvas{max-height:380px}
         </div>
       </div>
       <div id="map"></div>
-      <div class="source">Boundary file: <b>adm1_nso_province.geojson</b>. GEE asset reference: <b>projects/png-nfms/assets/adm1_nso_province</b>. Fallback layer: provincial centroid markers from the dashboard dataset.</div>
+      <div class="source">Boundary source: <b>PNG NSO ADM1 provincial boundary</b>, exported from <b>projects/png-nfms/assets/adm1_nso_province</b>. Province values are joined by province name and known naming aliases.</div>
     </section>
   </div>
 </section>
@@ -179,7 +179,7 @@ canvas{max-height:380px}
   <div class="grid">
     <section class="card full">
       <h2>ASIS drought and agricultural stress</h2>
-      <p class="note">This section keeps the original ASIS/GIEWS screening logic: rainfall anomaly, NDVI anomaly, VHI, ASI crop stress, and a composite priority score for field verification.</p>
+      <p class="note"><b>Purpose of this tab:</b> This section provides the current drought and agricultural stress screening view. It combines rainfall anomaly, NDVI anomaly, Vegetation Health Index (VHI), Agricultural Stress Index (ASI), and a composite priority score to identify provinces that should be followed up through field reports and local verification.</p><p>The values should be read as early-warning signals. A rainfall deficit may appear before crops show visible stress, while vegetation and ASI indicators help show whether dry conditions are beginning to affect agricultural areas.</p>
     </section>
     <section class="card wide"><h2>Composite priority score</h2><canvas id="asisScoreChart"></canvas></section>
     <section class="card side">
@@ -205,7 +205,7 @@ canvas{max-height:380px}
   <div class="grid">
     <section class="card full">
       <h2>Scenario 1: Frost Susceptibility Framework, JJA focus</h2>
-      <p class="note">The baseline frost model focuses on June, July and August, identifying high-altitude cold-air basins and agricultural zones where ground-level frost can damage crops, especially kaukau and vegetables.</p>
+      <p class="note"><b>Purpose of this tab:</b> Scenario 1 shows the baseline frost susceptibility footprint for the June-July-August dry season. It highlights high-altitude agricultural zones where cold air pooling and very low night-time land surface temperatures can create frost risk for crops such as kaukau, vegetables, and other highland staples.</p><p>This scenario is useful for preparedness planning in highland basins and valley floors, especially where frost can damage crops suddenly and where seed-stock protection, mulching, crop cover, or early harvesting advice may be needed.</p>
     </section>
 
     <section class="card full">
@@ -239,7 +239,7 @@ canvas{max-height:380px}
   <div class="grid">
     <section class="card full">
       <h2>Scenario 2: Integrated El Niño Hazard Matrix, Frost + Drought</h2>
-      <p class="note">The combined JJA model brings frost and rainfall-deficit stress together. This helps identify operational priorities where agricultural exposure is concentrated, not just where frost area is physically largest.</p>
+      <p class="note"><b>Purpose of this tab:</b> Scenario 2 combines the frost susceptibility signal with rainfall-deficit and drought-related stress for the June-July-August period. This provides a more operational view of El Niño hazard because it captures both highland frost exposure and wider dry-season agricultural stress.</p><p>The combined hazard view helps identify where response planning should focus first, especially where high-risk areas overlap with populated agricultural corridors and village systems.</p>
     </section>
 
     <section class="card full">
@@ -269,7 +269,7 @@ canvas{max-height:380px}
   <div class="grid">
     <section class="card full">
       <h2>Population, household and community exposure</h2>
-      <p class="warn"><b>Planning note:</b> These figures are exposure estimates for prioritisation and resource allocation. They should be verified against field reports, census updates, crop calendars, market conditions and local water-source status.</p>
+      <p class="warn"><b>Purpose of this tab:</b> This section translates mapped hazard footprints into planning estimates for households, population, and communities that may require closer attention. The figures support prioritisation and resource allocation, but they should be verified against field reports, updated census information, crop calendars, market conditions, and water-source status.</p>
       <div class="tablewrap">
         <table id="exposureTable">
           <thead><tr><th>Province</th><th>Frost km²</th><th>Frost population</th><th>Frost communities</th><th>JJA km²</th><th>JJA population</th><th>JJA communities</th><th>Planning reading</th></tr></thead>
@@ -284,6 +284,7 @@ canvas{max-height:380px}
   <div class="grid">
     <section class="card full">
       <h2>Operational response framework</h2>
+      <p class="note"><b>Purpose of this tab:</b> This section converts the mapping results into practical response options for government and partner planning. It separates the highlands frost-risk areas, lowland and coastal drought-prone areas, and mid-altitude transition zones so that each risk group can be matched with appropriate field action.</p>
       <table>
         <thead><tr><th>Risk group</th><th>Primary footprint</th><th>Recommended action</th></tr></thead>
         <tbody>
@@ -334,533 +335,55 @@ const ASIS=[
 ].map(r=>({province:r[0],score:r[1],priority:r[2],ytd:r[3],latestRain:r[4],ndvi:r[5],vhi:r[6],asi:r[7]}));
 
 const FROST=[
-  ['Enga',4243.485,38191,229148,458],
-  ['Hela',1214.778,10933,65598,131],
-  ['Morobe',875.633,7881,47284,95],
-  ['Central',638.096,5743,34457,69],
-  ['Western Highlands',461.160,4150,24903,50],
-  ['Southern Highlands',420.047,3780,22683,45],
-  ['West Sepik',379.143,3412,20474,41],
-  ['Jiwaka',363.290,3270,19618,39],
-  ['Eastern Highlands',359.038,3231,19388,39],
-  ['Northern',356.132,3205,19231,38],
-  ['Chimbu',302.991,2727,16362,33],
-  ['East Sepik',220.135,1981,11887,24],
-  ['Madang',177.907,1601,9607,19],
-  ['Western',82.223,740,4440,9],
-  ['Milne Bay',6.002,54,324,1],
-  ['Bougainville',3.363,30,182,0],
-  ['Gulf',1.299,12,70,0]
+  ['Enga',4243.485,38191,229148,458],['Hela',1214.778,10933,65598,131],['Morobe',875.633,7881,47284,95],['Central',638.096,5743,34457,69],['Western Highlands',461.160,4150,24903,50],['Southern Highlands',420.047,3780,22683,45],['West Sepik',379.143,3412,20474,41],['Jiwaka',363.290,3270,19618,39],['Eastern Highlands',359.038,3231,19388,39],['Northern',356.132,3205,19231,38],['Chimbu',302.991,2727,16362,33],['East Sepik',220.135,1981,11887,24],['Madang',177.907,1601,9607,19],['Western',82.223,740,4440,9],['Milne Bay',6.002,54,324,1],['Bougainville',3.363,30,182,0],['Gulf',1.299,12,70,0]
 ].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4]}));
 
 const JJA=[
-  ['Southern Highlands',151.504,13635,81812,164,420.047],
-  ['Morobe',70.349,6331,37988,76,875.633],
-  ['Eastern Highlands',58.263,5244,31462,63,359.038],
-  ['Hela',57.057,5135,30811,62,1214.778],
-  ['Central',51.354,4622,27731,55,638.096],
-  ['Madang',33.886,3050,18299,37,177.907],
-  ['Enga',33.964,3057,18341,37,4243.485],
-  ['Gulf',29.168,2625,15751,32,1.299],
-  ['West Sepik',27.039,2434,14601,29,379.143],
-  ['Western Highlands',26.880,2419,14515,29,461.160],
-  ['Western',23.751,2138,12825,26,82.223],
-  ['Chimbu',19.317,1739,10431,21,302.991],
-  ['West New Britain',15.418,1388,8325,17,0],
-  ['Northern',10.491,944,5666,11,356.132],
-  ['Jiwaka',9.659,869,5216,10,363.290],
-  ['East Sepik',8.167,735,4410,9,220.135],
-  ['Bougainville',1.216,109,657,1,3.363],
-  ['Milne Bay',0.158,14,85,0,6.002]
+  ['Southern Highlands',151.504,13635,81812,164,420.047],['Morobe',70.349,6331,37988,76,875.633],['Eastern Highlands',58.263,5244,31462,63,359.038],['Hela',57.057,5135,30811,62,1214.778],['Central',51.354,4622,27731,55,638.096],['Madang',33.886,3050,18299,37,177.907],['Enga',33.964,3057,18341,37,4243.485],['Gulf',29.168,2625,15751,32,1.299],['West Sepik',27.039,2434,14601,29,379.143],['Western Highlands',26.880,2419,14515,29,461.160],['Western',23.751,2138,12825,26,82.223],['Chimbu',19.317,1739,10431,21,302.991],['West New Britain',15.418,1388,8325,17,0],['Northern',10.491,944,5666,11,356.132],['Jiwaka',9.659,869,5216,10,363.290],['East Sepik',8.167,735,4410,9,220.135],['Bougainville',1.216,109,657,1,3.363],['Milne Bay',0.158,14,85,0,6.002]
 ].map((r,i)=>({rank:i+1,province:r[0],area:r[1],households:r[2],population:r[3],communities:r[4],frostArea:r[5]}));
 
-const CENTROIDS={
-  Central:[-9.15,147.55],
-  Enga:[-5.55,143.65],
-  Hela:[-5.95,142.95],
-  Morobe:[-6.8,146.9],
-  'Western Highlands':[-5.75,144.5],
-  'Southern Highlands':[-6.25,143.35],
-  'West Sepik':[-3.85,141.75],
-  Jiwaka:[-5.55,144.75],
-  'Eastern Highlands':[-6.25,145.65],
-  Northern:[-8.8,148.3],
-  Chimbu:[-6.0,144.95],
-  'East Sepik':[-4.15,143.65],
-  Madang:[-5.2,145.7],
-  Western:[-7.3,142.0],
-  'Milne Bay':[-10.3,150.4],
-  Bougainville:[-6.2,155.4],
-  Gulf:[-7.8,145.0],
-  'National Capital District':[-9.45,147.18],
-  'West New Britain':[-5.75,150.05],
-  Manus:[-2.1,147.0],
-  'East New Britain':[-4.5,152.1],
-  'New Ireland':[-3.3,151.6]
-};
+const CENTROIDS={Central:[-9.15,147.55],Enga:[-5.55,143.65],Hela:[-5.95,142.95],Morobe:[-6.8,146.9],'Western Highlands':[-5.75,144.5],'Southern Highlands':[-6.25,143.35],'West Sepik':[-3.85,141.75],Jiwaka:[-5.55,144.75],'Eastern Highlands':[-6.25,145.65],Northern:[-8.8,148.3],Chimbu:[-6.0,144.95],'East Sepik':[-4.15,143.65],Madang:[-5.2,145.7],Western:[-7.3,142.0],'Milne Bay':[-10.3,150.4],Bougainville:[-6.2,155.4],Gulf:[-7.8,145.0],'National Capital District':[-9.45,147.18],'West New Britain':[-5.75,150.05],Manus:[-2.1,147.0],'East New Britain':[-4.5,152.1],'New Ireland':[-3.3,151.6]};
 
 const fmt=x=>x==null?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
 const fmt3=x=>x==null?'No data':Number(x).toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3});
 const pct=x=>x==null?'No data':Number(x).toFixed(1)+'%';
 const cls=s=>String(s||'').split(' ')[0];
-
-const norm=s=>(s||'')
-  .toLowerCase()
-  .replace(/province|autonomous|region|district|capital|national/g,'')
-  .replace(/[^a-z]/g,'');
-
-const alias={
-  sandaun:'West Sepik',
-  westsepik:'West Sepik',
-  sepikwest:'West Sepik',
-  eastsepik:'East Sepik',
-  sepikeast:'East Sepik',
-  ncd:'National Capital District',
-  nationalcapital:'National Capital District',
-  nationalcapitaldistrict:'National Capital District',
-  oro:'Northern',
-  northern:'Northern',
-  northernoro:'Northern',
-  simbu:'Chimbu',
-  chimbu:'Chimbu',
-  bougainville:'Bougainville',
-  autonomousregionofbougainville:'Bougainville',
-  northernsolomons:'Bougainville',
-  westernhighlands:'Western Highlands',
-  southernhighlands:'Southern Highlands',
-  easternhighlands:'Eastern Highlands',
-  eastnewbritain:'East New Britain',
-  westnewbritain:'West New Britain',
-  newireland:'New Ireland',
-  milnebay:'Milne Bay',
-  gulf:'Gulf',
-  western:'Western',
-  enga:'Enga',
-  madang:'Madang',
-  morobe:'Morobe',
-  manus:'Manus',
-  central:'Central',
-  jiwaka:'Jiwaka',
-  hela:'Hela'
-};
-
+const norm=s=>(s||'').toLowerCase().replace(/province|autonomous|region|district|capital|national/g,'').replace(/[^a-z]/g,'');
+const alias={sandaun:'West Sepik',westsepik:'West Sepik',eastsepik:'East Sepik',ncd:'National Capital District',nationalcapital:'National Capital District',nationalcapitaldistrict:'National Capital District',oro:'Northern',northern:'Northern',simbu:'Chimbu',chimbu:'Chimbu',bougainville:'Bougainville',northernsolomons:'Bougainville',westernhighlands:'Western Highlands',southernhighlands:'Southern Highlands',eastnewbritain:'East New Britain',westnewbritain:'West New Britain',newireland:'New Ireland',milnebay:'Milne Bay',gulf:'Gulf',western:'Western',enga:'Enga',madang:'Madang',morobe:'Morobe',easternhighlands:'Eastern Highlands',manus:'Manus',central:'Central',jiwaka:'Jiwaka'};
 const index=a=>Object.fromEntries(a.map(r=>[norm(r.province),r]));
 const ai=index(ASIS),fi=index(FROST),ji=index(JJA);
-
-function match(n,idx){
-  let k=norm(n);
-  return idx[k]||idx[norm(alias[k])]||null;
-}
-
-function asisMeaning(r){
-  let p=[];
-  if(r.ytd!=null&&r.ytd<-25)p.push('large rainfall deficit so far in 2026');
-  if(r.latestRain!=null&&r.latestRain<-40)p.push('very dry latest dekad');
-  if(r.ndvi!=null&&r.ndvi<-5)p.push('vegetation less green than usual');
-  if(r.vhi!=null&&r.vhi<0.50)p.push('low vegetation health');
-  if(r.asi!=null&&r.asi>5)p.push('notable crop-area stress signal');
-  return (p.length?p:['mixed or weaker current warning signals']).join('; ')+'.';
-}
-
-function chart(id,type,labels,data,label,opts={}){
-  return new Chart(document.getElementById(id),{
-    type,
-    data:{labels,datasets:[{label,data}]},
-    options:Object.assign({
-      responsive:true,
-      plugins:{legend:{position:'bottom'}},
-      scales:{y:{beginAtZero:true}}
-    },opts)
-  });
-}
-
-function fillTable(id,rows,fn){
-  document.querySelector('#'+id+' tbody').innerHTML=rows.map(fn).join('');
-}
-
-function provinceRows(p){
-  return {asis:match(p,ai),frost:match(p,fi),jja:match(p,ji)};
-}
-
-function showProvince(p){
-  let r=provinceRows(p);
-  document.getElementById('provinceBrief').innerHTML=`
-    <div class="explain">
-      <h3>${p}</h3>
-      <table>
-        <tr><th>Scenario</th><th>Key result</th><th>Planning reading</th></tr>
-        <tr>
-          <td>ASIS drought</td>
-          <td>${r.asis?`Score ${r.asis.score}, ${r.asis.priority}; ASI ${pct(r.asis.asi)}; latest rain ${pct(r.asis.latestRain)}`:'No ASIS record'}</td>
-          <td>${r.asis?asisMeaning(r.asis):'Check local reports and updated ASIS data.'}</td>
-        </tr>
-        <tr>
-          <td>Scenario 1: Frost susceptibility</td>
-          <td>${r.frost?`${fmt3(r.frost.area)} km²; est. population ${fmt(r.frost.population)}`:'No high-risk frost footprint'}</td>
-          <td>${r.frost&&r.frost.area>300?'Prioritise frost preparedness and seed-stock protection.':'Routine frost monitoring or localised checks.'}</td>
-        </tr>
-        <tr>
-          <td>Scenario 2: Combined JJA hazard</td>
-          <td>${r.jja?`${fmt3(r.jja.area)} km²; est. population ${fmt(r.jja.population)}`:'No combined hazard footprint'}</td>
-          <td>${r.jja&&r.jja.area>=50?'Immediate multi-hazard field verification priority.':r.jja?'Monitor and verify village-level reports.':'Routine monitoring.'}</td>
-        </tr>
-      </table>
-    </div>`;
-}
-
-function initOverview(){
-  const fa=FROST.reduce((s,r)=>s+r.area,0);
-  const ja=JJA.reduce((s,r)=>s+r.area,0);
-  const fh=FROST.reduce((s,r)=>s+r.households,0);
-  const fp=FROST.reduce((s,r)=>s+r.population,0);
-  const fc=FROST.reduce((s,r)=>s+r.communities,0);
-  const jh=JJA.reduce((s,r)=>s+r.households,0);
-  const jp=JJA.reduce((s,r)=>s+r.population,0);
-  const jc=JJA.reduce((s,r)=>s+r.communities,0);
-
-  document.getElementById('kpiFrostArea').textContent=fmt3(fa);
-  document.getElementById('kpiJjaArea').textContent=fmt3(ja);
-  document.getElementById('kpiTopFrost').textContent=FROST[0].province;
-  document.getElementById('kpiTopFrostVal').textContent=fmt3(FROST[0].area)+' km²';
-  document.getElementById('kpiTopJja').textContent=JJA[0].province;
-  document.getElementById('kpiTopJjaVal').textContent=fmt3(JJA[0].area)+' km²';
-  document.getElementById('natFrostHH').textContent=fmt(fh);
-  document.getElementById('natFrostPop').textContent=fmt(fp);
-  document.getElementById('natFrostCom').textContent=fmt(fc);
-  document.getElementById('natJjaHH').textContent=fmt(jh);
-  document.getElementById('natJjaPop').textContent=fmt(jp);
-  document.getElementById('natJjaCom').textContent=fmt(jc);
-
-  let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort();
-  let sel=document.getElementById('provinceSelect');
-  sel.innerHTML=ps.map(p=>`<option>${p}</option>`).join('');
-  sel.onchange=e=>showProvince(e.target.value);
-  sel.value='Southern Highlands';
-  showProvince('Southern Highlands');
-
-  chart('frostTopChart','bar',FROST.slice(0,10).reverse().map(r=>r.province),FROST.slice(0,10).reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'});
-  chart('jjaTopChart','bar',JJA.slice(0,10).reverse().map(r=>r.province),JJA.slice(0,10).reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'});
-}
-
-function initDrought(){
-  fillTable('asisTable',ASIS,(r,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td><b>${r.province}</b></td>
-      <td><span class="pill ${cls(r.priority)}">${r.priority}</span></td>
-      <td>${r.score.toFixed(1)}</td>
-      <td>${pct(r.ytd)}</td>
-      <td>${pct(r.latestRain)}</td>
-      <td>${pct(r.ndvi)}</td>
-      <td>${r.vhi.toFixed(3)}</td>
-      <td>${pct(r.asi)}</td>
-      <td>${asisMeaning(r)}</td>
-    </tr>`);
-  chart('asisScoreChart','bar',[...ASIS].reverse().map(r=>r.province),[...ASIS].reverse().map(r=>r.score),'Priority score',{indexAxis:'y',scales:{x:{beginAtZero:true,max:60}}});
-}
-
-function initFrost(){
-  fillTable('frostTable',FROST,r=>`
-    <tr>
-      <td>${r.rank}</td>
-      <td><b>${r.province}</b></td>
-      <td>${fmt3(r.area)}</td>
-      <td>${fmt(r.households)}</td>
-      <td>${fmt(r.population)}</td>
-      <td>${fmt(r.communities)}</td>
-    </tr>`);
-  chart('frostChart','bar',[...FROST].reverse().map(r=>r.province),[...FROST].reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'});
-}
-
-function initCombined(){
-  fillTable('jjaTable',JJA,r=>`
-    <tr>
-      <td>${r.rank}</td>
-      <td><b>${r.province}</b></td>
-      <td>${fmt3(r.area)}</td>
-      <td>${fmt(r.households)}</td>
-      <td>${fmt(r.population)}</td>
-      <td>${fmt(r.communities)}</td>
-      <td>${fmt3(r.frostArea)}</td>
-    </tr>`);
-  chart('jjaChart','bar',[...JJA].reverse().map(r=>r.province),[...JJA].reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'});
-  new Chart(document.getElementById('compareChart'),{
-    type:'bar',
-    data:{
-      labels:JJA.slice(0,12).map(r=>r.province),
-      datasets:[
-        {label:'JJA hazard km²',data:JJA.slice(0,12).map(r=>r.area)},
-        {label:'Baseline frost km²',data:JJA.slice(0,12).map(r=>r.frostArea)}
-      ]
-    },
-    options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}
-  });
-}
-
-function initExposure(){
-  let ps=[...new Set([...FROST,...JJA].map(r=>r.province))].sort();
-  document.querySelector('#exposureTable tbody').innerHTML=ps.map(p=>{
-    let r=provinceRows(p);
-    let fa=r.frost?.area||0;
-    let ja=r.jja?.area||0;
-    let read=ja>=50?'Immediate multi-hazard verification priority':fa>=300?'Strong frost preparedness priority':ja>0?'Monitor and verify local reports':'Routine monitoring';
-    return`
-      <tr>
-        <td><b>${p}</b></td>
-        <td>${fmt3(fa)}</td>
-        <td>${r.frost?fmt(r.frost.population):'0'}</td>
-        <td>${r.frost?fmt(r.frost.communities):'0'}</td>
-        <td>${fmt3(ja)}</td>
-        <td>${r.jja?fmt(r.jja.population):'0'}</td>
-        <td>${r.jja?fmt(r.jja.communities):'0'}</td>
-        <td>${read}</td>
-      </tr>`;
-  }).join('');
-}
+function match(n,idx){let k=norm(n);return idx[k]||idx[norm(alias[k])]||null}
+function asisMeaning(r){let p=[];if(r.ytd!=null&&r.ytd<-25)p.push('large rainfall deficit so far in 2026');if(r.latestRain!=null&&r.latestRain<-40)p.push('very dry latest dekad');if(r.ndvi!=null&&r.ndvi<-5)p.push('vegetation less green than usual');if(r.vhi!=null&&r.vhi<0.50)p.push('low vegetation health');if(r.asi!=null&&r.asi>5)p.push('notable crop-area stress signal');return (p.length?p:['mixed or weaker current warning signals']).join('; ')+'.'}
+function chart(id,type,labels,data,label,opts={}){return new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label,data}]},options:Object.assign({responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}},opts)})}
+function fillTable(id,rows,fn){document.querySelector('#'+id+' tbody').innerHTML=rows.map(fn).join('')}
+function provinceRows(p){return{asis:match(p,ai),frost:match(p,fi),jja:match(p,ji)}}
+function showProvince(p){let r=provinceRows(p);document.getElementById('provinceBrief').innerHTML=`<div class="explain"><h3>${p}</h3><table><tr><th>Scenario</th><th>Key result</th><th>Planning reading</th></tr><tr><td>ASIS drought</td><td>${r.asis?`Score ${r.asis.score}, ${r.asis.priority}; ASI ${pct(r.asis.asi)}; latest rain ${pct(r.asis.latestRain)}`:'No ASIS record'}</td><td>${r.asis?asisMeaning(r.asis):'Check local reports and updated ASIS data.'}</td></tr><tr><td>Frost susceptibility</td><td>${r.frost?`${fmt3(r.frost.area)} km²; est. population ${fmt(r.frost.population)}`:'No high-risk frost footprint'}</td><td>${r.frost&&r.frost.area>300?'Prioritise frost preparedness and seed-stock protection.':'Routine frost monitoring or localised checks.'}</td></tr><tr><td>Combined JJA hazard</td><td>${r.jja?`${fmt3(r.jja.area)} km²; est. population ${fmt(r.jja.population)}`:'No combined hazard footprint'}</td><td>${r.jja&&r.jja.area>=50?'Immediate multi-hazard field verification priority.':r.jja?'Monitor and verify village-level reports.':'Routine monitoring.'}</td></tr></table></div>`}
+function initOverview(){const fa=FROST.reduce((s,r)=>s+r.area,0),ja=JJA.reduce((s,r)=>s+r.area,0),fh=FROST.reduce((s,r)=>s+r.households,0),fp=FROST.reduce((s,r)=>s+r.population,0),fc=FROST.reduce((s,r)=>s+r.communities,0),jh=JJA.reduce((s,r)=>s+r.households,0),jp=JJA.reduce((s,r)=>s+r.population,0),jc=JJA.reduce((s,r)=>s+r.communities,0);document.getElementById('kpiFrostArea').textContent=fmt3(fa);document.getElementById('kpiJjaArea').textContent=fmt3(ja);document.getElementById('kpiTopFrost').textContent=FROST[0].province;document.getElementById('kpiTopFrostVal').textContent=fmt3(FROST[0].area)+' km²';document.getElementById('kpiTopJja').textContent=JJA[0].province;document.getElementById('kpiTopJjaVal').textContent=fmt3(JJA[0].area)+' km²';document.getElementById('natFrostHH').textContent=fmt(fh);document.getElementById('natFrostPop').textContent=fmt(fp);document.getElementById('natFrostCom').textContent=fmt(fc);document.getElementById('natJjaHH').textContent=fmt(jh);document.getElementById('natJjaPop').textContent=fmt(jp);document.getElementById('natJjaCom').textContent=fmt(jc);let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort();let sel=document.getElementById('provinceSelect');sel.innerHTML=ps.map(p=>`<option>${p}</option>`).join('');sel.onchange=e=>showProvince(e.target.value);sel.value='Southern Highlands';showProvince('Southern Highlands');chart('frostTopChart','bar',FROST.slice(0,10).reverse().map(r=>r.province),FROST.slice(0,10).reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'});chart('jjaTopChart','bar',JJA.slice(0,10).reverse().map(r=>r.province),JJA.slice(0,10).reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'})}
+function initDrought(){fillTable('asisTable',ASIS,(r,i)=>`<tr><td>${i+1}</td><td><b>${r.province}</b></td><td><span class="pill ${cls(r.priority)}">${r.priority}</span></td><td>${r.score.toFixed(1)}</td><td>${pct(r.ytd)}</td><td>${pct(r.latestRain)}</td><td>${pct(r.ndvi)}</td><td>${r.vhi.toFixed(3)}</td><td>${pct(r.asi)}</td><td>${asisMeaning(r)}</td></tr>`);chart('asisScoreChart','bar',[...ASIS].reverse().map(r=>r.province),[...ASIS].reverse().map(r=>r.score),'Priority score',{indexAxis:'y',scales:{x:{beginAtZero:true,max:60}}})}
+function initFrost(){fillTable('frostTable',FROST,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td></tr>`);chart('frostChart','bar',[...FROST].reverse().map(r=>r.province),[...FROST].reverse().map(r=>r.area),'High-risk area km²',{indexAxis:'y'})}
+function initCombined(){fillTable('jjaTable',JJA,r=>`<tr><td>${r.rank}</td><td><b>${r.province}</b></td><td>${fmt3(r.area)}</td><td>${fmt(r.households)}</td><td>${fmt(r.population)}</td><td>${fmt(r.communities)}</td><td>${fmt3(r.frostArea)}</td></tr>`);chart('jjaChart','bar',[...JJA].reverse().map(r=>r.province),[...JJA].reverse().map(r=>r.area),'JJA hazard km²',{indexAxis:'y'});new Chart(document.getElementById('compareChart'),{type:'bar',data:{labels:JJA.slice(0,12).map(r=>r.province),datasets:[{label:'JJA hazard km²',data:JJA.slice(0,12).map(r=>r.area)},{label:'Baseline frost km²',data:JJA.slice(0,12).map(r=>r.frostArea)}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}}})}
+function initExposure(){let ps=[...new Set([...FROST,...JJA].map(r=>r.province))].sort();document.querySelector('#exposureTable tbody').innerHTML=ps.map(p=>{let r=provinceRows(p),fa=r.frost?.area||0,ja=r.jja?.area||0,read=ja>=50?'Immediate multi-hazard verification priority':fa>=300?'Strong frost preparedness priority':ja>0?'Monitor and verify local reports':'Routine monitoring';return`<tr><td><b>${p}</b></td><td>${fmt3(fa)}</td><td>${r.frost?fmt(r.frost.population):'0'}</td><td>${r.frost?fmt(r.frost.communities):'0'}</td><td>${fmt3(ja)}</td><td>${r.jja?fmt(r.jja.population):'0'}</td><td>${r.jja?fmt(r.jja.communities):'0'}</td><td>${read}</td></tr>`}).join('')}
 
 let map,geo,markers,legend,mapStarted=false;
-
 const mapOptions={
-  asis:[
-    ['score','Composite priority score'],
-    ['ytd','2026 rainfall anomaly'],
-    ['latestRain','Latest rainfall anomaly'],
-    ['ndvi','NDVI anomaly'],
-    ['vhi','VHI'],
-    ['asi','ASI crop stress']
-  ],
-  frost:[
-    ['area','Frost high-risk area'],
-    ['population','Estimated population'],
-    ['households','Estimated households'],
-    ['communities','Estimated communities']
-  ],
-  jja:[
-    ['area','JJA combined hazard area'],
-    ['population','Estimated population'],
-    ['households','Estimated households'],
-    ['communities','Estimated communities'],
-    ['frostArea','Baseline frost area']
-  ]
+  asis:[['score','Composite priority score'],['ytd','2026 rainfall anomaly'],['latestRain','Latest rainfall anomaly'],['ndvi','NDVI anomaly'],['vhi','VHI'],['asi','ASI crop stress']],
+  frost:[['area','Frost high-risk area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities']],
+  jja:[['area','JJA combined hazard area'],['population','Estimated population'],['households','Estimated households'],['communities','Estimated communities'],['frostArea','Baseline frost area']]
 };
-
-function mapDataset(){
-  let s=document.getElementById('mapScenario').value;
-  return s==='asis'?ai:s==='frost'?fi:ji;
-}
-
-function updateMapMetrics(){
-  let s=document.getElementById('mapScenario').value;
-  document.getElementById('mapMetric').innerHTML=mapOptions[s].map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
-}
-
-function mapLabel(s,m){
-  return (mapOptions[s].find(o=>o[0]===m)||[m,m])[1];
-}
-
-function mapColor(v,s,m){
-  if(v==null)return '#cbd5e1';
-
-  if(s==='asis'){
-    if(m==='score')return v>=45?'#b91c1c':v>=35?'#ea580c':v>=25?'#facc15':'#86efac';
-    if(m==='asi')return v>=10?'#b91c1c':v>=5?'#ea580c':v>=1?'#facc15':'#86efac';
-    if(m==='vhi')return v<.45?'#b91c1c':v<.5?'#ea580c':v<.55?'#facc15':'#86efac';
-    return v<=-40?'#b91c1c':v<=-20?'#ea580c':v<0?'#facc15':'#86efac';
-  }
-
-  if(s==='frost'){
-    return v>=1000?'#7f1d1d':v>=300?'#dc2626':v>=50?'#f97316':v>0?'#facc15':'#dcfce7';
-  }
-
-  return v>=50?'#7f1d1d':v>=20?'#dc2626':v>=5?'#f97316':v>0?'#facc15':'#dcfce7';
-}
-
-function getFeatureName(f){
-  const p=f.properties||{};
-  return p.PROVNAME||p.ProvName||p.provname||p.PROVINCE||p.Province||p.province||
-         p.ADM1_EN||p.ADM1_NAME||p.shapeName||p.NAME_1||p.name||p.NAME||'Province';
-}
-
-function styleFeature(f){
-  let s=document.getElementById('mapScenario').value;
-  let m=document.getElementById('mapMetric').value;
-  let d=match(getFeatureName(f),mapDataset());
-  return {color:'#475569',weight:1,fillColor:mapColor(d?d[m]:null,s,m),fillOpacity:.72};
-}
-
-function popupHtml(name,d,s,m){
-  if(!d)return `<b>${name}</b><br>No matched data record for this scenario.`;
-  let val=d[m]==null?'No data':(['area','frostArea'].includes(m)?fmt3(d[m])+' km²':s==='asis'&&!['score','vhi'].includes(m)?pct(d[m]):fmt(d[m]));
-  let pill=s==='asis'?cls(d.priority):s==='frost'?'Frost':'Combined';
-  let title=s==='asis'?d.priority:mapLabel(s,m);
-  return `
-    <b>${d.province}</b><br>
-    <span class="pill ${pill}">${title}</span><br>
-    ${mapLabel(s,m)}: <b>${val}</b>
-    <hr>
-    <small>${s==='asis'?asisMeaning(d):'Click other metrics to compare area, population, households and communities.'}</small>`;
-}
-
-function updateLegend(){
-  let s=document.getElementById('mapScenario').value;
-  let m=document.getElementById('mapMetric').value;
-  let rows=s==='asis'
-    ? [['#b91c1c','Highest concern'],['#ea580c','Moderate'],['#facc15','Watch'],['#86efac','Lower'],['#cbd5e1','No data']]
-    : [['#7f1d1d','Very high'],['#dc2626','High'],['#f97316','Moderate'],['#facc15','Low'],['#dcfce7','Zero'],['#cbd5e1','No data']];
-
-  let el=document.getElementById('mapLegend');
-  if(el)el.innerHTML='<b>'+mapLabel(s,m)+'</b><br>'+rows.map(r=>`<span class="swatch" style="background:${r[0]}"></span>${r[1]}`).join('<br>');
-}
-
-function refreshMap(){
-  if(!mapStarted)return;
-  if(geo)geo.setStyle(styleFeature);
-  drawFallbackMarkers();
-  updateLegend();
-}
-
-function drawFallbackMarkers(){
-  if(!map)return;
-  if(markers){markers.remove();markers=null;}
-  if(geo)return;
-
-  let s=document.getElementById('mapScenario').value;
-  let m=document.getElementById('mapMetric').value;
-  let idx=mapDataset();
-
-  markers=L.layerGroup();
-  Object.keys(CENTROIDS).forEach(name=>{
-    let d=match(name,idx);
-    let c=CENTROIDS[name];
-    let v=d?d[m]:null;
-    let marker=L.circleMarker(c,{
-      radius:10,
-      color:'#334155',
-      weight:1,
-      fillColor:mapColor(v,s,m),
-      fillOpacity:.85
-    });
-    marker.bindPopup(popupHtml(name,d,s,m));
-    marker.addTo(markers);
-  });
-  markers.addTo(map);
-}
-
-function initMap(){
-  if(mapStarted)return;
-  mapStarted=true;
-
-  updateMapMetrics();
-
-  map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:18,
-    attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
-
-  legend=L.control({position:'bottomright'});
-  legend.onAdd=()=>{
-    let d=L.DomUtil.create('div','map-legend');
-    d.id='mapLegend';
-    return d;
-  };
-  legend.addTo(map);
-
-  fetch('adm1_nso_province.geojson')
-    .then(r=>{
-      if(!r.ok)throw new Error('Boundary file returned '+r.status);
-      return r.json();
-    })
-    .then(g=>{
-      geo=L.geoJSON(g,{
-        style:styleFeature,
-        onEachFeature:(f,l)=>{
-          let n=getFeatureName(f);
-          l.on({
-            mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),
-            mouseout:e=>geo.resetStyle(e.target),
-            click:()=>{
-              let s=document.getElementById('mapScenario').value;
-              let m=document.getElementById('mapMetric').value;
-              l.bindPopup(popupHtml(n,match(n,mapDataset()),s,m)).openPopup();
-            }
-          });
-        }
-      }).addTo(map);
-      map.fitBounds(geo.getBounds(),{padding:[12,12]});
-      refreshMap();
-    })
-    .catch(e=>{
-      console.warn('Boundary failed, using centroid fallback:',e);
-      drawFallbackMarkers();
-      updateLegend();
-    });
-
-  document.getElementById('mapScenario').addEventListener('change',()=>{
-    updateMapMetrics();
-    refreshMap();
-  });
-
-  document.getElementById('mapMetric').addEventListener('change',refreshMap);
-  setTimeout(()=>map.invalidateSize(),150);
-}
-
-function downloadCSV(){
-  let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort();
-  let rows=[['Province','ASIS_score','ASIS_priority','YTD_rain_pct','Latest_rain_pct','NDVI_pct','VHI','ASI_pct','Frost_area_km2','Frost_population','JJA_area_km2','JJA_population']];
-
-  ps.forEach(p=>{
-    let r=provinceRows(p);
-    rows.push([
-      p,
-      r.asis?.score??'',
-      r.asis?.priority??'',
-      r.asis?.ytd??'',
-      r.asis?.latestRain??'',
-      r.asis?.ndvi??'',
-      r.asis?.vhi??'',
-      r.asis?.asi??'',
-      r.frost?.area??0,
-      r.frost?.population??0,
-      r.jja?.area??0,
-      r.jja?.population??0
-    ]);
-  });
-
-  let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');
-  let a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='png_elnino_dashboard_combined_data.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function initTabs(){
-  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById(b.dataset.panel).classList.add('active');
-    if(b.dataset.panel==='mapPanel'){
-      initMap();
-      setTimeout(()=>map.invalidateSize(),150);
-    }
-  }));
-}
-
-function init(){
-  initTabs();
-  initOverview();
-  initDrought();
-  initFrost();
-  initCombined();
-  initExposure();
-
-  document.getElementById('printBtn').addEventListener('click',()=>window.print());
-  document.getElementById('csvBtn').addEventListener('click',downloadCSV);
-}
-
+function mapDataset(){let s=document.getElementById('mapScenario').value;return s==='asis'?ai:s==='frost'?fi:ji}
+function updateMapMetrics(){let s=document.getElementById('mapScenario').value;document.getElementById('mapMetric').innerHTML=mapOptions[s].map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}
+function mapLabel(s,m){return(mapOptions[s].find(o=>o[0]===m)||[m,m])[1]}
+function mapColor(v,s,m){if(v==null)return'#cbd5e1';if(s==='asis'){if(m==='score')return v>=45?'#b91c1c':v>=35?'#ea580c':v>=25?'#facc15':'#86efac';if(m==='asi')return v>=10?'#b91c1c':v>=5?'#ea580c':v>=1?'#facc15':'#86efac';if(m==='vhi')return v<.45?'#b91c1c':v<.5?'#ea580c':v<.55?'#facc15':'#86efac';return v<=-40?'#b91c1c':v<=-20?'#ea580c':v<0?'#facc15':'#86efac'}if(s==='frost')return v>=1000?'#7f1d1d':v>=300?'#dc2626':v>=50?'#f97316':v>0?'#facc15':'#dcfce7';return v>=50?'#7f1d1d':v>=20?'#dc2626':v>=5?'#f97316':v>0?'#facc15':'#dcfce7'}
+function getFeatureName(f){return f.properties.PROVNAME||f.properties.provname||f.properties.ADM1_NAME||f.properties.ADM1_EN||f.properties.shapeName||f.properties.name||f.properties.NAME_1||'Province'}
+function styleFeature(f){let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,d=match(getFeatureName(f),mapDataset());return{color:'#475569',weight:1,fillColor:mapColor(d?d[m]:null,s,m),fillOpacity:.72}}
+function popupHtml(name,d,s,m){if(!d)return`<b>${name}</b><br>No matched data record for this scenario.`;let val=d[m]==null?'No data':(['area','frostArea'].includes(m)?fmt3(d[m])+' km²':s==='asis'&&!['score','vhi'].includes(m)?pct(d[m]):fmt(d[m]));let pill=s==='asis'?cls(d.priority):s==='frost'?'Frost':'Combined';let title=s==='asis'?d.priority:mapLabel(s,m);return`<b>${d.province}</b><br><span class="pill ${pill}">${title}</span><br>${mapLabel(s,m)}: <b>${val}</b><hr><small>${s==='asis'?asisMeaning(d):'Compare with the charts and exposure table for planning context.'}</small>`}
+function updateLegend(){let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,rows=s==='asis'?[['#b91c1c','Highest concern'],['#ea580c','Moderate'],['#facc15','Watch'],['#86efac','Lower'],['#cbd5e1','No data']]:[['#7f1d1d','Very high'],['#dc2626','High'],['#f97316','Moderate'],['#facc15','Low'],['#dcfce7','Zero'],['#cbd5e1','No data']];let el=document.getElementById('mapLegend');if(el)el.innerHTML='<b>'+mapLabel(s,m)+'</b><br>'+rows.map(r=>`<span class="swatch" style="background:${r[0]}"></span>${r[1]}`).join('<br>')}
+function refreshMap(){if(!mapStarted)return;if(geo)geo.setStyle(styleFeature);drawFallbackMarkers();updateLegend()}
+function drawFallbackMarkers(){if(!map)return;if(markers){markers.remove();markers=null}if(geo)return;let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value,idx=mapDataset();markers=L.layerGroup();Object.keys(CENTROIDS).forEach(name=>{let d=match(name,idx);let c=CENTROIDS[name];let v=d?d[m]:null;let marker=L.circleMarker(c,{radius:10,color:'#334155',weight:1,fillColor:mapColor(v,s,m),fillOpacity:.85});marker.bindPopup(popupHtml(name,d,s,m));marker.addTo(markers)});markers.addTo(map)}
+function initMap(){if(mapStarted)return;mapStarted=true;updateMapMetrics();map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);legend=L.control({position:'bottomright'});legend.onAdd=()=>{let d=L.DomUtil.create('div','map-legend');d.id='mapLegend';return d};legend.addTo(map);fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary file returned '+r.status);return r.json()}).then(g=>{geo=L.geoJSON(g,{style:styleFeature,onEachFeature:(f,l)=>{let n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>geo.resetStyle(e.target),click:()=>{let s=document.getElementById('mapScenario').value,m=document.getElementById('mapMetric').value;l.bindPopup(popupHtml(n,match(n,mapDataset()),s,m)).openPopup()}})}}).addTo(map);map.fitBounds(geo.getBounds(),{padding:[12,12]});refreshMap()}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);drawFallbackMarkers();updateLegend()});document.getElementById('mapScenario').addEventListener('change',()=>{updateMapMetrics();refreshMap()});document.getElementById('mapMetric').addEventListener('change',refreshMap);setTimeout(()=>map.invalidateSize(),150)}
+function downloadCSV(){let ps=[...new Set([...ASIS,...FROST,...JJA].map(r=>r.province))].sort(),rows=[['Province','ASIS_score','ASIS_priority','YTD_rain_pct','Latest_rain_pct','NDVI_pct','VHI','ASI_pct','Frost_area_km2','Frost_population','JJA_area_km2','JJA_population']];ps.forEach(p=>{let r=provinceRows(p);rows.push([p,r.asis?.score??'',r.asis?.priority??'',r.asis?.ytd??'',r.asis?.latestRain??'',r.asis?.ndvi??'',r.asis?.vhi??'',r.asis?.asi??'',r.frost?.area??0,r.frost?.population??0,r.jja?.area??0,r.jja?.population??0])});let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='png_elnino_dashboard_combined_data.csv';a.click();URL.revokeObjectURL(a.href)}
+function initTabs(){document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.panel).classList.add('active');if(b.dataset.panel==='mapPanel'){initMap();setTimeout(()=>map.invalidateSize(),150)}}))}
+function init(){initTabs();initOverview();initDrought();initFrost();initCombined();initExposure();document.getElementById('printBtn').addEventListener('click',()=>window.print());document.getElementById('csvBtn').addEventListener('click',downloadCSV)}
 document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
