@@ -1,0 +1,53 @@
+name: Apply blue dashboard theme
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/apply-blue-dashboard-theme.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  theme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update dashboard color scheme
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+              '--primary:#0f3d2e;--primary2:#17694f;--accent:#d97706;--danger:#991b1b;--warning:#f59e0b;--success:#15803d;--bg:#f4f7f6;--card:#fff;--ink:#111827;--muted:#667085;--line:#d8e0df;--soft:#f8fafc;': '--primary:#6699C2;--primary2:#4F82B3;--accent:#2F6FA3;--danger:#991b1b;--warning:#f59e0b;--success:#4F82B3;--bg:#F3F8FC;--card:#fff;--ink:#102A43;--muted:#516173;--line:#C7D9EA;--soft:#E7F1F8;',
+              'background:radial-gradient(circle at top left,#eef8f3 0,#f4f7f6 34%,#f7f8fb 100%)': 'background:radial-gradient(circle at top left,#E7F1F8 0,#F3F8FC 34%,#F8FBFD 100%)',
+              '.tag{color:#d9f99d;': '.tag{color:#EAF4FC;',
+              '.sub{max-width:920px;line-height:1.55;font-size:18px;color:#edfdf5}': '.sub{max-width:920px;line-height:1.55;font-size:18px;color:#F8FBFD}',
+              'color:#f4fff8}main{padding:20px}': 'color:#F8FBFD}main{padding:20px}',
+              'background:rgba(244,247,246,.86)': 'background:rgba(243,248,252,.86)',
+              'border-bottom:1px solid rgba(216,224,223,.7)': 'border-bottom:1px solid rgba(199,217,234,.7)',
+              'border:1px solid rgba(15,61,46,.14)': 'border:1px solid rgba(102,153,194,.25)',
+              'box-shadow:0 10px 24px rgba(15,61,46,.22)': 'box-shadow:0 10px 24px rgba(102,153,194,.28)',
+              'border:1px solid rgba(15,61,46,.10)': 'border:1px solid rgba(102,153,194,.18)',
+              'color:#102a22': 'color:#102A43',
+              '.note{border-left:4px solid var(--success);background:linear-gradient(135deg,#f0fdf4,#f8fffb)}': '.note{border-left:4px solid var(--success);background:linear-gradient(135deg,#E7F1F8,#F8FBFD)}',
+              '.map-badge{background:#ecfdf5;color:var(--primary);border:1px solid #bbf7d0;': '.map-badge{background:#E7F1F8;color:#102A43;border:1px solid #C7D9EA;',
+              'th{background:#f1f5f4;': 'th{background:#E7F1F8;',
+              '#map{height:590px;border-radius:20px;border:1px solid rgba(15,61,46,.16);': '#map{height:590px;border-radius:20px;border:1px solid rgba(102,153,194,.28);',
+              '.map-product-header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#fff,#f3faf7)}': '.map-product-header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#fff,#E7F1F8)}',
+              '.embed-frame{width:100%;height:760px;border:1px solid rgba(15,61,46,.16);': '.embed-frame{width:100%;height:760px;border:1px solid rgba(102,153,194,.28);',
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Update El Nino dashboard blue theme"
+          git push
