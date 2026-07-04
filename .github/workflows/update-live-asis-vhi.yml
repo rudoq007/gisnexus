@@ -1,14 +1,53 @@
-- name: Prepare Earth Engine credentials
-  env:
-    EARTHENGINE_SERVICE_ACCOUNT_JSON: ${{ secrets.EARTHENGINE_SERVICE_ACCOUNT_JSON }}
-  run: |
-    test -n "$EARTHENGINE_SERVICE_ACCOUNT_JSON" || (echo "Missing secret EARTHENGINE_SERVICE_ACCOUNT_JSON" && exit 1)
-    printf '%s' "$EARTHENGINE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/ee-service-account.json"
-    echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ee-service-account.json" >> "$GITHUB_ENV"
-    python - <<'PY' >> "$GITHUB_ENV"
-    import json, os
-    with open(os.environ['RUNNER_TEMP'] + '/ee-service-account.json', encoding='utf-8') as f:
-        info = json.load(f)
-    print('EE_SERVICE_ACCOUNT_EMAIL=' + info['client_email'])
-    print('EARTHENGINE_PROJECT=' + info.get('project_id', 'trekky675'))
-    PY
+name: Update live FAO ASIS VHI-D data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 18 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update-asis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install earthengine-api
+
+      - name: Prepare Earth Engine credentials
+        env:
+          EARTHENGINE_SERVICE_ACCOUNT_JSON: ${{ secrets.EARTHENGINE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          test -n "$EARTHENGINE_SERVICE_ACCOUNT_JSON" || (echo "Missing secret EARTHENGINE_SERVICE_ACCOUNT_JSON" && exit 1)
+          printf '%s' "$EARTHENGINE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/ee-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ee-service-account.json" >> "$GITHUB_ENV"
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json, os
+          with open(os.environ['RUNNER_TEMP'] + '/ee-service-account.json', encoding='utf-8') as f:
+              info = json.load(f)
+          print('EE_SERVICE_ACCOUNT_EMAIL=' + info['client_email'])
+          print('EARTHENGINE_PROJECT=' + info.get('project_id', 'trekky675'))
+          PY
+
+      - name: Build live ASIS JSON
+        run: python scripts/build_asis_live.py
+
+      - name: Commit live data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/asis_vhi_latest.json
+          git diff --cached --quiet || git commit -m "Update live FAO ASIS VHI-D data"
+          git push
