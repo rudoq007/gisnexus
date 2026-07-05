@@ -37,6 +37,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}th,td{
 <script>
 const LIVE_ASIS_URL='data/asis_vhi_latest.json?v='+Date.now();
 const LIVE_PROCESSING_URL='data/live_processing_status.json?v='+Date.now();
+const LIVE_PROCESSING_URL='data/live_processing_status.json?v='+Date.now();
 const CENTROIDS={Central:[-9.15,147.55],Enga:[-5.55,143.65],Hela:[-5.95,142.95],Morobe:[-6.8,146.9],'Western Highlands':[-5.75,144.5],'Southern Highlands':[-6.25,143.35],'West Sepik':[-3.85,141.75],Jiwaka:[-5.55,144.75],'Eastern Highlands':[-6.25,145.65],Northern:[-8.8,148.3],Chimbu:[-6.0,144.95],'East Sepik':[-4.15,143.65],Madang:[-5.2,145.7],Western:[-7.3,142.0],'Milne Bay':[-10.3,150.4],Bougainville:[-6.2,155.4],Gulf:[-7.8,145.0],'National Capital District':[-9.45,147.18],'West New Britain':[-5.75,150.05],Manus:[-2.1,147.0],'East New Britain':[-4.5,152.1],'New Ireland':[-3.3,151.6]};
 let liveData=null,liveRows=[],rowIndex={},charts={},map=null,geo=null,markers=null,asisTile=null,mapStarted=false;
 const fmt=x=>x==null||Number.isNaN(Number(x))?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
