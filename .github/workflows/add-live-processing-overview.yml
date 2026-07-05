@@ -1,0 +1,70 @@
+name: Add live processing overview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/add-live-processing-overview.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch dashboard overview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old = '''<section id="overview" class="panel active"><div class="grid"><section class="card full"><h2>Executive interpretation</h2><div class="warn"><b>Interpretation note:</b> This dashboard is now centred on live FAO ASIS/GIEWS vegetation-health data. It supports early warning, prioritisation and field verification planning, but does not replace official declarations by mandated national authorities or detailed field assessment by DAL, NARI, NDC, provincial or district teams.</div><p>The previous static frost and combined frost+drought products have been removed from the dashboard. The national overview, graphs, tables, map and operational interpretation now update from the latest available FAO ASIS VHI-D dekad where the live data file is available.</p><div id="liveStatus" class="note">Loading live FAO ASIS/GIEWS VHI-D data...</div></section><section class="card kpi"><span class="muted">Latest ASIS dekad</span><b id="cardDekad">--</b><span class="muted" id="cardGenerated">waiting for live data</span></section><section class="card kpi"><span class="muted">National mean VHI-D</span><b id="cardMean">--</b><span class="muted">province mean average</span></section><section class="card kpi"><span class="muted">High / moderate stress</span><b id="cardHighModerate">--</b><span class="muted">provinces</span></section><section class="card kpi"><span class="muted">Watch / lower stress</span><b id="cardWatchLower">--</b><span class="muted">provinces</span></section><section class="card wide"><h2>Province live ASIS explorer</h2><div class="toolbar"><div style="min-width:260px"><label class="muted">Select province</label><select id="provinceSelect"></select></div><button class="btn primary" id="printBtn">Print current brief</button><button class="btn" id="csvBtn">Download live ASIS CSV</button></div><div id="provinceBrief"></div></section><section class="card side"><h2>What changed</h2><p><b>Removed:</b> static frost map scenario, static combined JJA hazard scenario, and their old population exposure cards.</p><p><b>Retained:</b> operational decision-support structure, province-level screening, live map, charts, tables and field verification guidance.</p><p><b>Population exposure:</b> now treated as a follow-on overlay. It should only be calculated when live ASIS stress pixels are intersected with gridded population, census units, crop masks or livelihood exposure layers.</p></section><section class="card half"><h2>Lowest VHI-D provinces</h2><canvas id="vhiRankChart"></canvas></section><section class="card half"><h2>Stress class distribution</h2><canvas id="stressClassChart"></canvas></section></div></section>'''
+
+          new = '''<section id="overview" class="panel active"><div class="grid"><section class="card full"><h2>Executive interpretation</h2><div class="warn"><b>Interpretation note:</b> This dashboard combines two live components: FAO ASIS/GIEWS vegetation-health screening and the PNG live processing workspace for drought and frost review. It supports early warning, prioritisation and field verification planning, but does not replace official declarations by mandated national authorities or detailed field assessment by DAL, NARI, NDC, provincial or district teams.</div><p>The previous static frost and combined frost+drought products have been removed from the dashboard. The national overview, graphs, tables, map and operational interpretation now update from the latest available FAO ASIS VHI-D dekad where the live data file is available, while the overview also reports the current PNG live processing workspace date and drought/frost analysis windows when that status feed is available.</p><div id="liveStatus" class="note">Loading live FAO ASIS/GIEWS VHI-D data...</div></section><section class="card kpi"><span class="muted">Latest ASIS dekad</span><b id="cardDekad">--</b><span class="muted" id="cardGenerated">waiting for live data</span></section><section class="card kpi"><span class="muted">National mean VHI-D</span><b id="cardMean">--</b><span class="muted">province mean average</span></section><section class="card kpi"><span class="muted">High / moderate stress</span><b id="cardHighModerate">--</b><span class="muted">provinces</span></section><section class="card kpi"><span class="muted">Watch / lower stress</span><b id="cardWatchLower">--</b><span class="muted">provinces</span></section><section class="card wide"><h2>Province live ASIS explorer</h2><div class="toolbar"><div style="min-width:260px"><label class="muted">Select province</label><select id="provinceSelect"></select></div><button class="btn primary" id="printBtn">Print current brief</button><button class="btn" id="csvBtn">Download live ASIS CSV</button></div><div id="provinceBrief"></div></section><section class="card side"><h2>What changed</h2><p><b>Removed:</b> static frost map scenario, static combined JJA hazard scenario, and their old population exposure cards.</p><p><b>Retained:</b> operational decision-support structure, province-level screening, live map, charts, tables and field verification guidance.</p><p><b>Population exposure:</b> now treated as a follow-on overlay. It should only be calculated when live ASIS stress pixels are intersected with gridded population, census units, crop masks or livelihood exposure layers.</p></section><section class="card full" id="liveWorkspaceOverviewCard"><span class="eyebrow">PNG live processing workspace</span><h2>Drought and frost processing status</h2><p class="note"><b>Source:</b> This summary is read from <code>data/live_processing_status.json</code> and complements the full Streamlit processing workspace. It is intended to show the latest analysis date and drought/frost windows on the overview page without replacing the full interactive workspace.</p><div class="metric"><div><span class="muted">Analysis date</span><b id="liveProcDate">Pending</b></div><div><span class="muted">Drought window</span><b id="liveProcDroughtWindow">Pending</b></div><div><span class="muted">Frost window</span><b id="liveProcFrostWindow">Pending</b></div></div><p class="small" id="liveProcNotes">Waiting for <code>data/live_processing_status.json</code>. Add a live processing status feed to populate this card.</p><div class="embed-actions"><a class="btn primary" href="https://png-climate-workspace-v1.streamlit.app/" target="_blank" rel="noopener">Open live processing workspace</a></div></section><section class="card half"><h2>Lowest VHI-D provinces</h2><canvas id="vhiRankChart"></canvas></section><section class="card half"><h2>Stress class distribution</h2><canvas id="stressClassChart"></canvas></section></div></section>'''
+
+          if old in s:
+              s = s.replace(old, new)
+
+          s = s.replace("const LIVE_ASIS_URL='data/asis_vhi_latest.json?v='+Date.now();", "const LIVE_ASIS_URL='data/asis_vhi_latest.json?v='+Date.now();\nconst LIVE_PROCESSING_URL='data/live_processing_status.json?v='+Date.now();")
+          s = s.replace("let liveData=null,liveRows=[],rowIndex={},map,geoLayer,tileLayer,markerLayer,charts={};", "let liveData=null,liveRows=[],rowIndex={},liveProcessingData=null,map,geoLayer,tileLayer,markerLayer,charts={};")
+
+          needle = "function applyLiveData(data){"
+          insert = "function updateLiveProcessingCard(data){liveProcessingData=data||null;const dateText=data?.analysis_date||data?.generated_utc||'Pending';const droughtText=data?.drought_window||'Pending';const frostText=data?.frost_window||'Pending';const notes=data?.notes||'Live PNG drought and frost screening workspace metadata not yet provided.';if(document.getElementById('liveProcDate'))liveProcDate.textContent=dateText;if(document.getElementById('liveProcDroughtWindow'))liveProcDroughtWindow.textContent=droughtText;if(document.getElementById('liveProcFrostWindow'))liveProcFrostWindow.textContent=frostText;if(document.getElementById('liveProcNotes'))liveProcNotes.textContent=notes}\nfunction applyLiveProcessingPending(msg){updateLiveProcessingCard({analysis_date:'Pending',drought_window:'Pending',frost_window:'Pending',notes:msg||'Expected file: data/live_processing_status.json. Add a status export from the Streamlit live processing workspace to populate this overview card.'})}\n"
+          if needle in s and 'function updateLiveProcessingCard' not in s:
+              s = s.replace(needle, insert + needle)
+
+          old_init = "function init(){initTabs();printBtn.addEventListener('click',()=>window.print());csvBtn.addEventListener('click',downloadCSV);provinceSelect.addEventListener('change',e=>showProvince(e.target.value));fetch(LIVE_ASIS_URL).then(r=>{if(!r.ok)throw new Error('Live ASIS JSON not found: '+r.status);return r.json()}).then(applyLiveData).catch(e=>{console.warn(e);applyPending()})}"
+          new_init = "function init(){initTabs();printBtn.addEventListener('click',()=>window.print());csvBtn.addEventListener('click',downloadCSV);provinceSelect.addEventListener('change',e=>showProvince(e.target.value));fetch(LIVE_ASIS_URL).then(r=>{if(!r.ok)throw new Error('Live ASIS JSON not found: '+r.status);return r.json()}).then(applyLiveData).catch(e=>{console.warn(e);applyPending()});fetch(LIVE_PROCESSING_URL).then(r=>{if(!r.ok)throw new Error('Live processing status JSON not found: '+r.status);return r.json()}).then(updateLiveProcessingCard).catch(e=>{console.warn(e);applyLiveProcessingPending()})}"
+          if old_init in s:
+              s = s.replace(old_init, new_init)
+
+          p.write_text(s, encoding='utf-8')
+
+          status = {
+              "generated_utc": "Pending",
+              "analysis_date": "Pending",
+              "drought_window": "Pending",
+              "frost_window": "Pending",
+              "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
+              "notes": "Template status file for the PNG live processing workspace. Update this JSON from your GEE/Streamlit workflow to show the latest drought and frost windows on the overview page.",
+              "available_layers": ["Drought", "Frost", "Both"]
+          }
+          out = Path('data/live_processing_status.json')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(status, indent=2), encoding='utf-8')
+          PY
+
+      - name: Commit dashboard changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html data/live_processing_status.json
+          git diff --cached --quiet || git commit -m "Add live processing status to overview"
+          git push
