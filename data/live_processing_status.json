@@ -1,0 +1,13 @@
+{
+  "generated_utc": "Pending",
+  "analysis_date": "Pending",
+  "drought_window": "Pending",
+  "frost_window": "Pending",
+  "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
+  "notes": "Template status file for the PNG live processing workspace. Update this JSON from your GEE/Streamlit workflow to show the latest drought and frost windows on the overview page.",
+  "available_layers": [
+    "Drought",
+    "Frost",
+    "Both"
+  ]
+}
