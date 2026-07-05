@@ -1,10 +1,10 @@
 {
   "generated_utc": "2026-07-05 12:30 UTC",
-  "analysis_date": "2026-07-04",
-  "drought_window": "2026-03-21 to 2026-06-19",
-  "frost_window": "2026-06-27 to 2026-07-04",
+  "analysis_date": "2026-07-05",
+  "drought_window": "2026-03-22 to 2026-06-20",
+  "frost_window": "2026-06-28 to 2026-07-05",
   "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
-  "notes": "Live PNG drought and frost screening workspace summary from the Streamlit/GEE processing workflow.",
+  "notes": "Live PNG drought and frost screening workspace summary from the separate Streamlit/GEE processing workflow.",
   "available_layers": [
     "Drought",
     "Frost",
