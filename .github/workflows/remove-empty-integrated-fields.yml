@@ -1,0 +1,68 @@
+name: Simplify integrated dashboard fields
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/remove-empty-integrated-fields.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove empty integrated fields from dashboard
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace(
+              '<option value="priority_desc">Highest exposure priority first</option><option value="priority_asc">Lowest exposure priority first</option>',
+              '<option value="priority_desc">Highest composite stress first</option><option value="priority_asc">Lowest composite stress first</option>'
+          )
+
+          s = s.replace(
+              '</p></section><section class="card kpi"><span class="muted">Population exposed</span><b id="integratedPopulationExposed">--</b><span class="muted">moderate to severe agricultural priority</span></section><section class="card kpi"><span class="muted">High-priority population</span><b id="integratedPopulationHigh">--</b><span class="muted">inside highest-priority zones</span></section><section class="card kpi"><span class="muted">High-priority cropland</span><b id="integratedCroplandHigh">--</b><span class="muted">hectares</span></section><section class="card kpi"><span class="muted">Stressed cropland</span><b id="integratedCroplandStressed">--</b><span class="muted">hectares</span></section><section class="card full"><h2>Integrated priority provincial table</h2>',
+              '</p></section><section class="card kpi"><span class="muted">Population exposed</span><b id="integratedPopulationExposed">--</b><span class="muted">people inside composite stress zones</span></section><section class="card full"><h2>Integrated priority provincial table</h2>'
+          )
+
+          s = s.replace(
+              '<th>Province</th><th>Composite stress</th><th>Agricultural priority</th><th>Exposure priority</th><th>Priority class</th><th>Population exposed</th><th>High-priority population</th><th>High-priority cropland (ha)</th><th>Stressed cropland (ha)</th>',
+              '<th>Province</th><th>Composite stress</th><th>Agricultural priority</th><th>Exposure priority</th><th>Priority class</th><th>Population exposed</th>'
+          )
+
+          s = re.sub(
+              r"function sortIntegratedRows\(rows,choice\)\{.*?\}",
+              "function sortIntegratedRows(rows,choice){const out=rows.slice();if(choice==='province_asc')return out.sort((a,b)=>(a.province||'').localeCompare(b.province||''));if(choice==='province_desc')return out.sort((a,b)=>(b.province||'').localeCompare(a.province||''));if(choice==='priority_asc')return out.sort((a,b)=>(a.composite_biophysical_stress_mean??999)-(b.composite_biophysical_stress_mean??999));return out.sort((a,b)=>(b.composite_biophysical_stress_mean??-999)-(a.composite_biophysical_stress_mean??-999))}",
+              s,
+              count=1,
+              flags=re.S,
+          )
+
+          s = re.sub(
+              r"function renderIntegratedTable\(\)\{.*?\}function updateIntegratedSection\(data\)\{.*?\}",
+              "function renderIntegratedTable(){const tbody=document.querySelector('#integratedTable tbody');if(!tbody)return;const query=document.getElementById('integratedSearch')?.value||'';const sort=document.getElementById('integratedSort')?.value||'priority_desc';const rows=sortIntegratedRows(filterIntegratedRows(integratedRows,query),sort);if(!rows.length){tbody.innerHTML='<tr><td colspan=\"6\">No matching provinces found.</td></tr>';return}tbody.innerHTML=rows.map(r=>`<tr><td><b>${r.province||'Unknown'}</b></td><td>${r.composite_biophysical_stress_mean==null?'No data':Number(r.composite_biophysical_stress_mean).toFixed(1)}</td><td>${r.agricultural_priority_mean==null?'No data':Number(r.agricultural_priority_mean).toFixed(1)}</td><td>${r.exposure_priority_mean==null?'No data':Number(r.exposure_priority_mean).toFixed(1)}</td><td><span class=\"pill ${r.priority_class||'NoData'}\">${r.priority_class||'No data'}</span></td><td>${fmtInt(r.population_exposed_total)}</td></tr>`).join('')}function updateIntegratedSection(data){integratedData=data||null;integratedRows=Array.isArray(data?.provinces)?data.provinces.slice():[];const summary=data?.national_summary||{};if(document.getElementById('integratedPopulationExposed'))integratedPopulationExposed.textContent=fmtInt(summary.total_population_exposed);renderIntegratedTable()}",
+              s,
+              count=1,
+              flags=re.S,
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit dashboard simplification
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Remove empty integrated dashboard fields"
+          git push
