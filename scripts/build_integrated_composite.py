@@ -13,15 +13,9 @@ CHIRPS_COLLECTION = "UCSB-CHG/CHIRPS/DAILY"
 MODIS_COLLECTION = "MODIS/061/MOD11A1"
 WORLDCOVER_COLLECTION = "ESA/WorldCover/v200"
 WORLDPOP_COLLECTION = "WorldPop/GP/100m/pop"
-CROPLAND_WEIGHT_OUTSIDE = 0.80
-CROPLAND_WEIGHT_INSIDE = 1.00
-HIGH_PRIORITY_THRESHOLD = 50
-EXPOSED_PRIORITY_THRESHOLD = 35
-CROPLAND_STRESSED_THRESHOLD = 35
-WATCH_PRIORITY_THRESHOLD = 20
-COUNT_HIGH_THRESHOLD = 40
-COUNT_EXPOSED_THRESHOLD = 25
-COUNT_WATCH_THRESHOLD = 15
+COMPOSITE_HIGH_THRESHOLD = 40
+COMPOSITE_EXPOSED_THRESHOLD = 25
+COMPOSITE_WATCH_THRESHOLD = 15
 
 
 def initialise_earth_engine() -> str:
@@ -146,29 +140,6 @@ def build_cropland_mask() -> ee.Image:
     return ee.Image(worldcover).select("Map").eq(40).rename("cropland_mask")
 
 
-def build_cropland_factor(cropland_mask: ee.Image) -> ee.Image:
-    return (
-        cropland_mask.multiply(CROPLAND_WEIGHT_INSIDE - CROPLAND_WEIGHT_OUTSIDE)
-        .add(CROPLAND_WEIGHT_OUTSIDE)
-        .rename("cropland_factor")
-    )
-
-
-def build_population_weight(population: ee.Image) -> ee.Image:
-    p95 = ee.Number(
-        population.reduceRegion(
-            reducer=ee.Reducer.percentile([95]),
-            geometry=png_geometry(),
-            scale=1000,
-            maxPixels=1e13,
-            tileScale=4,
-        ).get("population")
-    )
-
-    p95_safe = ee.Number(ee.Algorithms.If(p95, p95, 1))
-    return population.divide(p95_safe).min(1).rename("population_weight")
-
-
 def classify_priority(value):
     if value is None:
         return "No data"
@@ -221,45 +192,34 @@ def build_outputs():
         .clip(boundary)
     )
 
-    cropland_mask = build_cropland_mask().clip(boundary)
-    cropland_factor = build_cropland_factor(cropland_mask).clip(boundary)
-    agricultural_priority = (
-        composite_biophysical.multiply(cropland_factor)
-        .rename("agricultural_priority")
-        .clip(boundary)
-    )
+    # Keep these bands for dashboard compatibility, but they now mirror the composite-focused approach.
+    agricultural_priority = composite_biophysical.rename("agricultural_priority")
+    exposure_priority = composite_biophysical.rename("exposure_priority")
 
     worldpop = latest_worldpop_image()
     population = worldpop.select([0]).rename("population")
     population_year = worldpop.get("year").getInfo()
 
-    population_weight = build_population_weight(population)
-    exposure_priority = (
-        agricultural_priority.unmask(0)
-        .multiply(ee.Image.constant(0.5).add(population_weight.multiply(0.5)))
-        .rename("exposure_priority")
-        .clip(boundary)
-    )
+    cropland_mask = build_cropland_mask().clip(boundary)
 
-    # Counts are based on agricultural_priority, not exposure_priority.
-    population_high_priority = population.updateMask(agricultural_priority.gte(COUNT_HIGH_THRESHOLD)).rename(
+    population_high_priority = population.updateMask(composite_biophysical.gte(COMPOSITE_HIGH_THRESHOLD)).rename(
         "population_high_priority"
     )
     population_moderate_priority = population.updateMask(
-        agricultural_priority.gte(COUNT_EXPOSED_THRESHOLD).And(agricultural_priority.lt(COUNT_HIGH_THRESHOLD))
+        composite_biophysical.gte(COMPOSITE_EXPOSED_THRESHOLD).And(composite_biophysical.lt(COMPOSITE_HIGH_THRESHOLD))
     ).rename("population_moderate_priority")
     population_watch_priority = population.updateMask(
-        agricultural_priority.gte(COUNT_WATCH_THRESHOLD).And(agricultural_priority.lt(COUNT_EXPOSED_THRESHOLD))
+        composite_biophysical.gte(COMPOSITE_WATCH_THRESHOLD).And(composite_biophysical.lt(COMPOSITE_EXPOSED_THRESHOLD))
     ).rename("population_watch_priority")
-    population_exposed_total = population.updateMask(agricultural_priority.gte(COUNT_EXPOSED_THRESHOLD)).rename(
+    population_exposed_total = population.updateMask(composite_biophysical.gte(COMPOSITE_EXPOSED_THRESHOLD)).rename(
         "population_exposed_total"
     )
 
     cropland_high_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        cropland_mask.eq(1).And(agricultural_priority.gte(COUNT_HIGH_THRESHOLD))
+        cropland_mask.eq(1).And(composite_biophysical.gte(COMPOSITE_HIGH_THRESHOLD))
     ).rename("cropland_high_ha")
     cropland_stressed_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        cropland_mask.eq(1).And(agricultural_priority.gte(COUNT_EXPOSED_THRESHOLD))
+        cropland_mask.eq(1).And(composite_biophysical.gte(COMPOSITE_EXPOSED_THRESHOLD))
     ).rename("cropland_stressed_ha")
 
     summary_image = ee.Image.cat(
@@ -268,8 +228,8 @@ def build_outputs():
             rainfall_pct.rename("rainfall_pct_normal"),
             frost_lst.unmask().rename("night_lst_celsius"),
             composite_biophysical.rename("composite_biophysical_stress"),
-            agricultural_priority.unmask(0).rename("agricultural_priority"),
-            exposure_priority.rename("exposure_priority"),
+            agricultural_priority.unmask(0),
+            exposure_priority.unmask(0),
             population_high_priority.unmask(0),
             population_moderate_priority.unmask(0),
             population_watch_priority.unmask(0),
@@ -306,7 +266,7 @@ def build_outputs():
             "composite_biophysical_stress_mean": safe_round(props.get("composite_biophysical_stress_mean"), 1),
             "agricultural_priority_mean": safe_round(props.get("agricultural_priority_mean"), 1),
             "exposure_priority_mean": safe_round(props.get("exposure_priority_mean"), 1),
-            "priority_class": classify_priority(props.get("exposure_priority_mean")),
+            "priority_class": classify_priority(props.get("composite_biophysical_stress_mean")),
             "population_high_priority": safe_round(props.get("population_high_priority_sum"), 0),
             "population_moderate_priority": safe_round(props.get("population_moderate_priority_sum"), 0),
             "population_watch_priority": safe_round(props.get("population_watch_priority_sum"), 0),
@@ -323,7 +283,7 @@ def build_outputs():
 
     provinces = sorted(
         provinces,
-        key=lambda x: (x["exposure_priority_mean"] is None, -(x["exposure_priority_mean"] or -999)),
+        key=lambda x: (x["composite_biophysical_stress_mean"] is None, -(x["composite_biophysical_stress_mean"] or -999)),
     )
 
     palette = ["#1a9850", "#91cf60", "#fee08b", "#fc8d59", "#d73027", "#7f0000"]
@@ -335,17 +295,13 @@ def build_outputs():
         "frost_window": f"{start_7} to {anchor_date}",
         "population_year": population_year,
         "thresholds": {
-            "ranking_high_priority_threshold": HIGH_PRIORITY_THRESHOLD,
-            "ranking_exposed_priority_threshold": EXPOSED_PRIORITY_THRESHOLD,
-            "ranking_cropland_stressed_threshold": CROPLAND_STRESSED_THRESHOLD,
-            "ranking_watch_priority_threshold": WATCH_PRIORITY_THRESHOLD,
-            "count_high_threshold": COUNT_HIGH_THRESHOLD,
-            "count_exposed_threshold": COUNT_EXPOSED_THRESHOLD,
-            "count_watch_threshold": COUNT_WATCH_THRESHOLD,
+            "composite_high_threshold": COMPOSITE_HIGH_THRESHOLD,
+            "composite_exposed_threshold": COMPOSITE_EXPOSED_THRESHOLD,
+            "composite_watch_threshold": COMPOSITE_WATCH_THRESHOLD,
         },
         "layers": {
             "composite_biophysical_stress_tile_url": get_tile_url(composite_biophysical, 0, 100, palette),
-            "agricultural_priority_tile_url": get_tile_url(agricultural_priority.unmask(0), 0, 100, palette),
+            "agricultural_priority_tile_url": get_tile_url(agricultural_priority, 0, 100, palette),
             "exposure_priority_tile_url": get_tile_url(exposure_priority, 0, 100, palette),
         },
         "national_summary": {
