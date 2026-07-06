@@ -15,6 +15,10 @@ WORLDCOVER_COLLECTION = "ESA/WorldCover/v200"
 WORLDPOP_COLLECTION = "WorldPop/GP/100m/pop"
 CROPLAND_WEIGHT_OUTSIDE = 0.80
 CROPLAND_WEIGHT_INSIDE = 1.00
+HIGH_PRIORITY_THRESHOLD = 50
+EXPOSED_PRIORITY_THRESHOLD = 35
+CROPLAND_STRESSED_THRESHOLD = 35
+WATCH_PRIORITY_THRESHOLD = 20
 
 
 def initialise_earth_engine() -> str:
@@ -234,20 +238,24 @@ def build_outputs():
         .clip(boundary)
     )
 
-    population_high_priority = population.updateMask(agricultural_priority.gte(80)).rename("population_high_priority")
+    population_high_priority = population.updateMask(exposure_priority.gte(HIGH_PRIORITY_THRESHOLD)).rename(
+        "population_high_priority"
+    )
     population_moderate_priority = population.updateMask(
-        agricultural_priority.gte(60).And(agricultural_priority.lt(80))
+        exposure_priority.gte(EXPOSED_PRIORITY_THRESHOLD).And(exposure_priority.lt(HIGH_PRIORITY_THRESHOLD))
     ).rename("population_moderate_priority")
     population_watch_priority = population.updateMask(
-        agricultural_priority.gte(40).And(agricultural_priority.lt(60))
+        exposure_priority.gte(WATCH_PRIORITY_THRESHOLD).And(exposure_priority.lt(EXPOSED_PRIORITY_THRESHOLD))
     ).rename("population_watch_priority")
-    population_exposed_total = population.updateMask(agricultural_priority.gte(40)).rename("population_exposed_total")
+    population_exposed_total = population.updateMask(exposure_priority.gte(EXPOSED_PRIORITY_THRESHOLD)).rename(
+        "population_exposed_total"
+    )
 
     cropland_high_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        cropland_mask.eq(1).And(agricultural_priority.gte(80))
+        cropland_mask.eq(1).And(agricultural_priority.gte(HIGH_PRIORITY_THRESHOLD))
     ).rename("cropland_high_ha")
     cropland_stressed_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        cropland_mask.eq(1).And(agricultural_priority.gte(60))
+        cropland_mask.eq(1).And(agricultural_priority.gte(CROPLAND_STRESSED_THRESHOLD))
     ).rename("cropland_stressed_ha")
 
     summary_image = ee.Image.cat(
@@ -322,6 +330,12 @@ def build_outputs():
         "drought_window": f"{start_90} to {safe_end}",
         "frost_window": f"{start_7} to {anchor_date}",
         "population_year": population_year,
+        "thresholds": {
+            "high_priority_threshold": HIGH_PRIORITY_THRESHOLD,
+            "exposed_priority_threshold": EXPOSED_PRIORITY_THRESHOLD,
+            "cropland_stressed_threshold": CROPLAND_STRESSED_THRESHOLD,
+            "watch_priority_threshold": WATCH_PRIORITY_THRESHOLD,
+        },
         "layers": {
             "composite_biophysical_stress_tile_url": get_tile_url(composite_biophysical, 0, 100, palette),
             "agricultural_priority_tile_url": get_tile_url(agricultural_priority.unmask(0), 0, 100, palette),
