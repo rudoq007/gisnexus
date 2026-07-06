@@ -1,0 +1,79 @@
+name: Patch Population and Exposure tab to composite-population approach v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/patch-exposure-tab-composite-pop-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rewrite exposure tab and JS bindings
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          new_exposure_section = (
+              '<section id="exposure" class="panel"><div class="grid">'
+              '<section class="card full"><h2>Population exposure summary</h2><p class="note"><b>About this section:</b> '
+              'This tab reports people located inside composite biophysical stress zones. The exposure counts are derived from the composite stress surface and gridded population data, then summarised by province for public-facing interpretation.</p></section>'
+              '<section class="card kpi"><span class="muted">Population exposed</span><b id="popOverlayStatus">--</b><span class="muted">people in composite stress zones</span></section>'
+              '<section class="card kpi"><span class="muted">High exposure population</span><b id="exposureHigh">--</b><span class="muted">people in higher composite stress zones</span></section>'
+              '<section class="card kpi"><span class="muted">Affected provinces</span><b id="exposureModerate">--</b><span class="muted">provinces with exposed population</span></section>'
+              '<section class="card kpi"><span class="muted">Watch population</span><b id="exposureWatch">--</b><span class="muted">people in watch-level stress zones</span></section>'
+              '<section class="card full"><h2>Population exposure table</h2>'
+              '<div class="table-controls"><div class="field"><label class="muted">Find province</label><input id="exposureSearch" type="text" placeholder="Type a province name"></div>'
+              '<div class="field"><label class="muted">Sort by</label><select id="exposureSort"><option value="population_desc">Highest exposed population first</option><option value="population_asc">Lowest exposed population first</option><option value="stress_desc">Highest composite stress first</option><option value="stress_asc">Lowest composite stress first</option><option value="province_asc">Province A-Z</option><option value="province_desc">Province Z-A</option></select></div></div>'
+              '<div class="tablewrap"><table id="exposureTable"><thead><tr><th>Province</th><th>Composite stress</th><th>Stress class</th><th>Population exposed</th><th>High exposure population</th><th>ASIS mean</th><th>Rainfall % normal</th><th>Frost mean °C</th></tr></thead><tbody></tbody></table></div></section></div></section>'
+          )
+
+          s, n = re.subn(
+              r'<section id="exposure" class="panel">.*?<section id="response" class="panel">',
+              new_exposure_section + '<section id="response" class="panel">',
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n == 0:
+              raise SystemExit('Failed to replace exposure section')
+
+          new_exposure_js = (
+              "function sortExposureRows(rows,choice){const out=rows.slice();if(choice==='province_asc')return out.sort((a,b)=>(a.province||'').localeCompare(b.province||''));if(choice==='province_desc')return out.sort((a,b)=>(b.province||'').localeCompare(a.province||''));if(choice==='stress_desc')return out.sort((a,b)=>(b.composite_biophysical_stress_mean??-999)-(a.composite_biophysical_stress_mean??-999));if(choice==='stress_asc')return out.sort((a,b)=>(a.composite_biophysical_stress_mean??999)-(b.composite_biophysical_stress_mean??999));if(choice==='population_asc')return out.sort((a,b)=>(a.population_exposed_total??999999)-(b.population_exposed_total??999999));return out.sort((a,b)=>(b.population_exposed_total??-1)-(a.population_exposed_total??-1))}\n"
+              "function renderExposureTable(){const tbody=document.querySelector('#exposureTable tbody');if(!tbody)return;const query=document.getElementById('exposureSearch')?.value||'';const sort=document.getElementById('exposureSort')?.value||'population_desc';const rows=sortExposureRows(filterIntegratedRows(integratedRows,query),sort);if(!rows.length){tbody.innerHTML='<tr><td colspan=\"8\">No matching provinces found.</td></tr>';return}tbody.innerHTML=rows.map(r=>`<tr><td><b>${r.province||'Unknown'}</b></td><td>${r.composite_biophysical_stress_mean==null?'No data':Number(r.composite_biophysical_stress_mean).toFixed(1)}</td><td><span class=\"pill ${r.priority_class||'NoData'}\">${r.priority_class||'No data'}</span></td><td>${fmtInt(r.population_exposed_total)}</td><td>${fmtInt(r.population_high_priority)}</td><td>${r.asis_vhi_mean==null?'No data':Number(r.asis_vhi_mean).toFixed(3)}</td><td>${r.rainfall_pct_normal_mean==null?'No data':Number(r.rainfall_pct_normal_mean).toFixed(1)}</td><td>${r.night_lst_celsius_mean==null?'No data':Number(r.night_lst_celsius_mean).toFixed(1)}</td></tr>`).join('')}\n"
+              "function updateExposure(){const summary=integratedData?.national_summary||{};const rows=Array.isArray(integratedRows)?integratedRows:[];const affected=rows.filter(r=>(r.population_exposed_total||0)>0).length;const watchPop=rows.reduce((sum,r)=>sum+(Number(r.population_watch_priority)||0),0);popOverlayStatus.textContent=fmtInt(summary.total_population_exposed);exposureHigh.textContent=fmtInt(summary.total_population_high_priority);exposureModerate.textContent=fmtInt(affected);exposureWatch.textContent=fmtInt(watchPop);renderExposureTable()}"
+          )
+
+          s, n = re.subn(
+              r'function renderExposureTable\(\)\{.*?\}function updateExposure\(\)\{.*?\}(?=function filterIntegratedRows)',
+              new_exposure_js,
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n == 0:
+              raise SystemExit('Failed to replace exposure JS block')
+
+          s = s.replace('renderIntegratedTable()}', 'renderIntegratedTable();updateExposure()}')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit exposure tab patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Refocus Population and Exposure tab on composite stress outputs"
+          git push
