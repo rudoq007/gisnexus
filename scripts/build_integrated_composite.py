@@ -13,6 +13,8 @@ CHIRPS_COLLECTION = "UCSB-CHG/CHIRPS/DAILY"
 MODIS_COLLECTION = "MODIS/061/MOD11A1"
 WORLDCOVER_COLLECTION = "ESA/WorldCover/v200"
 WORLDPOP_COLLECTION = "WorldPop/GP/100m/pop"
+CROPLAND_WEIGHT_OUTSIDE = 0.80
+CROPLAND_WEIGHT_INSIDE = 1.00
 
 
 def initialise_earth_engine() -> str:
@@ -137,6 +139,14 @@ def build_cropland_mask() -> ee.Image:
     return ee.Image(worldcover).select("Map").eq(40).rename("cropland_mask")
 
 
+def build_cropland_factor(cropland_mask: ee.Image) -> ee.Image:
+    return (
+        cropland_mask.multiply(CROPLAND_WEIGHT_INSIDE - CROPLAND_WEIGHT_OUTSIDE)
+        .add(CROPLAND_WEIGHT_OUTSIDE)
+        .rename("cropland_factor")
+    )
+
+
 def build_population_weight(population: ee.Image) -> ee.Image:
     p95 = ee.Number(
         population.reduceRegion(
@@ -205,8 +215,9 @@ def build_outputs():
     )
 
     cropland_mask = build_cropland_mask().clip(boundary)
+    cropland_factor = build_cropland_factor(cropland_mask).clip(boundary)
     agricultural_priority = (
-        composite_biophysical.updateMask(cropland_mask)
+        composite_biophysical.multiply(cropland_factor)
         .rename("agricultural_priority")
         .clip(boundary)
     )
@@ -233,10 +244,10 @@ def build_outputs():
     population_exposed_total = population.updateMask(agricultural_priority.gte(40)).rename("population_exposed_total")
 
     cropland_high_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        agricultural_priority.gte(80)
+        cropland_mask.eq(1).And(agricultural_priority.gte(80))
     ).rename("cropland_high_ha")
     cropland_stressed_ha = ee.Image.pixelArea().divide(10000).updateMask(
-        agricultural_priority.gte(60)
+        cropland_mask.eq(1).And(agricultural_priority.gte(60))
     ).rename("cropland_stressed_ha")
 
     summary_image = ee.Image.cat(
