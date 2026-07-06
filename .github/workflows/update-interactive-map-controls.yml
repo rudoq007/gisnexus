@@ -1,0 +1,60 @@
+name: Update interactive map layering and controls
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/update-interactive-map-controls.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Improve layer order, overlay toggles and basemap options
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace(
+              ".mapbar{display:grid;grid-template-columns:1fr 260px;gap:12px;align-items:end}",
+              ".mapbar{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:stretch}"
+          )
+
+          s = s.replace(
+              "<div class=\"mapbar\"><div class=\"explain\"><b>About this map:</b> The map displays the latest available FAO vegetation-health screening layer together with PNG provincial summaries. Click a province to view the latest vegetation-stress reading and interpretation.</div><div><label class=\"muted\">Map layer</label><select id=\"mapLayer\"><option value=\"tile\">Screening layer + province summary</option><option value=\"province\">Province summary only</option></select></div></div>",
+              "<div class=\"mapbar\"><div class=\"explain\"><b>About this map:</b> The map displays the latest available FAO vegetation-health screening layer together with PNG provincial summaries. Click a province to view the latest vegetation-stress reading and interpretation.</div><div class=\"explain\"><b>Map controls:</b> Use the layer control in the top-right corner to switch basemaps and turn the screening raster, provincial polygons and point summaries on or off. By default, all three layers are shown.</div></div>"
+          )
+
+          s = s.replace(
+              "let liveData=null,liveRows=[],rowIndex={},liveProcessingData=null,liveProcessingRows=[],map,mapStarted=false,geo,asisTile,markerLayer,charts={};",
+              "let liveData=null,liveRows=[],rowIndex={},liveProcessingData=null,liveProcessingRows=[],map,mapStarted=false,geo,asisTile,markerLayer,provinceLayer,baseLayerRefs={},overlayLayersRef={},charts={};"
+          )
+
+          s = s.replace(
+              "function drawMarkers(){if(markerLayer){markerLayer.remove();markerLayer=null}markerLayer=L.layerGroup();liveRows.forEach(r=>{const c=CENTROIDS[r.province]||CENTROIDS[alias[norm(r.province)]];if(!c)return;L.circleMarker(c,{radius:10,color:'#334155',weight:1,fillColor:color(r.mean),fillOpacity:.85}).bindPopup(popup(r,r.province)).addTo(markerLayer)});markerLayer.addTo(map)}",
+              "function drawMarkers(){if(markerLayer){markerLayer.remove();markerLayer=null}markerLayer=L.layerGroup();liveRows.forEach(r=>{const c=CENTROIDS[r.province]||CENTROIDS[alias[norm(r.province)]];if(!c)return;L.circleMarker(c,{pane:'pointPane',radius:10,color:'#334155',weight:1,fillColor:color(r.mean),fillOpacity:.85}).bindPopup(popup(r,r.province)).addTo(markerLayer)});overlayLayersRef.points=markerLayer;if(map && !map.hasLayer(markerLayer))markerLayer.addTo(map)}"
+          )
+
+          s = s.replace(
+              "function initMap(){if(mapStarted)return;mapStarted=true;map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);if(liveData?.tile_url){asisTile=L.tileLayer(liveData.tile_url,{attribution:'FAO ASIS/GIEWS',opacity:.82});if(mapLayer.value==='tile')asisTile.addTo(map)}fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary service returned '+r.status);return r.json()}).then(g=>{geo=L.geoJSON(g,{style:styleFeature,onEachFeature:(f,l)=>{const n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>geo.resetStyle(e.target),click:()=>l.bindPopup(popup(matchProvince(n),n)).openPopup()})}}).addTo(map);map.fitBounds(geo.getBounds(),{padding:[12,12]})}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);drawMarkers()});drawMarkers();addLegend();mapLayer.addEventListener('change',()=>{if(asisTile){if(mapLayer.value==='tile'&&!map.hasLayer(asisTile))asisTile.addTo(map);if(mapLayer.value==='province'&&map.hasLayer(asisTile))map.removeLayer(asisTile)}});setTimeout(()=>map.invalidateSize(),150)}",
+              "function initMap(){if(mapStarted)return;mapStarted=true;map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);map.createPane('rasterPane');map.getPane('rasterPane').style.zIndex=220;map.createPane('provincePane');map.getPane('provincePane').style.zIndex=360;map.createPane('pointPane');map.getPane('pointPane').style.zIndex=420;baseLayerRefs={'OpenStreetMap':L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}),'Carto Light':L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:20,attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}),'World Imagery':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles &copy; Esri'}),'Topographic':L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap'})};baseLayerRefs['Carto Light'].addTo(map);if(liveData?.tile_url){asisTile=L.tileLayer(liveData.tile_url,{pane:'rasterPane',attribution:'FAO ASIS/GIEWS',opacity:.82}).addTo(map);overlayLayersRef.raster=asisTile}drawMarkers();fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary service returned '+r.status);return r.json()}).then(g=>{provinceLayer=L.geoJSON(g,{pane:'provincePane',style:styleFeature,onEachFeature:(f,l)=>{const n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>provinceLayer.resetStyle(e.target),click:()=>l.bindPopup(popup(matchProvince(n),n)).openPopup()})}}).addTo(map);overlayLayersRef.provinces=provinceLayer;if(markerLayer && !map.hasLayer(markerLayer))markerLayer.addTo(map);if(map._layerControl)map.removeControl(map._layerControl);map._layerControl=L.control.layers(baseLayerRefs,{'Vegetation screening raster':asisTile,'Provincial polygons':provinceLayer,'Province point summaries':markerLayer},{collapsed:false,position:'topright'}).addTo(map);map.fitBounds(provinceLayer.getBounds(),{padding:[12,12]})}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);if(map._layerControl)map.removeControl(map._layerControl);map._layerControl=L.control.layers(baseLayerRefs,{'Vegetation screening raster':asisTile,'Province point summaries':markerLayer},{collapsed:false,position:'topright'}).addTo(map)});addLegend();setTimeout(()=>map.invalidateSize(),150)}"
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit interactive map update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Improve interactive map layering and controls"
+          git push
