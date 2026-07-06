@@ -1,0 +1,46 @@
+name: Refine public-facing dashboard copy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/refine-public-copy.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine-copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update public-facing wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+            'Live vegetation-health and agricultural drought screening dashboard using FAO ASIS/GIEWS information for Papua New Guinea. Static frost and combined scenario maps have been removed so the dashboard focuses on current live screening updates.': 'Live vegetation-health and agricultural drought screening dashboard using FAO ASIS/GIEWS information for Papua New Guinea.',
+            '<span>Live FAO ASIS/GIEWS update</span><span id="heroDekad">Latest period loading</span><span>Province level</span><span>Current screening focus</span>': '<span>FAO ASIS/GIEWS overview</span><span id="heroDekad">Latest screening period</span><span>Provincial outlook</span><span>Agricultural early warning</span>',
+            'The previous static frost and combined frost+drought products have been removed from the dashboard. The national overview, graphs, tables, map and operational interpretation now update from the latest available ASIS/GIEWS screening period where that live update is available, while the overview also reports the current PNG live processing workspace date and drought/frost analysis windows.': 'The national overview, graphs, tables, map and operational interpretation are designed to reflect the latest available ASIS/GIEWS screening period where that update is available, while the overview also reports the current PNG live processing workspace date and drought/frost analysis windows.',
+            '<section class="card side"><h2>What changed</h2><p><b>Removed:</b> static frost map scenario, static combined JJA hazard scenario, and their old population exposure cards.</p><p><b>Retained:</b> operational decision-support structure, province-level screening, live map, charts, tables and field verification guidance.</p><p><b>Population exposure:</b> now treated as a follow-on overlay. It should only be calculated when live ASIS stress pixels are intersected with gridded population, census units, crop masks or livelihood exposure layers.</p></section>': '<section class="card side"><h2>Overview focus</h2><p>This dashboard provides a province-level screening view of vegetation condition, drought monitoring and field verification priorities.</p><p>It combines live ASIS/GIEWS screening information with the separate PNG live processing workspace for drought and frost review.</p><p>Population exposure estimates should be interpreted alongside dedicated overlay analysis, field observations and sector-specific assessment.</p></section>',
+            '<p class="warn"><b>Change from the previous dashboard:</b> the former population exposure tables were tied to static frost and combined hazard maps. Those have been removed. This tab now provides an ASIS-based exposure planning framework and will display numeric population or household exposure only if those fields are added after overlay analysis.</p>': '<p class="warn"><b>Interpretation note:</b> This tab provides an exposure-planning framework linked to the latest vegetation-condition screening results. Numeric population or household values are only shown where additional overlay analysis has been completed.</p>'
+          }
+
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit refined copy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Refine public-facing dashboard copy"
+          git push
