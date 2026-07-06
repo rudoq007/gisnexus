@@ -1,0 +1,47 @@
+name: Add PNG flag to header
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/add-png-flag-header.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-header:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add PNG flag beside main title
+        run: |
+          python - <<'PY2'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          css_old = '.wrap,main{max-width:1240px;margin:auto;position:relative;z-index:1}h1{margin:.3rem 0 0;font-size:clamp(32px,5vw,58px);line-height:1.03;letter-spacing:-.055em;max-width:980px}'
+          css_new = '.wrap,main{max-width:1240px;margin:auto;position:relative;z-index:1}.title-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.title-flag{width:54px;height:auto;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.35);background:#fff}h1{margin:.3rem 0 0;font-size:clamp(32px,5vw,58px);line-height:1.03;letter-spacing:-.055em;max-width:980px}'
+          s = s.replace(css_old, css_new)
+
+          old_h1 = '<div class="tag">FAO PNG climate risk decision support</div><h1>PNG El Niño ASIS/GIEWS Live Drought Dashboard</h1><p class="sub">'
+          new_h1 = '<div class="tag">FAO PNG climate risk decision support</div><div class="title-row"><img class="title-flag" src="https://flagcdn.com/w80/pg.png" alt="Papua New Guinea flag"><h1>PNG El Niño ASIS/GIEWS Live Drought Dashboard</h1></div><p class="sub">'
+          s = s.replace(old_h1, new_h1)
+
+          media_old = '@media(max-width:950px){.kpi,.wide,.side,.half,.third{grid-column:1/-1}.mapbar,.metric{grid-template-columns:1fr}#map{height:500px}.embed-frame{height:620px}.site-footer{display:block}.hero-meta span{width:100%}}'
+          media_new = '@media(max-width:950px){.kpi,.wide,.side,.half,.third{grid-column:1/-1}.mapbar,.metric{grid-template-columns:1fr}#map{height:500px}.embed-frame{height:620px}.site-footer{display:block}.hero-meta span{width:100%}.title-row{align-items:flex-start}.title-flag{width:42px}}'
+          s = s.replace(media_old, media_new)
+
+          p.write_text(s, encoding='utf-8')
+          PY2
+
+      - name: Commit header update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Add PNG flag beside dashboard title"
+          git push
