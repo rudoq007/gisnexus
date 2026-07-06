@@ -11,7 +11,7 @@ DEFAULT_PROJECT = "trekky675"
 ASIS_COLLECTION = "projects/UNFAO/ASIS/VHI-D"
 CHIRPS_COLLECTION = "UCSB-CHG/CHIRPS/DAILY"
 MODIS_COLLECTION = "MODIS/061/MOD11A1"
-WORLDCOVER_IMAGE = "ESA/WorldCover/v200"
+WORLDCOVER_COLLECTION = "ESA/WorldCover/v200"
 WORLDPOP_COLLECTION = "WorldPop/GP/100m/pop"
 
 
@@ -133,7 +133,8 @@ def build_frost_score(lst_c: ee.Image) -> ee.Image:
 
 
 def build_cropland_mask() -> ee.Image:
-    return ee.Image(WORLDCOVER_IMAGE).select("Map").eq(40).rename("cropland_mask")
+    worldcover = ee.ImageCollection(WORLDCOVER_COLLECTION).first()
+    return ee.Image(worldcover).select("Map").eq(40).rename("cropland_mask")
 
 
 def build_population_weight(population: ee.Image) -> ee.Image:
