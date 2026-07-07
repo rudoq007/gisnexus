@@ -1,0 +1,46 @@
+name: Patch PNGNWS tab with previews
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/patch-pngnws-tab-previews.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch PNGNWS tab section
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          new_section = '''<section id="pngnws" class="panel"><div class="grid"><section class="card full"><span class="eyebrow">PNG National Weather Service</span><h2>PNGNWS Outlook</h2><p class="note"><b>Official national reference:</b> This tab links to public outlook and satellite products published by the PNG National Weather Service. These products complement the dashboard screening outputs and provide an official national forecast context for interpretation and briefing.</p><div class="embed-actions"><a class="btn primary" href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener">3-Month Forecast</a><a class="btn" href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener">31-Day Forecast</a><a class="btn" href="https://www.pngmet.gov.pg/public-wx/" target="_blank" rel="noopener">Public Weather</a><a class="btn" href="https://www.pngmet.gov.pg/satellite/himawari/" target="_blank" rel="noopener">Satellite</a></div><p class="small">These links open the latest publicly available PNG National Weather Service products in a new tab.</p></section><section class="card full"><h2>Forecast and imagery previews</h2><p class="note"><b>Preview note:</b> The images below are public PNGNWS products shown as quick-look references. Select any preview to open the official PNGNWS source page or product path in a new tab.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px"><div class="explain"><h3>3-Month Rainfall Outlook (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/pngdomain/1_rain.png" alt="PNGNWS 3-month rainfall outlook PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Seasonal rainfall outlook over the PNG domain.</p></div><div class="explain"><h3>3-Month Rainfall Outlook (Global)</h3><a href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/globaldomain/1_rain.png" alt="PNGNWS 3-month rainfall outlook global domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Global seasonal rainfall outlook published by PNGNWS.</p></div><div class="explain"><h3>31-Day Rainfall Preview (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/tcc_fc_images/daily/rain/png_domain/1_rain.png" alt="PNGNWS 31-day rainfall forecast PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">PNG-domain daily rainfall forecast preview from the 31-day outlook.</p></div><div class="explain"><h3>31-Day Temperature Preview (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/tcc_fc_images/daily/tsurf/png_domain/1_tsurf.png" alt="PNGNWS 31-day temperature forecast PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">PNG-domain near-surface temperature forecast preview.</p></div><div class="explain"><h3>Himawari Satellite Preview</h3><a href="https://www.pngmet.gov.pg/satellite/himawari/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/satellite/himawari_pngnws/3hrs_animation_ir1s/17.jpg" alt="PNGNWS Himawari IR1S satellite preview" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Quick-look infrared satellite frame from the PNGNWS Himawari page.</p></div><div class="explain"><h3>GSMaP Daily Rainfall Preview</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="https://www.pngmet.gov.pg/media/gsmap/daily_00z-23z/1.png" alt="PNGNWS GSMaP daily rainfall preview" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Daily precipitation preview image available from the PNGNWS product stack.</p></div></div></section><section class="card half"><h2>How to use this tab</h2><p>Use the seasonal and monthly forecast links to compare official national outlook products with the live ASIS/GIEWS vegetation screening, composite stress patterns, and exposure summaries shown elsewhere in the dashboard.</p><p>The satellite link can support rapid visual review of current cloud patterns and synoptic conditions, while Public Weather provides day-to-day national reference information.</p></section><section class="card half"><h2>Suggested interpretation</h2><p>Use PNGNWS products as the official national forecast context, and use the dashboard as a screening and prioritisation layer for provincial follow-up.</p><p>Where both the PNGNWS outlook and the dashboard indicators point in the same direction, confidence in follow-up targeting is stronger. Where they differ, additional technical review and field verification may be needed.</p></section></div></section>'''
+
+          pattern = r'<section id="pngnws" class="panel">.*?</section>\n<section id="earthmap" class="panel">'
+          replacement = new_section + '\n<section id="earthmap" class="panel">'
+          s, n = re.subn(pattern, replacement, s, count=1, flags=re.S)
+          if n == 0:
+              raise SystemExit('Failed to replace PNGNWS section in index.html')
+
+          p.write_text(s, encoding='utf-8')
+          print('Patched PNGNWS section')
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Add PNGNWS previews to outlook tab"
+          git push
