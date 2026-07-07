@@ -1,0 +1,35 @@
+{
+  "source": "PNG National Weather Service public product pages",
+  "products": {
+    "three_month_rain_pngdomain.png": {
+      "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
+      "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/pngdomain/1_rain.png",
+      "bytes": 187049
+    },
+    "three_month_rain_global.png": {
+      "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
+      "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/globaldomain/1_rain.png",
+      "bytes": 256365
+    },
+    "thirtyone_day_rain_pngdomain.png": {
+      "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
+      "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/daily/rain/png_domain/1_rain.png",
+      "bytes": 202136
+    },
+    "thirtyone_day_temperature_pngdomain.png": {
+      "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
+      "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/daily/tsurf/png_domain/1_tsurf.png",
+      "bytes": 186724
+    },
+    "gsmap_daily_latest.png": {
+      "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
+      "asset_url": "https://www.pngmet.gov.pg/media/gsmap/daily_00z-23z/1.png",
+      "bytes": 132692
+    },
+    "himawari_ir1s_latest.jpg": {
+      "page_url": "https://www.pngmet.gov.pg/satellite/himawari/",
+      "asset_url": "https://www.pngmet.gov.pg/media/satellite/himawari_pngnws/3hrs_animation_ir1s/0.jpg",
+      "bytes": 115159
+    }
+  }
+}
