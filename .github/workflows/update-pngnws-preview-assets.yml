@@ -1,0 +1,67 @@
+name: Update PNGNWS preview assets
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/update-pngnws-preview-assets.yml'
+      - 'scripts/fetch_pngnws_previews.py'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-pngnws-previews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch latest PNGNWS preview assets
+        run: python scripts/fetch_pngnws_previews.py
+
+      - name: Switch PNGNWS tab to local mirrored assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+              'https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/pngdomain/1_rain.png': 'assets/pngnws/three_month_rain_pngdomain.png',
+              'https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/globaldomain/1_rain.png': 'assets/pngnws/three_month_rain_global.png',
+              'https://www.pngmet.gov.pg/media/tcc_fc_images/daily/rain/png_domain/1_rain.png': 'assets/pngnws/thirtyone_day_rain_pngdomain.png',
+              'https://www.pngmet.gov.pg/media/tcc_fc_images/daily/tsurf/png_domain/1_tsurf.png': 'assets/pngnws/thirtyone_day_temperature_pngdomain.png',
+              'https://www.pngmet.gov.pg/media/satellite/himawari_pngnws/3hrs_animation_ir1s/17.jpg': 'assets/pngnws/himawari_ir1s_latest.jpg',
+              'https://www.pngmet.gov.pg/media/gsmap/daily_00z-23z/1.png': 'assets/pngnws/gsmap_daily_latest.png',
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+
+          s = s.replace(
+              'The images below are public PNGNWS products shown as quick-look references. Select any preview to open the official PNGNWS source page or product path in a new tab.',
+              'The previews below are mirrored automatically into this dashboard from public PNGNWS products. They refresh on a schedule so the tab remains stable without manual uploads.'
+          )
+          s = s.replace(
+              'These links open the latest publicly available PNG National Weather Service products in a new tab.',
+              'Official links open in a new tab. Preview images below are synced automatically into this dashboard on a schedule.'
+          )
+
+          p.write_text(s, encoding='utf-8')
+          print('Updated PNGNWS tab to use local mirrored assets')
+          PY
+
+      - name: Commit refreshed PNGNWS assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/pngnws data/pngnws_preview_status.json
+          git diff --cached --quiet || git commit -m "Refresh PNGNWS preview assets"
+          git push
