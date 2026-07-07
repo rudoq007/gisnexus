@@ -1,0 +1,68 @@
+name: Add PNG National Weather Service Outlook card
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/add-pngnws-outlook-card.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Insert PNGNWS outlook card into overview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          if 'id="pngNwsOutlookCard"' in s:
+              print('PNGNWS outlook card already present')
+              raise SystemExit(0)
+
+          anchor = '''      </section>
+
+      <section class="card half">
+        <h2>Highest vegetation stress provinces</h2>'''
+
+          insert = '''      </section>
+
+      <section class="card full" id="pngNwsOutlookCard">
+        <span class="eyebrow">PNG National Weather Service</span>
+        <h2>PNG National Weather Service Outlook</h2>
+        <p class="note"><b>Official national reference:</b> These links open public forecast and satellite products from the PNG National Weather Service and can be used alongside the dashboard screening outputs for national interpretation and comparison.</p>
+        <div class="embed-actions">
+          <a class="btn primary" href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener">3-Month Forecast</a>
+          <a class="btn" href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener">31-Day Forecast</a>
+          <a class="btn" href="https://www.pngmet.gov.pg/public-wx/" target="_blank" rel="noopener">Public Weather</a>
+          <a class="btn" href="https://www.pngmet.gov.pg/satellite/himawari/" target="_blank" rel="noopener">Satellite</a>
+        </div>
+        <p class="small">These products are maintained on the PNG National Weather Service website and open in a new tab.</p>
+      </section>
+
+      <section class="card half">
+        <h2>Highest vegetation stress provinces</h2>'''
+
+          if anchor not in s:
+              raise SystemExit('Anchor block not found in index.html')
+
+          s = s.replace(anchor, insert, 1)
+          p.write_text(s, encoding='utf-8')
+          print('Patched index.html')
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Add PNG National Weather Service Outlook card"
+          git push
