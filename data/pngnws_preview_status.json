@@ -24,12 +24,12 @@
     "gsmap_daily_latest.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/gsmap/daily_00z-23z/1.png",
-      "bytes": 132589
+      "bytes": 132649
     },
     "himawari_ir1s_latest.jpg": {
       "page_url": "https://www.pngmet.gov.pg/satellite/himawari/",
       "asset_url": "https://www.pngmet.gov.pg/media/satellite/himawari_pngnws/3hrs_animation_ir1s/0.jpg",
-      "bytes": 122055
+      "bytes": 121161
     }
   }
 }
