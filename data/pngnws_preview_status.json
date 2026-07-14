@@ -4,12 +4,12 @@
     "three_month_rain_pngdomain.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/pngdomain/1_rain.png",
-      "bytes": 183577
+      "bytes": 184018
     },
     "three_month_rain_global.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/globaldomain/1_rain.png",
-      "bytes": 257414
+      "bytes": 257216
     },
     "thirtyone_day_rain_pngdomain.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
@@ -24,12 +24,12 @@
     "gsmap_daily_latest.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/gsmap/daily_00z-23z/1.png",
-      "bytes": 132624
+      "bytes": 132645
     },
     "himawari_ir1s_latest.jpg": {
       "page_url": "https://www.pngmet.gov.pg/satellite/himawari/",
       "asset_url": "https://www.pngmet.gov.pg/media/satellite/himawari_pngnws/3hrs_animation_ir1s/0.jpg",
-      "bytes": 0
+      "bytes": 120574
     }
   }
 }
