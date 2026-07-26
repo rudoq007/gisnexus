@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-07-25 05:33 UTC",
+  "generated_utc": "2026-07-26 05:47 UTC",
   "asis_date": "2026-07-11",
   "drought_window": "2026-03-28 to 2026-06-26",
   "frost_window": "2026-07-04 to 2026-07-11",
@@ -20,15 +20,15 @@
     "oni_period": "AMJ 2026",
     "enso_phase": "Weak El Nino",
     "dmi_value": 0.15,
-    "dmi_period": "Apr 2025",
+    "dmi_period": "May 2026",
     "iod_phase": "Neutral IOD",
     "source_note": "ONI: NOAA CPC (cpc.ncep.noaa.gov). DMI: NOAA PSL (psl.noaa.gov). Reported as national-scale context, not a per-province input.",
     "fetch_error": null
   },
   "layers": {
-    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/375669d39bb1ab73f4c339d56b6f24eb-e98a17d9710b88252200bdfe567a3e70/tiles/{z}/{x}/{y}",
-    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/9d1813738fcc99a2a34a9d47ec09e035-1bf850e56ec67032406fcad5de243ad7/tiles/{z}/{x}/{y}",
-    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/f9fd68ffbf2de81afb2dc0993b865164-ba15b17e5ffb9d4cdd93e1358cb44fdb/tiles/{z}/{x}/{y}"
+    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/6a8b25e03df9bcf102b2e864dc5ec169-d37322f3bb725345d1522a1fc4cddcb6/tiles/{z}/{x}/{y}",
+    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/f382e52a60214f620fc49624c3b0d578-b1585a6dee263c2bcfdc2d83ec024d67/tiles/{z}/{x}/{y}",
+    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/8af22c8d5c930f36846c4345d7e9f975-6e33cac4126a5b0f8d54d5847f6ba626/tiles/{z}/{x}/{y}"
   },
   "national_summary": {
     "total_population_exposed": 26363.0,
