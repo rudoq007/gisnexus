@@ -85,7 +85,8 @@ function updateMapSourceText(){if(!document.getElementById('mapSource'))return;c
 function updateEnsoIodCard(data){const ctx=data?.enso_iod_context||null;const weights=data?.composite_weights||null;if(document.getElementById('ensoPhase'))ensoPhase.textContent=ctx?.enso_phase||'Pending';if(document.getElementById('iodPhase'))iodPhase.textContent=ctx?.iod_phase||'Pending';if(document.getElementById('compositeWeightsText')){compositeWeightsText.textContent=weights?`${Math.round(weights.asis*100)}% vegetation / ${Math.round(weights.rainfall*100)}% rainfall / ${Math.round(weights.soil_moisture*100)}% soil moisture / ${Math.round(weights.frost*100)}% frost`:'Pending'}if(document.getElementById('ensoIodNote')){if(!ctx){ensoIodNote.textContent='Climate driver context will appear here when available.'}else{const oniText=ctx.oni_value==null?'ONI not available':`ONI ${ctx.oni_value} (${ctx.oni_period||'latest period'})`;const dmiText=ctx.dmi_value==null?'DMI not available':`DMI ${ctx.dmi_value} (${ctx.dmi_period||'latest period'})`;const errNote=ctx.fetch_error?` Note: ${ctx.fetch_error}`:'';ensoIodNote.textContent=`${oniText}. ${dmiText}. ${ctx.source_note||''}${errNote}`}}}
 function updateIntegratedSection(data){integratedData=data||null;integratedRows=Array.isArray(data?.provinces)?data.provinces.slice():[];const summary=data?.national_summary||{};if(document.getElementById('integratedPopulationExposed'))integratedPopulationExposed.textContent=fmtInt(summary.total_population_exposed);renderIntegratedTable();updateExposure();updateMapSourceText();updateEnsoIodCard(data);if(mapStarted){if(provinceLayer)provinceLayer.setStyle(styleFeature);drawMarkers();refreshMapLayers()}}
 function matchProvince(name){const k=norm(name);if(!k)return null;const aliasName=alias[k];const aliasKey=aliasName?norm(aliasName):'';return rowIndex[k]||(aliasKey?rowIndex[aliasKey]:null)||null}
-function getFeatureName(f){const p=(f&&f.properties)||{};return p.shapeName||p.shape_name||p.name||p.NAME_1||p.ADM1_EN||p.province||p.PROVINCE||p.Province||p.ADM1_NAME||p.admin1Name||''}
+const PROVNAME_FIXUPS={'Northern (Oro)':'Oro','Chimbu (Simbu)':'Chimbu','West Sepik (Sandaun)':'Sandaun','Milne Bay Province':'Milne Bay','Gulf Province':'Gulf'};
+function getFeatureName(f){const p=(f&&f.properties)||{};let name=p.shapeName||p.shape_name||p.name||p.NAME_1||p.ADM1_EN||p.province||p.PROVINCE||p.Province||p.ADM1_NAME||p.admin1Name||p.PROVNAME||'';return PROVNAME_FIXUPS[name]||name}
 function color(v){if(v==null)return'#cbd5e1';if(v<0.35)return'#662A00';if(v<0.50)return'#D8D8D8';if(v<0.65)return'#E5FFCC';return'#006633'}
 function popup(row,name){const integratedRow=matchIntegratedProvince(name)||(row&&matchIntegratedProvince(row.province));const liveRow=row||matchProvince(name);if(integratedRow){return`<b>${integratedRow.province||name||'Province'}</b><br><span class="pill ${compositeShort(integratedRow.composite_biophysical_stress_mean)}">${compositeClass(integratedRow.composite_biophysical_stress_mean)}</span><br>Composite stress: <b>${integratedRow.composite_biophysical_stress_mean==null?'No data':Number(integratedRow.composite_biophysical_stress_mean).toFixed(1)}</b><br>Population exposed: <b>${fmtInt(integratedRow.population_exposed_total)}</b><br>High exposure population: <b>${fmtInt(integratedRow.population_high_priority)}</b><br>ASIS mean: <b>${integratedRow.asis_vhi_mean==null?'No data':Number(integratedRow.asis_vhi_mean).toFixed(3)}</b><br>Rainfall % normal: <b>${integratedRow.rainfall_pct_normal_mean==null?'No data':Number(integratedRow.rainfall_pct_normal_mean).toFixed(1)}</b><br>Frost mean °C: <b>${integratedRow.night_lst_celsius_mean==null?'No data':Number(integratedRow.night_lst_celsius_mean).toFixed(1)}</b>`}if(!liveRow)return`<b>${name||'Province'}</b><br>Province summary is not available for this map feature yet.`;return`<b>${liveRow.province}</b><br><span class="pill ${stressShort(liveRow.mean)}">${stressClass(liveRow.mean)}</span><br>Vegetation index: <b>${fmt3(liveRow.mean)}</b><br><small>${meaning(liveRow)}</small>`}
 function styleFeature(f){const integratedRow=matchIntegratedProvince(getFeatureName(f));if(integratedRow)return{color:'#475569',weight:1,fillColor:compositeColor(integratedRow.composite_biophysical_stress_mean),fillOpacity:.72};const liveRow=matchProvince(getFeatureName(f));return{color:'#475569',weight:1,fillColor:color(liveRow?.mean),fillOpacity:.72}}
@@ -116,11 +117,9 @@ const CDI_EXAMPLE_DATA={"Bougainville":{"cdi":0.4,"enso":0.5,"iod":0.0,"rain":-0
 // adm1_nso_province.geojson uses different names for 3 provinces than the
 // CDI data above -- same alias pattern already used elsewhere on this page.
 const CDI_EXAMPLE_NAME_ALIAS={'Northern':'Oro','Northern Solomons':'Bougainville','West Sepik':'Sandaun'};
-// Hela and Jiwaka split from Southern Highlands/Western Highlands in 2012;
-// adm1_nso_province.geojson (like GAUL) hasn't been updated to show them as
-// separate polygons -- shown as point markers instead, same fallback
-// approach the main Interactive Map tab uses for missing boundaries.
-const CDI_EXAMPLE_MISSING_BOUNDARY_CENTROIDS={'Hela':[-5.95,142.95],'Jiwaka':[-5.55,144.75]};
+// Hela and Jiwaka now have real polygons in the current boundary file
+// (PNG_Province_boundary.geojson, replacing the older adm1_nso_province
+// source that was missing them) -- no marker fallback needed any more.
 
 function cdiExampleLookup(geojsonName){
   const key=CDI_EXAMPLE_NAME_ALIAS[geojsonName]||geojsonName;
@@ -203,13 +202,6 @@ function initCdiExampleMap(){
         });
       }
     }).addTo(cdiMap);
-
-    Object.entries(CDI_EXAMPLE_MISSING_BOUNDARY_CENTROIDS).forEach(([name,coord])=>{
-      const p=cdiExampleLookup(name);
-      L.circleMarker(coord,{radius:9,color:'#334155',weight:1,fillColor:cdiExampleColor(p?p.cdi:null),fillOpacity:.9})
-        .bindPopup(cdiExamplePopup(name,p))
-        .addTo(cdiMap);
-    });
 
     cdiMap.fitBounds(layer.getBounds(),{padding:[8,8]});
     setTimeout(()=>cdiMap.invalidateSize(),150);
