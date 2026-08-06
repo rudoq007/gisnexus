@@ -343,7 +343,34 @@ def get_tile_url(image: ee.Image, min_val: float, max_val: float, palette: list[
     return image.getMapId({"min": min_val, "max": max_val, "palette": palette})["tile_fetcher"].url_format
 
 
-def build_outputs():
+def export_composite_geotiff(image: ee.Image, boundary: "ee.Geometry", output_path: Path, scale: int = 1000) -> None:
+    """Download the composite raster as an actual GeoTIFF file, not just a
+    tile-service URL. Uses Earth Engine's synchronous getDownloadURL() --
+    the raster is small enough (single band, national extent, 1km
+    resolution -> a few million pixels) to stay well under the size this
+    endpoint supports without needing an async Drive/GCS export task.
+
+    scale=1000 matches the resolution already used for the per-province
+    reduceRegions() elsewhere in this script, so the raster and the CSV
+    province averages are computed at the same underlying resolution.
+    """
+    url = image.getDownloadURL(
+        {
+            "region": boundary,
+            "scale": scale,
+            "format": "GEO_TIFF",
+            "crs": "EPSG:4326",
+        }
+    )
+    req = urllib.request.Request(url, headers={"User-Agent": "gisnexus-composite-builder"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        data = resp.read()
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+
+
+def build_outputs(tif_output_path: Path | None = None):
     boundary = png_geometry()
 
     asis_img = latest_asis_image()
@@ -375,6 +402,9 @@ def build_outputs():
         .rename("composite_biophysical_stress")
         .clip(boundary)
     )
+
+    if tif_output_path is not None:
+        export_composite_geotiff(composite_biophysical, boundary, tif_output_path)
 
     # ENSO/IOD are national-scale scalars, not spatial layers - fetched separately
     # and reported as context (see fetch_enso_iod_state docstring for rationale).
@@ -545,10 +575,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--json-output", required=True)
     parser.add_argument("--csv-output", required=True)
+    parser.add_argument(
+        "--tif-output",
+        default=None,
+        help="Optional path to also export the composite_biophysical_stress raster as a GeoTIFF "
+        "(e.g. data/composite_biophysical_stress.tif). Skipped if not provided.",
+    )
     args = parser.parse_args()
 
     initialise_earth_engine()
-    output = build_outputs()
+    tif_path = Path(args.tif_output) if args.tif_output else None
+    output = build_outputs(tif_output_path=tif_path)
 
     json_path = Path(args.json_output)
     csv_path = Path(args.csv_output)
@@ -559,6 +596,8 @@ def main():
 
     print(f"Wrote {json_path}")
     print(f"Wrote {csv_path}")
+    if tif_path:
+        print(f"Wrote {tif_path}")
 
 
 if __name__ == "__main__":
