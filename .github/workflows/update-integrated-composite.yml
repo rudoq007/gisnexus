@@ -44,12 +44,13 @@ jobs:
         run: |
           python scripts/build_integrated_composite.py \
             --json-output data/integrated_priority_latest.json \
-            --csv-output data/integrated_priority_latest.csv
+            --csv-output data/integrated_priority_latest.csv \
+            --tif-output data/composite_biophysical_stress.tif
 
       - name: Commit and push outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/integrated_priority_latest.json data/integrated_priority_latest.csv scripts/build_integrated_composite.py .github/workflows/update-integrated-composite.yml
+          git add data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif scripts/build_integrated_composite.py .github/workflows/update-integrated-composite.yml
           git diff --cached --quiet || git commit -m "Update integrated composite priority outputs"
           git push
