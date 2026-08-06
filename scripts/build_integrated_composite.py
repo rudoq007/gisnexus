@@ -363,7 +363,16 @@ def export_composite_geotiff(image: ee.Image, boundary: "ee.Geometry", output_pa
         }
     )
     req = urllib.request.Request(url, headers={"User-Agent": "gisnexus-composite-builder"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    # CONFIRMED by a real run (2026-08-06): 120s was not enough. The
+    # timeout isn't about download bandwidth (the file itself is only a
+    # few MB) -- getDownloadURL() blocks until Earth Engine has actually
+    # COMPUTED the composite server-side first (combining CHIRPS, ASIS,
+    # ERA5-Land, and MODIS layers across the whole country), and only
+    # then starts streaming bytes. That computation alone took longer
+    # than 120s and the request timed out before any data came back.
+    # 600s gives real headroom without the job hanging indefinitely if
+    # something is genuinely broken.
+    with urllib.request.urlopen(req, timeout=600) as resp:
         data = resp.read()
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
