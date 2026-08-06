@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
@@ -343,40 +344,56 @@ def get_tile_url(image: ee.Image, min_val: float, max_val: float, palette: list[
     return image.getMapId({"min": min_val, "max": max_val, "palette": palette})["tile_fetcher"].url_format
 
 
-def export_composite_geotiff(image: ee.Image, boundary: "ee.Geometry", output_path: Path, scale: int = 1000) -> None:
+def export_composite_geotiff(image: ee.Image, boundary: "ee.Geometry", output_path: Path, scale: int = 5000) -> None:
     """Download the composite raster as an actual GeoTIFF file, not just a
-    tile-service URL. Uses Earth Engine's synchronous getDownloadURL() --
-    the raster is small enough (single band, national extent, 1km
-    resolution -> a few million pixels) to stay well under the size this
-    endpoint supports without needing an async Drive/GCS export task.
+    tile-service URL. Uses Earth Engine's synchronous getDownloadURL().
 
-    scale=1000 matches the resolution already used for the per-province
-    reduceRegions() elsewhere in this script, so the raster and the CSV
-    province averages are computed at the same underlying resolution.
+    CONFIRMED by two real runs (2026-08-06): scale=1000 (matching the
+    reduceRegions() resolution elsewhere in this script) makes Earth
+    Engine's own SERVER close the connection after ~4.5 minutes
+    (RemoteDisconnected), regardless of how long the client is willing to
+    wait -- raising the client-side timeout doesn't help because the
+    problem isn't the client giving up, it's that computing ~2.86 million
+    pixels' worth of composite (CHIRPS + ASIS + ERA5-Land + MODIS, each
+    itself a filtered/reduced ImageCollection) synchronously is too slow
+    for whatever budget Google enforces on this endpoint.
+
+    scale=5000 (5km) cuts that to ~114k pixels (a ~25x reduction) --
+    still a genuinely useful national-overview resolution (comparable to
+    or finer than several operational satellite drought products' native
+    resolution, e.g. VHI-class products around 4-5km), and confirmed fast
+    enough to complete synchronously. If a higher-resolution export is
+    ever needed, the real fix is switching to Earth Engine's asynchronous
+    batch export (ee.batch.Export.image.toDrive/toCloudStorage + polling
+    for task completion), not a bigger client-side timeout -- that's an
+    architecture change, not a config tweak, so it's deliberately not
+    what this function does.
     """
-    url = image.getDownloadURL(
-        {
-            "region": boundary,
-            "scale": scale,
-            "format": "GEO_TIFF",
-            "crs": "EPSG:4326",
-        }
-    )
-    req = urllib.request.Request(url, headers={"User-Agent": "gisnexus-composite-builder"})
-    # CONFIRMED by a real run (2026-08-06): 120s was not enough. The
-    # timeout isn't about download bandwidth (the file itself is only a
-    # few MB) -- getDownloadURL() blocks until Earth Engine has actually
-    # COMPUTED the composite server-side first (combining CHIRPS, ASIS,
-    # ERA5-Land, and MODIS layers across the whole country), and only
-    # then starts streaming bytes. That computation alone took longer
-    # than 120s and the request timed out before any data came back.
-    # 600s gives real headroom without the job hanging indefinitely if
-    # something is genuinely broken.
-    with urllib.request.urlopen(req, timeout=600) as resp:
-        data = resp.read()
+    last_exc = None
+    for attempt in range(1, 4):
+        try:
+            url = image.getDownloadURL(
+                {
+                    "region": boundary,
+                    "scale": scale,
+                    "format": "GEO_TIFF",
+                    "crs": "EPSG:4326",
+                }
+            )
+            req = urllib.request.Request(url, headers={"User-Agent": "gisnexus-composite-builder"})
+            with urllib.request.urlopen(req, timeout=300) as resp:
+                data = resp.read()
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(data)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_bytes(data)
+            return
+        except Exception as exc:  # noqa: BLE001 - deliberately broad: retry any transient network/EE error
+            last_exc = exc
+            print(f"  ! GeoTIFF export attempt {attempt}/3 failed: {exc}")
+            if attempt < 3:
+                time.sleep(15)
+
+    raise RuntimeError("GeoTIFF export failed after 3 attempts") from last_exc
 
 
 def build_outputs(tif_output_path: Path | None = None):
