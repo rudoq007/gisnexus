@@ -1,6 +1,6 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-08-23 18:38 UTC",
+  "generated_utc": "2026-08-24 18:50 UTC",
   "dekad_label": "2026-7-D21",
   "metadata": {
     "DEKAD_dekadAlt": 21,
@@ -9,7 +9,7 @@
     "system:time_end": 1785456000000,
     "system:time_start": 1784592000000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fbfe04125e10ab8cba708bec96fb3025-9736cb6c3511491257a7656d6d59064e/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fbfe04125e10ab8cba708bec96fb3025-d94a5235dbda194b16d0000fb44c8fa1/tiles/{z}/{x}/{y}",
   "provinces": [
     {
       "province": "National Capital District",
