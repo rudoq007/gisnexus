@@ -1,114 +1,114 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-08-24 18:50 UTC",
-  "dekad_label": "2026-7-D21",
+  "generated_utc": "2026-08-25 18:48 UTC",
+  "dekad_label": "2026-8-D23",
   "metadata": {
-    "DEKAD_dekadAlt": 21,
-    "DEKAD_month": 7,
+    "DEKAD_dekadAlt": 23,
+    "DEKAD_month": 8,
     "DEKAD_year": 2026,
-    "system:time_end": 1785456000000,
-    "system:time_start": 1784592000000
+    "system:time_end": 1787184000000,
+    "system:time_start": 1786406400000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fbfe04125e10ab8cba708bec96fb3025-d94a5235dbda194b16d0000fb44c8fa1/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/48a4e212f1feb84ec6da6483e2dbd194-fc6a4fb9fa4d7e953205df85d3cc8595/tiles/{z}/{x}/{y}",
   "provinces": [
     {
       "province": "National Capital District",
-      "mean": 0.3372,
+      "mean": 0.3221,
       "interpretation": "High vegetation stress"
     },
     {
-      "province": "West Sepik",
-      "mean": 0.459,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
       "province": "East Sepik",
-      "mean": 0.4595,
+      "mean": 0.4318,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "Western Highlands",
-      "mean": 0.4801,
+      "mean": 0.4419,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "West Sepik",
+      "mean": 0.4421,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Gulf",
+      "mean": 0.4771,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Chimbu",
+      "mean": 0.4811,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "Eastern Highlands",
-      "mean": 0.5038,
-      "interpretation": "Watch / below-normal vegetation condition"
+      "mean": 0.485,
+      "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Madang",
-      "mean": 0.5076,
-      "interpretation": "Watch / below-normal vegetation condition"
+      "province": "Milne Bay",
+      "mean": 0.4906,
+      "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Chimbu",
-      "mean": 0.5143,
-      "interpretation": "Watch / below-normal vegetation condition"
+      "province": "Manus",
+      "mean": 0.4913,
+      "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Western",
-      "mean": 0.5143,
+      "province": "Southern Highlands",
+      "mean": 0.4963,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Enga",
+      "mean": 0.5059,
       "interpretation": "Watch / below-normal vegetation condition"
     },
     {
       "province": "Northern",
-      "mean": 0.5165,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Milne Bay",
-      "mean": 0.5212,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Enga",
-      "mean": 0.5235,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Southern Highlands",
-      "mean": 0.5354,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Manus",
-      "mean": 0.5358,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Gulf",
-      "mean": 0.5412,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "Northern Solomons",
-      "mean": 0.5418,
-      "interpretation": "Watch / below-normal vegetation condition"
-    },
-    {
-      "province": "East New Britain",
-      "mean": 0.5509,
+      "mean": 0.5063,
       "interpretation": "Watch / below-normal vegetation condition"
     },
     {
       "province": "New Ireland",
-      "mean": 0.5549,
+      "mean": 0.5064,
       "interpretation": "Watch / below-normal vegetation condition"
     },
     {
-      "province": "West New Britain",
-      "mean": 0.5647,
+      "province": "East New Britain",
+      "mean": 0.5071,
       "interpretation": "Watch / below-normal vegetation condition"
     },
     {
-      "province": "Central",
-      "mean": 0.5679,
+      "province": "Western",
+      "mean": 0.5146,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Madang",
+      "mean": 0.5245,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Northern Solomons",
+      "mean": 0.5309,
       "interpretation": "Watch / below-normal vegetation condition"
     },
     {
       "province": "Morobe",
-      "mean": 0.5693,
+      "mean": 0.5355,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Central",
+      "mean": 0.5468,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "West New Britain",
+      "mean": 0.5479,
       "interpretation": "Watch / below-normal vegetation condition"
     }
   ],
