@@ -47,10 +47,21 @@ jobs:
             --csv-output data/integrated_priority_latest.csv \
             --tif-output data/composite_biophysical_stress.tif
 
+      - name: Build pixel-level CDI layer and patch composite output
+        # Non-blocking: this layer is newer and still approximates SPI-1/soil-moisture
+        # (see script docstring). A failure here (e.g. cdi_example_latest.json missing
+        # because no PNG_CDI.rds has been committed yet) must not break the
+        # already-working nightly composite commit below.
+        continue-on-error: true
+        run: |
+          python scripts/build_cdi_pixel.py \
+            --json-output data/integrated_priority_latest.json \
+            --tif-output data/cdi_pixel_latest.tif
+
       - name: Commit and push outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif scripts/build_integrated_composite.py .github/workflows/update-integrated-composite.yml
-          git diff --cached --quiet || git commit -m "Update integrated composite priority outputs"
+          git add data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif scripts/build_integrated_composite.py scripts/build_cdi_pixel.py .github/workflows/update-integrated-composite.yml
+          git diff --cached --quiet || git commit -m "Update integrated composite priority and pixel-level CDI outputs"
           git push
