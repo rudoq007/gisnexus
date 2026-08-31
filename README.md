@@ -1,4 +1,6 @@
-# PNG El Niño ASIS/GIEWS Live Drought Dashboard
+# ADAPT — PNG El Niño Early Warning Dashboard
+
+_(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
 
 A public-facing Papua New Guinea drought monitoring dashboard built around **FAO ASIS/GIEWS vegetation-health screening**, a **composite biophysical stress layer**, and a linked **live drought and frost processing workspace**.
 
@@ -22,16 +24,21 @@ The system currently combines:
 
 ## Main dashboard tabs
 
-### 1. Overview
-Provides the high-level briefing view:
-- latest ASIS screening period
-- national vegetation summary
+ADAPT is organised into five tabs, consolidated from an earlier nine-tab layout so the navigation leads with what ADAPT is before showing its live outputs.
+
+### 1. About ADAPT
+The front door to the dashboard. Explains what ADAPT is and presents the **Combined Drought Index (CDI)** methodology jointly developed by PNG's National Weather Service (NWS) and FAO: the indicator table and weights, an interactive example map, per-province CDI component charts, and the historical CDI time series (1996-present). This is the default tab shown on load.
+
+### 2. Overview
+The national operational snapshot:
+- latest ASIS screening period and national vegetation summary
 - number of provinces in higher concern classes
-- selected province briefing
+- selected province briefing (with print/CSV export)
 - live drought and frost processing status
+- ENSO/IOD climate driver context
 - charts for the highest-stress provinces and stress-class distribution
 
-### 2. Interactive Map
+### 3. Interactive Map
 Interactive map for visual review of current conditions.
 
 Current map behaviour:
@@ -41,49 +48,18 @@ Current map behaviour:
 - province point summaries are displayed on top for quick inspection
 - popups summarise stress and exposure conditions by province
 
-### 3. Live ASIS Drought Stress
-Dedicated view for the latest FAO ASIS/GIEWS provincial screening summary.
+### 4. Provincial Data
+Merges what were previously three separate tabs (Live ASIS Drought Stress, Integrated Priority, Population & Exposure) into one:
+- vegetation-index ranking chart and searchable/sortable ASIS provincial table, with plain-language screening meaning and verification priority
+- population exposure KPIs (exposed, high-exposure, affected provinces, watch-level population)
+- one combined, searchable/sortable provincial table covering composite stress, priority class, agricultural priority, exposure priority, population exposed, high-exposure population, ASIS vegetation index, rainfall % normal, soil moisture % normal, and frost mean
 
-This tab shows:
-- provincial vegetation index ranking
-- stress-class interpretation
-- province table for ASIS screening results
-- plain-language screening meaning and verification priority
-
-### 4. Integrated Priority
-This tab combines multiple indicators into a single provincial prioritisation view.
-
-The current integrated table focuses on:
-- province
-- composite stress
-- agricultural priority
-- exposure priority
-- priority class
-- population exposed
-
-### 5. Population & Exposure
-Public-facing exposure tab focused on people located inside stressed zones.
-
-This tab summarises:
-- exposed population
-- higher-exposure population
-- number of affected provinces
-- watch-level population
-- province-level table linking exposure with stress and supporting indicators
-
-### 6. Operational Response
-Guidance section for how results should be interpreted and followed up.
-
-This includes:
-- response framing by stress class
-- field verification checklist
-- examples of what district, provincial, DAL, NARI, NDC, and partner teams may need to collect on the ground
-
-### 7. Live Processing Workspace
-Embedded and linked **Streamlit** workspace used for live technical review and processing of drought and frost layers.
-
-### 8. EarthMap
-Embedded and linked **EarthMap** environment for contextual geospatial review.
+### 5. Response & Tools
+Merges the former Operational Response, Live Processing Workspace, PNGNWS Outlook, and EarthMap tabs into one:
+- response framing by stress class and a field verification checklist (what district, provincial, DAL, NARI, NDC, and partner teams should collect on the ground)
+- embedded/linked **Live Processing Workspace** (Streamlit) for live technical review and processing of drought and frost layers
+- **PNGNWS Outlook**: official national forecast links and auto-synced preview imagery
+- embedded/linked **EarthMap** for contextual geospatial review
 
 ## Background processing concept
 
@@ -160,7 +136,7 @@ This should still be treated as a **screening estimate**, not a final official a
 
 Key files currently used by the dashboard include:
 
-- `index.html` — main GitHub Pages dashboard front end
+- `index.html` — main GitHub Pages dashboard front end (ADAPT)
 - `README.md` — project documentation
 - `adm1_nso_province.geojson` — PNG provincial boundaries
 - `data/asis_vhi_latest.json` — latest ASIS/GIEWS update for dashboard use
