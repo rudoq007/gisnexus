@@ -1,0 +1,47 @@
+name: Update CDI data from monthly PNG_CDI.rds
+
+# How to use this each month:
+# 1. Save Josh's emailed PNG_CDI.rds attachment into this repo at
+#    pipeline/PNG_CDI.rds (overwrite the previous month's file) -- either
+#    via `git add`/`git commit`/`git push`, or by dragging it into that
+#    folder through the GitHub web UI ("Add file" -> "Upload files").
+# 2. That's it. This workflow runs automatically on the push, regenerates
+#    data/cdi_example_latest.json and data/cdi_archive.json, and commits
+#    them back to main. GitHub Pages then redeploys the live site.
+#
+# No local Python/R setup, no manual JSON editing, no chat session needed.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'pipeline/PNG_CDI.rds'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-cdi-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install rdata
+
+      - name: Regenerate CDI JSON data
+        run: python scripts/update_cdi_data.py pipeline/PNG_CDI.rds
+
+      - name: Commit updated data files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/cdi_example_latest.json data/cdi_archive.json
+          git diff --staged --quiet && echo "No changes to commit." && exit 0
+          git commit -m "Auto-update CDI data from pipeline/PNG_CDI.rds [skip ci]"
+          git push
