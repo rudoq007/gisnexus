@@ -219,12 +219,6 @@ const CDI_COMPONENT_COLORS={enso:'#e11d1d',iod:'#9333ea',rain:'#06b6d4',sm:'#924
 const CDI_COMPONENT_LABELS={enso:'ENSO',iod:'IOD',rain:'SPI-1',sm:'SM',vi:'VI',fcast3:'forecast SPI-3'};
 const CDI_COMPONENT_WEIGHTS={enso:0.20,iod:0.10,rain:0.20,sm:0.20,vi:0.10,fcast3:0.20};
 const CDI_MONTH_ABBR=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-// Each archived row is keyed by its OBSERVATION month (e.g. MONTH=7 uses July
-// obs + forecast). Per the CDI methodology, that row is reported as the
-// following calendar month's CDI (e.g. row MONTH=7 -> "August's CDI"), the
-// same convention already used for the CDI_EXAMPLE_DATA card above. Chart
-// labels below apply that +1 month shift so displayed months match.
-function reportingMonth(year,month){const m=month+1;return m>12?[year+1,1]:[year,m]}
 
 let cdiComponentsChartInstance=null,cdiTimeseriesChartInstance=null;
 
@@ -242,7 +236,7 @@ function cdiComponentFlagValue(key,value){
 function renderCdiComponentsChart(province){
   const rec=CDI_FULL_DATA.recent_indicators[province];
   if(!rec)return;
-  const labels=rec.months.map(([y,m])=>{const[ry,rm]=reportingMonth(y,m);return CDI_MONTH_ABBR[rm]+' '+ry});
+  const labels=rec.months.map(([y,m])=>CDI_MONTH_ABBR[m]+' '+y);
   const keys=['enso','iod','rain','sm','vi','fcast3'];
   const datasets=keys.map(key=>({
     label:CDI_COMPONENT_LABELS[key],
@@ -256,6 +250,7 @@ function renderCdiComponentsChart(province){
     data:{labels,datasets},
     options:{
       responsive:true,
+      interaction:{mode:'index',intersect:false},
       plugins:{legend:{position:'bottom'},tooltip:{callbacks:{
         footer:items=>{
           const total=items.reduce((s,i)=>s+i.parsed.y,0);
@@ -272,7 +267,7 @@ function renderCdiComponentsChart(province){
 function renderCdiTimeseriesChart(province){
   const cdiValues=CDI_FULL_DATA.cdi_history[province];
   if(!cdiValues)return;
-  const labels=CDI_FULL_DATA.timeline.map(([y,m])=>{const[ry,rm]=reportingMonth(y,m);return ry+'-'+String(rm).padStart(2,'0')});
+  const labels=CDI_FULL_DATA.timeline.map(([y,m])=>y+'-'+String(m).padStart(2,'0'));
   if(cdiTimeseriesChartInstance)cdiTimeseriesChartInstance.destroy();
   cdiTimeseriesChartInstance=new Chart(document.getElementById('cdiTimeseriesChart'),{
     type:'line',
