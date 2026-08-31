@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/31626988/README.md)
+[README.md](https://github.com/user-attachments/files/31666237/README.md)
 # ADAPT — PNG El Niño Early Warning Dashboard
 
 _(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
@@ -51,6 +51,12 @@ So the row with `MONTH=7` (July observations) is published as **"August's CDI"**
 ### CDI formula verification (2026-08-31)
 
 Cross-checking `do_CDI.R` against this dashboard's client-side flag thresholds (`cdiComponentFlagValue`, `cdiExampleFlag`, and the methodology table) found one mismatch, since fixed: the soil-moisture alert threshold is **-5%**, not -10% (`ifelse(SM >= -5, 0, ifelse(SM >= -15, 0.5, 1))` in the R source). ENSO, IOD, rainfall (SPI-1), vegetation (VHI) and forecast rainfall (SPI-3) thresholds all matched exactly.
+
+### CDI operational phase bands (2026-08-31)
+
+The About ADAPT example map, its province popups, and the methodology note now label each province's CDI with the same operational-phase decision framework the Food Security Cluster itself uses, per Table 1 of the FAO PNG Food Security & Agriculture Sectoral Plan (August 2026 draft): **0.40-0.59 Readiness, 0.60-0.79 Anticipatory Action, 0.80-1.00 Response threshold** (below 0.40 shown as "Monitoring", since the sectoral plan's table doesn't define a band there). This replaced an ad-hoc "Drought / Elevated risk / Some indicators active" severity scale in `cdiExamplePopup` that used different, undocumented thresholds (0.6/0.4/0.2) and didn't match any actual decision framework. The new logic lives in one function, `cdiOperationalPhase(cdi)`, so the map, popups and methodology text can never drift out of sync with each other again. Verified against the sectoral plan's own Table 1: with the August 2026 data, all provinces classify as Anticipatory Action except Madang at Response threshold -- an exact match.
+
+**Not implemented (deliberately, for now):** the sectoral plan also gives national people-in-need / people-targeted figures (1,166,630 / 933,304, 186,661 HH) and a phased response-activity plan. These were not added to the dashboard in this pass. If they are added later, they must **not** be merged or averaged with `data/integrated_priority_latest.json`'s own population exposure figures (`population_exposed_total`, `population_high_priority`, etc.) -- those come from a different methodology (WorldPop intersected with the composite biophysical stress layer, not the CDI) and are a genuinely separate estimate. Some correlation between the two is expected and fine; presenting one as if it were a subtotal or recalculation of the other is not, and would misrepresent both source documents.
 
 ### 2. Overview
 The national operational snapshot:
@@ -108,21 +114,41 @@ This file feeds:
 - composite map layer
 - province popup content on the interactive map
 
-**Pixel-level CDI layer (new):** the dashboard also looks for an optional
-`layers.cdi_tile_url` field in this JSON (alongside the existing
-`layers.composite_biophysical_stress_tile_url`). When present, it should be
-an XYZ/Earth-Engine tile URL for a single-band raster where every pixel is
-the same weighted CDI score used for the province-level CDI (ENSO and IOD
-applied as flat national flags, combined per-pixel with the gridded SPI-1
-rainfall, ERA5-Land soil moisture, ASIS vegetation, and SEAS5 forecast
-rainfall inputs -- i.e. the CDI formula computed before it is averaged down
-to province means). When this field is present, the Interactive Map tab
-shows it as the default raster layer (ahead of composite stress), with its
-own legend and a "CDI raster (GeoTIFF)" download at `data/cdi_pixel_latest.tif`
-(same convention as the existing `composite_biophysical_stress.tif` export).
-If the field is absent, the map falls back to composite stress / ASIS as
-before -- no code changes needed on the front end once the pipeline starts
-publishing it.
+**Pixel-level CDI layer (automated):** `layers.cdi_tile_url` is generated
+and patched into this file every night by `scripts/build_cdi_pixel.py`,
+which runs as an extra step in `.github/workflows/update-integrated-composite.yml`
+right after `build_integrated_composite.py` (patching, not overwriting, so
+it survives that workflow's nightly full rewrite). It is an Earth-Engine
+XYZ tile URL for a single-band raster where every pixel is the same
+weighted CDI score used for the province-level CDI in `do_CDI.R`: ENSO and
+IOD applied as flat national flags read automatically from
+`data/cdi_example_latest.json`, combined per-pixel with a CHIRPS-based
+SPI-1 rainfall approximation, an ERA5-Land soil-moisture anomaly, and ASIS
+vegetation (VHI) -- all using calendar-month windows keyed to the same
+observation month `do_CDI.R` uses, not the composite score's own rolling
+90-day/30-day windows. The forecast SPI-3 term is a documented placeholder
+(no SEAS5 source in Earth Engine's public catalog yet -- see the script's
+docstring) until a seasonal forecast asset is wired in.
+
+When `cdi_tile_url` is present, the Interactive Map tab shows it as the
+default raster layer (ahead of composite stress), with its own legend and
+a "CDI raster (GeoTIFF)" download at `data/cdi_pixel_latest.tif`, also
+written by the same step (same convention as the existing
+`composite_biophysical_stress.tif` export). The CDI-pixel step is
+non-blocking (`continue-on-error: true`) so a failure there never breaks
+the already-working nightly composite commit -- if it fails (e.g. before
+the first `PNG_CDI.rds` has ever been committed, since it depends on
+`cdi_example_latest.json`), the map simply falls back to composite stress
+/ ASIS as before, same as if the field were absent.
+
+**Rainfall/soil-moisture approximation caveat:** SPI-1 and the soil-moisture
+anomaly here are empirical proxies (z-score / percent-departure), not a
+true Gamma-fitted SPI or whatever exact SMAPI formula `PNG_rain_CHIRPS.rds`
+/ `PNG_SM_ERA5.rds` use internally (their generation source wasn't in the
+material available when this was built). `build_cdi_pixel.py` prints
+per-province CDI means on every run specifically so they can be spot-checked
+against the corresponding `PNG_CDI_summary_*.csv` -- do that before treating
+this raster as authoritative at the 0 / 0.5 / 1 flag boundaries.
 
 #### `data/live_processing_status.json`
 Summary status file for the separate PNG live processing workspace.
@@ -185,7 +211,9 @@ Key files currently used by the dashboard include:
 - `data/cdi_archive.json` — full 1996-present CDI history for the "Recent CDI components" and "Historical CDI time series" charts
 - `pipeline/PNG_CDI.rds` — the CDI pipeline's latest monthly export; committing a new one here triggers `update-cdi-data.yml`
 - `scripts/update_cdi_data.py` — regenerates the two `cdi_*.json` files above from `pipeline/PNG_CDI.rds`
-- `.github/workflows/` — GitHub Actions workflows for automated updates and patching (including `update-cdi-data.yml`)
+- `scripts/build_cdi_pixel.py` — generates the pixel-level CDI raster and patches `layers.cdi_tile_url` into `data/integrated_priority_latest.json`; runs nightly as part of `update-integrated-composite.yml`
+- `data/cdi_pixel_latest.tif` — GeoTIFF export of the pixel-level CDI raster, written by `scripts/build_cdi_pixel.py`
+- `.github/workflows/` — GitHub Actions workflows for automated updates and patching (including `update-cdi-data.yml` and `update-integrated-composite.yml`)
 - `scripts/` — backend processing scripts used to build outputs
 
 ## Front-end stack
