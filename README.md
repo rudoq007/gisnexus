@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/31626988/README.md)
 # ADAPT — PNG El Niño Early Warning Dashboard
 
 _(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
@@ -29,6 +30,28 @@ ADAPT is organised into five tabs, consolidated from an earlier nine-tab layout 
 ### 1. About ADAPT
 The front door to the dashboard. Explains what ADAPT is and presents the **Combined Drought Index (CDI)** methodology jointly developed by PNG's National Weather Service (NWS) and FAO: the indicator table and weights, an interactive example map, per-province CDI component charts, and the historical CDI time series (1996-present). This is the default tab shown on load.
 
+**Monthly update -- now automated:** the methodology table's "Latest data used" column, the "Example: PNG, `<month>`" heading/caption, and the CDI example map/charts are no longer hand-edited into this file. They are fetched at runtime from `data/cdi_example_latest.json` and `data/cdi_archive.json`, which are generated from the CDI pipeline's monthly `PNG_CDI.rds` export by `scripts/update_cdi_data.py`.
+
+Two ways to run the monthly update:
+
+1. **Automatic (recommended):** commit the month's `PNG_CDI.rds` (as emailed by the CDI pipeline owner) to `pipeline/PNG_CDI.rds` in this repo -- via `git push` or by dragging the file into that folder through the GitHub web UI -- and push to `main`. The `.github/workflows/update-cdi-data.yml` workflow runs automatically, regenerates the two JSON files, and commits them. No local setup needed.
+2. **Manual:** run `pip install rdata && python scripts/update_cdi_data.py path/to/PNG_CDI.rds` locally, then commit the two changed files in `data/`.
+
+Either way, the script derives the correct calendar-month labels itself (see "Data timing convention" below) instead of anyone guessing at date arithmetic by hand -- this is what several rounds of mislabeled "Jul 2026" vs "Aug 2026" bugs earlier in this dashboard's development were caused by.
+
+### Data timing convention
+
+Confirmed directly from the CDI pipeline's own `do_CDI.R` source (2026-07-29, Josh Hooker/FAORAP): each row in `PNG_CDI.rds` is keyed by `YEAR`/`MONTH`, the **observation month** for ENSO, IOD, rainfall, soil moisture and vegetation. The row's `fcYEAR`/`fcMONTH` is one month ahead and marks the start of the 3-month rainfall forecast window. Per the script's own comment:
+
+> `# CDI estimate made in month m uses observations from month m-1`
+> `# and seasonal forecast for month m through to month m+2`
+
+So the row with `MONTH=7` (July observations) is published as **"August's CDI"** -- matching the pipeline's own `PNG_CDI_summary_2026_8.csv` naming. `scripts/update_cdi_data.py` uses `fcYEAR`/`fcMONTH` for the "Example: PNG, `<month>`" reporting label and `YEAR`/`MONTH` for the archive's own month-by-month labelling (kept unshifted, consistent with the other 366 months already in `cdi_history`/`recent_indicators` -- see git history for the back-and-forth that settled on this split).
+
+### CDI formula verification (2026-08-31)
+
+Cross-checking `do_CDI.R` against this dashboard's client-side flag thresholds (`cdiComponentFlagValue`, `cdiExampleFlag`, and the methodology table) found one mismatch, since fixed: the soil-moisture alert threshold is **-5%**, not -10% (`ifelse(SM >= -5, 0, ifelse(SM >= -15, 0.5, 1))` in the R source). ENSO, IOD, rainfall (SPI-1), vegetation (VHI) and forecast rainfall (SPI-3) thresholds all matched exactly.
+
 ### 2. Overview
 The national operational snapshot:
 - latest ASIS screening period and national vegetation summary
@@ -42,8 +65,8 @@ The national operational snapshot:
 Interactive map for visual review of current conditions.
 
 Current map behaviour:
-- **Composite biophysical stress** is the main operational raster
-- **Live ASIS vegetation screening** is available as a secondary reference layer
+- **Pixel-level Combined Drought Index (CDI)** is the main operational raster when the pipeline publishes `layers.cdi_tile_url` (see `data/integrated_priority_latest.json` below); otherwise the map falls back to composite stress
+- **Composite biophysical stress** and **live ASIS vegetation screening** remain available as reference layers
 - provincial polygons are symbolised by current integrated stress where available
 - province point summaries are displayed on top for quick inspection
 - popups summarise stress and exposure conditions by province
@@ -81,10 +104,25 @@ This file feeds:
 Integrated composite stress and exposure output.
 
 This file feeds:
-- integrated priority tab
-- population and exposure tab
+- Provincial Data tab
 - composite map layer
 - province popup content on the interactive map
+
+**Pixel-level CDI layer (new):** the dashboard also looks for an optional
+`layers.cdi_tile_url` field in this JSON (alongside the existing
+`layers.composite_biophysical_stress_tile_url`). When present, it should be
+an XYZ/Earth-Engine tile URL for a single-band raster where every pixel is
+the same weighted CDI score used for the province-level CDI (ENSO and IOD
+applied as flat national flags, combined per-pixel with the gridded SPI-1
+rainfall, ERA5-Land soil moisture, ASIS vegetation, and SEAS5 forecast
+rainfall inputs -- i.e. the CDI formula computed before it is averaged down
+to province means). When this field is present, the Interactive Map tab
+shows it as the default raster layer (ahead of composite stress), with its
+own legend and a "CDI raster (GeoTIFF)" download at `data/cdi_pixel_latest.tif`
+(same convention as the existing `composite_biophysical_stress.tif` export).
+If the field is absent, the map falls back to composite stress / ASIS as
+before -- no code changes needed on the front end once the pipeline starts
+publishing it.
 
 #### `data/live_processing_status.json`
 Summary status file for the separate PNG live processing workspace.
@@ -143,7 +181,11 @@ Key files currently used by the dashboard include:
 - `data/integrated_priority_latest.json` — latest integrated composite stress output
 - `data/integrated_priority_latest.csv` — tabular export of integrated priority results
 - `data/live_processing_status.json` — linked live workspace status summary
-- `.github/workflows/` — GitHub Actions workflows for automated updates and patching
+- `data/cdi_example_latest.json` — current month's per-province CDI + indicators for the About ADAPT example map/table (see "Monthly update" above)
+- `data/cdi_archive.json` — full 1996-present CDI history for the "Recent CDI components" and "Historical CDI time series" charts
+- `pipeline/PNG_CDI.rds` — the CDI pipeline's latest monthly export; committing a new one here triggers `update-cdi-data.yml`
+- `scripts/update_cdi_data.py` — regenerates the two `cdi_*.json` files above from `pipeline/PNG_CDI.rds`
+- `.github/workflows/` — GitHub Actions workflows for automated updates and patching (including `update-cdi-data.yml`)
 - `scripts/` — backend processing scripts used to build outputs
 
 ## Front-end stack
