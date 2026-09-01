@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/31666237/README.md)
+[README.md](https://github.com/user-attachments/files/31677819/README.md)
 # ADAPT — PNG El Niño Early Warning Dashboard
 
 _(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
@@ -57,6 +57,14 @@ Cross-checking `do_CDI.R` against this dashboard's client-side flag thresholds (
 The About ADAPT example map, its province popups, and the methodology note now label each province's CDI with the same operational-phase decision framework the Food Security Cluster itself uses, per Table 1 of the FAO PNG Food Security & Agriculture Sectoral Plan (August 2026 draft): **0.40-0.59 Readiness, 0.60-0.79 Anticipatory Action, 0.80-1.00 Response threshold** (below 0.40 shown as "Monitoring", since the sectoral plan's table doesn't define a band there). This replaced an ad-hoc "Drought / Elevated risk / Some indicators active" severity scale in `cdiExamplePopup` that used different, undocumented thresholds (0.6/0.4/0.2) and didn't match any actual decision framework. The new logic lives in one function, `cdiOperationalPhase(cdi)`, so the map, popups and methodology text can never drift out of sync with each other again. Verified against the sectoral plan's own Table 1: with the August 2026 data, all provinces classify as Anticipatory Action except Madang at Response threshold -- an exact match.
 
 **Not implemented (deliberately, for now):** the sectoral plan also gives national people-in-need / people-targeted figures (1,166,630 / 933,304, 186,661 HH) and a phased response-activity plan. These were not added to the dashboard in this pass. If they are added later, they must **not** be merged or averaged with `data/integrated_priority_latest.json`'s own population exposure figures (`population_exposed_total`, `population_high_priority`, etc.) -- those come from a different methodology (WorldPop intersected with the composite biophysical stress layer, not the CDI) and are a genuinely separate estimate. Some correlation between the two is expected and fine; presenting one as if it were a subtotal or recalculation of the other is not, and would misrepresent both source documents.
+
+### Seasonal context and province livelihood profiles (2026-09-01)
+
+Source material: the FAO PNG El Nino Plan of Action (5 July 2026) and a revised draft of the Food Security & Agriculture Sectoral Plan (1 September 2026, confirmed identical to the 20 August draft on Table 1's CDI thresholds -- no change needed to the phase bands above). Three additions, all in the About ADAPT tab:
+
+- **Seasonal phase timeline** (`renderSeasonalPhaseTimeline()`, new `#seasonalContextCard`): a static four-phase calendar (Preparedness Jun-Sep 2026, Anticipatory Action Sep-Dec 2026, Response Jan-Apr 2027, Recovery Apr 2027 onward) from the national plan's Table 8/Section H, with today's phase highlighted client-side by calendar month. This is deliberately kept separate from `cdiOperationalPhase()`: the timeline shows *where the season is*, the CDI phase bands show *how severe conditions currently are*. Don't merge the two into one indicator -- a province can be in the calendar's "Preparedness" window while its own CDI has already crossed into Response, and the dashboard should be able to show that contradiction rather than hide it.
+- **Historical severity callout**: cites the plan's own 1997/98 (~1.2M needing food assistance, ~40 drought/famine deaths) and 2015/16 (~2.7M affected, ~495,000 severe food insecurity) figures, for stakes/context only -- not used in any calculation.
+- **Province livelihood/impact profiles** (`PROVINCE_LIVELIHOOD_PROFILES`, wired into `cdiExamplePopup()`): each CDI map popup now also shows the province's dominant livelihood system and likely drought impact, from the national plan's Table 1. That table is itself a draft and only 15 of 22 provinces were filled in as of 5 July 2026 (missing: Gulf, Milne Bay, Oro, East Sepik, Sandaun, Madang, National Capital District) -- the popup simply omits this section for provinces without an entry, the same graceful-degradation pattern used elsewhere for missing data. Re-run `scripts/update_cdi_data.py`'s output is unaffected; this table is hand-maintained from the source document, not pipeline-generated, so if FAO fills in the remaining provinces in a future draft, `PROVINCE_LIVELIHOOD_PROFILES` in `index.html` needs updating by hand.
 
 ### 2. Overview
 The national operational snapshot:
@@ -196,6 +204,18 @@ The dashboard currently focuses on public-facing exposure indicators such as:
 
 This should still be treated as a **screening estimate**, not a final official affected-population count.
 
+### CDI-linked population exposure (NSO 2024 census units) -- 2026-09-01
+
+A second, separate population-exposure figure is now generated nightly by `scripts/build_cdi_population_exposure.py`, written to `data/cdi_population_exposure.json`. It samples the pixel-level CDI raster (`data/cdi_pixel_latest.tif`) at every PNG NSO 2024 census-unit point in `pipeline/CU_reference_imputed.gpkg` (~30,700 points; imputed coordinates used where the original point coordinates were missing), classifies each by the same CDI operational phase bands used elsewhere on the dashboard, and aggregates population and household counts by province and by phase.
+
+**This is deliberately a different data source and methodology from the population-exposure numbers described just above** (which come from WorldPop intersected with the composite biophysical stress layer, not the CDI). The two figures will not match and should never be merged, summed, or presented as a refinement of one another -- see the `methodology_note` field embedded in `cdi_population_exposure.json` itself, which repeats this caveat so it survives even if this README doesn't travel with the data. Some correlation between the two is expected and fine.
+
+Province name matching: the census-unit file uses PNG NSO's own `Adm 1 Name` spelling (e.g. `SIMBU`, `NORTHERN (ORO)`, `WEST SEPIK`, `AUTONOMOUS REGION OF BOUGAINVILLE`), mapped to this dashboard's canonical province names via `ADM1_NAME_ALIAS` in the script (e.g. `SIMBU` &rarr; `Chimbu`, `NORTHERN (ORO)` &rarr; `Oro`, `WEST SEPIK` &rarr; `Sandaun`). All 22 provinces map cleanly as of the current file; the script prints a warning and skips any Adm 1 Name it doesn't recognise, so a future renaming upstream would surface as a warning in the workflow log rather than silently mis-attributing population.
+
+This step runs nightly in `update-integrated-composite.yml`, right after `build_cdi_pixel.py` (it depends on that step's GeoTIFF output) and is non-blocking (`continue-on-error: true`), same as that step.
+
+**Front-end display:** a new card, `#cdiPopulationExposureCard`, at the end of the About ADAPT tab's CDI section (after the historical time series chart), rendered by `loadCdiPopulationExposure()`. It fetches `data/cdi_population_exposure.json` at runtime and stays hidden (`style="display:none"` in the markup) until that fetch succeeds -- same graceful-degradation pattern as the other optional live layers, so the card simply won't appear until the workflow has produced the file at least once. Shows national totals by phase as stat cards, then a per-province table sorted by Response-threshold population, with its own explicit callout that these numbers are a different source/methodology from the Provincial Data tab's population exposure and must not be combined with it.
+
 ## Repository structure
 
 Key files currently used by the dashboard include:
@@ -213,6 +233,9 @@ Key files currently used by the dashboard include:
 - `scripts/update_cdi_data.py` — regenerates the two `cdi_*.json` files above from `pipeline/PNG_CDI.rds`
 - `scripts/build_cdi_pixel.py` — generates the pixel-level CDI raster and patches `layers.cdi_tile_url` into `data/integrated_priority_latest.json`; runs nightly as part of `update-integrated-composite.yml`
 - `data/cdi_pixel_latest.tif` — GeoTIFF export of the pixel-level CDI raster, written by `scripts/build_cdi_pixel.py`
+- `pipeline/CU_reference_imputed.gpkg` — PNG NSO 2024 census-unit population estimates (static reference data, not regenerated monthly)
+- `scripts/build_cdi_population_exposure.py` — samples the CDI raster at each census-unit point and aggregates population/households by province and CDI phase into `data/cdi_population_exposure.json`; runs nightly as part of `update-integrated-composite.yml`, after `build_cdi_pixel.py`
+- `data/cdi_population_exposure.json` — output of the above; see "CDI-linked population exposure" note above before using or displaying these figures
 - `.github/workflows/` — GitHub Actions workflows for automated updates and patching (including `update-cdi-data.yml` and `update-integrated-composite.yml`)
 - `scripts/` — backend processing scripts used to build outputs
 
