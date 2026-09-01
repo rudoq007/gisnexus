@@ -1,5 +1,7 @@
-[README.md](https://github.com/user-attachments/files/31681061/README.md)
+[README.md](https://github.com/user-attachments/files/31683050/README.md)
 # ADAPT — PNG El Niño Early Warning Dashboard
+
+**Live dashboard:** https://png-elnino.org
 
 _(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
 
@@ -265,7 +267,7 @@ This keeps deployment simple while allowing live JSON-driven updates.
 
 ## Hosting and deployment
 
-The dashboard is hosted through **GitHub Pages**.
+The dashboard is hosted through **GitHub Pages** at **https://png-elnino.org**.
 
 Typical deployment flow:
 1. source JSON or HTML changes are committed to the repository
