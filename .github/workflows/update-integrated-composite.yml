@@ -73,6 +73,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_population_exposure.json scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py .github/workflows/update-integrated-composite.yml
-          git diff --cached --quiet || git commit -m "Update integrated composite priority and pixel-level CDI outputs"
+          # Add each path only if it actually exists -- the CDI-pixel and
+          # population-exposure steps above are intentionally non-blocking, so
+          # their outputs may legitimately be missing on a given run. A plain
+          # `git add` on a missing path fails with exit 128 and used to take
+          # this whole (otherwise unrelated) step down with it, defeating the
+          # point of continue-on-error on those steps.
+          for f in data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_population_exposure.json scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py .github/workflows/update-integrated-composite.yml; do
+            if [ -f "$f" ]; then
+              git add "$f"
+            else
+              echo "  (skipping $f -- not present this run)"
+            fi
+          done
+          git diff --cached --quiet && echo "No changes to commit." && exit 0
+          git commit -m "Update integrated composite priority and pixel-level CDI outputs"
           git push
