@@ -1,9 +1,9 @@
-[README.md](https://github.com/user-attachments/files/31677819/README.md)
+[README.md](https://github.com/user-attachments/files/31681061/README.md)
 # ADAPT — PNG El Niño Early Warning Dashboard
 
 _(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
 
-A public-facing Papua New Guinea drought monitoring dashboard built around **FAO ASIS/GIEWS vegetation-health screening**, a **composite biophysical stress layer**, and a linked **live drought and frost processing workspace**.
+A public-facing Papua New Guinea drought monitoring dashboard built around the **Combined Drought Index (CDI)** -- NWS/FAO's primary, government-endorsed anticipatory-action trigger -- with **FAO ASIS/GIEWS vegetation-health screening**, a **composite biophysical stress layer**, and a linked **live drought and frost processing workspace** as complementary, higher-frequency screening layers underneath it.
 
 The dashboard is designed to support:
 - early warning and screening
@@ -215,6 +215,18 @@ Province name matching: the census-unit file uses PNG NSO's own `Adm 1 Name` spe
 This step runs nightly in `update-integrated-composite.yml`, right after `build_cdi_pixel.py` (it depends on that step's GeoTIFF output) and is non-blocking (`continue-on-error: true`), same as that step.
 
 **Front-end display:** a new card, `#cdiPopulationExposureCard`, at the end of the About ADAPT tab's CDI section (after the historical time series chart), rendered by `loadCdiPopulationExposure()`. It fetches `data/cdi_population_exposure.json` at runtime and stays hidden (`style="display:none"` in the markup) until that fetch succeeds -- same graceful-degradation pattern as the other optional live layers, so the card simply won't appear until the workflow has produced the file at least once. Shows national totals by phase as stat cards, then a per-province table sorted by Response-threshold population, with its own explicit callout that these numbers are a different source/methodology from the Provincial Data tab's population exposure and must not be combined with it.
+
+## Site-wide cohesion pass (2026-09-01)
+
+A full read-through of all five tabs found that the dashboard had accumulated **three parallel severity/response frameworks that never referenced each other**: the CDI operational phase (Readiness/Anticipatory Action/Response threshold -- the newest, government-endorsed trigger), the composite biophysical stress priority class (Severe/High/Moderate/Watch/Low, 0-100 scale, different weights, no ENSO/IOD), and the ASIS vegetation stress class (High/Moderate/Watch/Lower). A user could pull the same province from three different tabs and get three differently-labelled verdicts with no indication of how they relate. Fixed:
+
+- **Provincial Data tab**: both the "Composite stress, priority & exposure" and "Live ASIS/GIEWS drought and vegetation stress" cards now state explicitly that the CDI phase (About ADAPT tab) is the primary trigger, and frame their own metrics as complementary, higher-frequency screening layers (ASIS updates roughly every 10 days vs. CDI's monthly cycle) rather than competing verdicts.
+- **Response & Tools tab**: added a new lead card, `#cdiResponseGuidance`, at the top of the tab with the CDI phase &rarr; recommended action table (the same text as `cdiOperationalPhase()` in the About tab, kept in sync by hand). The pre-existing ASIS-based "Operational response framework" table is retitled "ASIS vegetation-stress framework (secondary layer)" and now sits underneath it as a faster-cadence complement, not the tab's only framework.
+- **Overview tab**: the "Executive interpretation" note was leftover pre-rebrand copy that described ADAPT purely as "ASIS/GIEWS screening and the PNG live processing workspace" with no mention of the CDI at all -- directly at odds with the About ADAPT tab's own framing. Rewritten to lead with the CDI as the primary trigger, with ASIS and the live processing workspace as supporting layers.
+- **Population exposure cross-reference**: About ADAPT's CDI-linked population card already noted it differs from Provincial Data's WorldPop-based figures; Provincial Data's own population section didn't point back. Added the reverse note so the relationship reads the same from either direction.
+- **This README's own opening line** had the same stale framing as the Overview tab and was updated to match (CDI as the primary trigger; ASIS/composite/live-processing as complementary layers).
+
+Not changed: the Overview vs. Provincial Data overlap in ASIS vegetation-ranking content (a chart on Overview, a full table on Provincial Data) was reviewed and left as-is -- summary-then-detail is a normal dashboard pattern, not a redundancy.
 
 ## Repository structure
 
