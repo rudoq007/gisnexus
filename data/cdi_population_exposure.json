@@ -1,0 +1,310 @@
+{
+  "generated_utc": "2026-09-01 07:19 UTC",
+  "cdi_pixel_observation_month": "2026-07",
+  "source": {
+    "census_units": "PNG NSO 2024 Census Unit population estimates (pipeline/CU_reference_imputed.gpkg; imputed coordinates used where original point coordinates were missing)",
+    "cdi_raster": "data/cdi_pixel_latest.tif"
+  },
+  "methodology_note": "Population figures here are PNG NSO 2024 census-unit population estimates sampled against the pixel-level CDI raster and classified by the same operational phase bands used elsewhere on the dashboard (Table 1, FAO PNG Food Security & Agriculture Sectoral Plan, Aug 2026). This is a DIFFERENT data source and methodology from data/integrated_priority_latest.json's own population exposure figures (WorldPop intersected with the composite biophysical stress layer) -- the two must not be merged, summed, or treated as a refinement of one another.",
+  "national": {
+    "total_population": 14617706,
+    "total_households": 2235460,
+    "census_units": 30708,
+    "census_units_no_coverage": 3980,
+    "population_by_phase": {
+      "Response threshold": 0,
+      "Anticipatory Action": 5098369,
+      "Readiness": 7550879,
+      "Monitoring": 0,
+      "No data": 1968458
+    }
+  },
+  "provinces": {
+    "Bougainville": {
+      "total_population": 457807,
+      "total_households": 73007,
+      "census_units": 1340,
+      "census_units_no_coverage": 140,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 119551,
+        "Readiness": 289981,
+        "Monitoring": 0,
+        "No data": 48275
+      }
+    },
+    "Central": {
+      "total_population": 526842,
+      "total_households": 66317,
+      "census_units": 1235,
+      "census_units_no_coverage": 173,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 243651,
+        "Readiness": 203221,
+        "Monitoring": 0,
+        "No data": 79970
+      }
+    },
+    "Chimbu": {
+      "total_population": 789976,
+      "total_households": 130573,
+      "census_units": 1792,
+      "census_units_no_coverage": 176,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 167977,
+        "Readiness": 547655,
+        "Monitoring": 0,
+        "No data": 74344
+      }
+    },
+    "East New Britain": {
+      "total_population": 621904,
+      "total_households": 96121,
+      "census_units": 1001,
+      "census_units_no_coverage": 238,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 185423,
+        "Readiness": 257112,
+        "Monitoring": 0,
+        "No data": 179369
+      }
+    },
+    "East Sepik": {
+      "total_population": 807716,
+      "total_households": 142002,
+      "census_units": 1645,
+      "census_units_no_coverage": 189,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 199152,
+        "Readiness": 521802,
+        "Monitoring": 0,
+        "No data": 86762
+      }
+    },
+    "Eastern Highlands": {
+      "total_population": 971670,
+      "total_households": 179364,
+      "census_units": 3061,
+      "census_units_no_coverage": 343,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 447792,
+        "Readiness": 400275,
+        "Monitoring": 0,
+        "No data": 123603
+      }
+    },
+    "Enga": {
+      "total_population": 653752,
+      "total_households": 96986,
+      "census_units": 1043,
+      "census_units_no_coverage": 85,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 126738,
+        "Readiness": 482883,
+        "Monitoring": 0,
+        "No data": 44131
+      }
+    },
+    "Gulf": {
+      "total_population": 271166,
+      "total_households": 39527,
+      "census_units": 582,
+      "census_units_no_coverage": 76,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 71037,
+        "Readiness": 152545,
+        "Monitoring": 0,
+        "No data": 47584
+      }
+    },
+    "Hela": {
+      "total_population": 662054,
+      "total_households": 100878,
+      "census_units": 1959,
+      "census_units_no_coverage": 432,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 174478,
+        "Readiness": 339203,
+        "Monitoring": 0,
+        "No data": 148373
+      }
+    },
+    "Jiwaka": {
+      "total_population": 530173,
+      "total_households": 89097,
+      "census_units": 1139,
+      "census_units_no_coverage": 120,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 119210,
+        "Readiness": 358907,
+        "Monitoring": 0,
+        "No data": 52056
+      }
+    },
+    "Madang": {
+      "total_population": 842685,
+      "total_households": 127149,
+      "census_units": 1785,
+      "census_units_no_coverage": 112,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 525690,
+        "Readiness": 266490,
+        "Monitoring": 0,
+        "No data": 50505
+      }
+    },
+    "Manus": {
+      "total_population": 112498,
+      "total_households": 17405,
+      "census_units": 243,
+      "census_units_no_coverage": 58,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 65693,
+        "Readiness": 21244,
+        "Monitoring": 0,
+        "No data": 25561
+      }
+    },
+    "Milne Bay": {
+      "total_population": 572222,
+      "total_households": 91208,
+      "census_units": 1327,
+      "census_units_no_coverage": 269,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 253188,
+        "Readiness": 206635,
+        "Monitoring": 0,
+        "No data": 112399
+      }
+    },
+    "Morobe": {
+      "total_population": 1390825,
+      "total_households": 197913,
+      "census_units": 2811,
+      "census_units_no_coverage": 331,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 357646,
+        "Readiness": 849857,
+        "Monitoring": 0,
+        "No data": 183322
+      }
+    },
+    "National Capital District": {
+      "total_population": 1529094,
+      "total_households": 166369,
+      "census_units": 723,
+      "census_units_no_coverage": 163,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 827691,
+        "Readiness": 474037,
+        "Monitoring": 0,
+        "No data": 227366
+      }
+    },
+    "New Ireland": {
+      "total_population": 390832,
+      "total_households": 61807,
+      "census_units": 802,
+      "census_units_no_coverage": 162,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 221968,
+        "Readiness": 92082,
+        "Monitoring": 0,
+        "No data": 76782
+      }
+    },
+    "Oro": {
+      "total_population": 321429,
+      "total_households": 44686,
+      "census_units": 991,
+      "census_units_no_coverage": 94,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 65999,
+        "Readiness": 223620,
+        "Monitoring": 0,
+        "No data": 31810
+      }
+    },
+    "Sandaun": {
+      "total_population": 550892,
+      "total_households": 79943,
+      "census_units": 1238,
+      "census_units_no_coverage": 155,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 143528,
+        "Readiness": 333071,
+        "Monitoring": 0,
+        "No data": 74293
+      }
+    },
+    "Southern Highlands": {
+      "total_population": 1147849,
+      "total_households": 193327,
+      "census_units": 2982,
+      "census_units_no_coverage": 414,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 276666,
+        "Readiness": 704201,
+        "Monitoring": 0,
+        "No data": 166982
+      }
+    },
+    "West New Britain": {
+      "total_population": 414852,
+      "total_households": 67783,
+      "census_units": 746,
+      "census_units_no_coverage": 78,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 194191,
+        "Readiness": 172924,
+        "Monitoring": 0,
+        "No data": 47737
+      }
+    },
+    "Western": {
+      "total_population": 352699,
+      "total_households": 51228,
+      "census_units": 916,
+      "census_units_no_coverage": 69,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 142286,
+        "Readiness": 179376,
+        "Monitoring": 0,
+        "No data": 31037
+      }
+    },
+    "Western Highlands": {
+      "total_population": 698769,
+      "total_households": 122770,
+      "census_units": 1347,
+      "census_units_no_coverage": 103,
+      "population_by_phase": {
+        "Response threshold": 0,
+        "Anticipatory Action": 168814,
+        "Readiness": 473758,
+        "Monitoring": 0,
+        "No data": 56197
+      }
+    }
+  }
+}
