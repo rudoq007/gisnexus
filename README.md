@@ -1,342 +1,339 @@
-[README.md](https://github.com/user-attachments/files/31683050/README.md)
-# ADAPT — PNG El Niño Early Warning Dashboard
-
-**Live dashboard:** https://png-elnino.org
-
-_(formerly referred to internally as the "PNG El Niño ASIS/GIEWS Live Drought Dashboard")_
-
-A public-facing Papua New Guinea drought monitoring dashboard built around the **Combined Drought Index (CDI)** -- NWS/FAO's primary, government-endorsed anticipatory-action trigger -- with **FAO ASIS/GIEWS vegetation-health screening**, a **composite biophysical stress layer**, and a linked **live drought and frost processing workspace** as complementary, higher-frequency screening layers underneath it.
-
-The dashboard is designed to support:
-- early warning and screening
-- province-level prioritisation
-- population exposure review
-- operational interpretation and field verification planning
-- quick access to linked EarthMap and Streamlit tools
-
-## Dashboard purpose
-
-This dashboard is intended to provide a **screening and prioritisation view**, not a final impact declaration. It brings together multiple live and semi-live data products so users can quickly identify which provinces may require closer review, field verification, or escalation.
-
-The system currently combines:
-- **Live ASIS/GIEWS vegetation condition screening**
-- **Integrated composite biophysical stress outputs**
-- **Population exposure summaries derived from stressed zones**
-- **PNG live drought and frost processing status**
-- **Linked external tools** for detailed technical review
-
-## Main dashboard tabs
-
-ADAPT is organised into five tabs, consolidated from an earlier nine-tab layout so the navigation leads with what ADAPT is before showing its live outputs.
-
-### 1. About ADAPT
-The front door to the dashboard. Explains what ADAPT is and presents the **Combined Drought Index (CDI)** methodology jointly developed by PNG's National Weather Service (NWS) and FAO: the indicator table and weights, an interactive example map, per-province CDI component charts, and the historical CDI time series (1996-present). This is the default tab shown on load.
-
-**Monthly update -- now automated:** the methodology table's "Latest data used" column, the "Example: PNG, `<month>`" heading/caption, and the CDI example map/charts are no longer hand-edited into this file. They are fetched at runtime from `data/cdi_example_latest.json` and `data/cdi_archive.json`, which are generated from the CDI pipeline's monthly `PNG_CDI.rds` export by `scripts/update_cdi_data.py`.
-
-Two ways to run the monthly update:
-
-1. **Automatic (recommended):** commit the month's `PNG_CDI.rds` (as emailed by the CDI pipeline owner) to `pipeline/PNG_CDI.rds` in this repo -- via `git push` or by dragging the file into that folder through the GitHub web UI -- and push to `main`. The `.github/workflows/update-cdi-data.yml` workflow runs automatically, regenerates the two JSON files, and commits them. No local setup needed.
-2. **Manual:** run `pip install rdata && python scripts/update_cdi_data.py path/to/PNG_CDI.rds` locally, then commit the two changed files in `data/`.
-
-Either way, the script derives the correct calendar-month labels itself (see "Data timing convention" below) instead of anyone guessing at date arithmetic by hand -- this is what several rounds of mislabeled "Jul 2026" vs "Aug 2026" bugs earlier in this dashboard's development were caused by.
-
-### Data timing convention
-
-Confirmed directly from the CDI pipeline's own `do_CDI.R` source (2026-07-29, Josh Hooker/FAORAP): each row in `PNG_CDI.rds` is keyed by `YEAR`/`MONTH`, the **observation month** for ENSO, IOD, rainfall, soil moisture and vegetation. The row's `fcYEAR`/`fcMONTH` is one month ahead and marks the start of the 3-month rainfall forecast window. Per the script's own comment:
-
-> `# CDI estimate made in month m uses observations from month m-1`
-> `# and seasonal forecast for month m through to month m+2`
-
-So the row with `MONTH=7` (July observations) is published as **"August's CDI"** -- matching the pipeline's own `PNG_CDI_summary_2026_8.csv` naming. `scripts/update_cdi_data.py` uses `fcYEAR`/`fcMONTH` for the "Example: PNG, `<month>`" reporting label and `YEAR`/`MONTH` for the archive's own month-by-month labelling (kept unshifted, consistent with the other 366 months already in `cdi_history`/`recent_indicators` -- see git history for the back-and-forth that settled on this split).
-
-### CDI formula verification (2026-08-31)
-
-Cross-checking `do_CDI.R` against this dashboard's client-side flag thresholds (`cdiComponentFlagValue`, `cdiExampleFlag`, and the methodology table) found one mismatch, since fixed: the soil-moisture alert threshold is **-5%**, not -10% (`ifelse(SM >= -5, 0, ifelse(SM >= -15, 0.5, 1))` in the R source). ENSO, IOD, rainfall (SPI-1), vegetation (VHI) and forecast rainfall (SPI-3) thresholds all matched exactly.
-
-### CDI operational phase bands (2026-08-31)
-
-The About ADAPT example map, its province popups, and the methodology note now label each province's CDI with the same operational-phase decision framework the Food Security Cluster itself uses, per Table 1 of the FAO PNG Food Security & Agriculture Sectoral Plan (August 2026 draft): **0.40-0.59 Readiness, 0.60-0.79 Anticipatory Action, 0.80-1.00 Response threshold** (below 0.40 shown as "Monitoring", since the sectoral plan's table doesn't define a band there). This replaced an ad-hoc "Drought / Elevated risk / Some indicators active" severity scale in `cdiExamplePopup` that used different, undocumented thresholds (0.6/0.4/0.2) and didn't match any actual decision framework. The new logic lives in one function, `cdiOperationalPhase(cdi)`, so the map, popups and methodology text can never drift out of sync with each other again. Verified against the sectoral plan's own Table 1: with the August 2026 data, all provinces classify as Anticipatory Action except Madang at Response threshold -- an exact match.
-
-**Not implemented (deliberately, for now):** the sectoral plan also gives national people-in-need / people-targeted figures (1,166,630 / 933,304, 186,661 HH) and a phased response-activity plan. These were not added to the dashboard in this pass. If they are added later, they must **not** be merged or averaged with `data/integrated_priority_latest.json`'s own population exposure figures (`population_exposed_total`, `population_high_priority`, etc.) -- those come from a different methodology (WorldPop intersected with the composite biophysical stress layer, not the CDI) and are a genuinely separate estimate. Some correlation between the two is expected and fine; presenting one as if it were a subtotal or recalculation of the other is not, and would misrepresent both source documents.
-
-### Seasonal context and province livelihood profiles (2026-09-01)
-
-Source material: the FAO PNG El Nino Plan of Action (5 July 2026) and a revised draft of the Food Security & Agriculture Sectoral Plan (1 September 2026, confirmed identical to the 20 August draft on Table 1's CDI thresholds -- no change needed to the phase bands above). Three additions, all in the About ADAPT tab:
-
-- **Seasonal phase timeline** (`renderSeasonalPhaseTimeline()`, new `#seasonalContextCard`): a static four-phase calendar (Preparedness Jun-Sep 2026, Anticipatory Action Sep-Dec 2026, Response Jan-Apr 2027, Recovery Apr 2027 onward) from the national plan's Table 8/Section H, with today's phase highlighted client-side by calendar month. This is deliberately kept separate from `cdiOperationalPhase()`: the timeline shows *where the season is*, the CDI phase bands show *how severe conditions currently are*. Don't merge the two into one indicator -- a province can be in the calendar's "Preparedness" window while its own CDI has already crossed into Response, and the dashboard should be able to show that contradiction rather than hide it.
-- **Historical severity callout**: cites the plan's own 1997/98 (~1.2M needing food assistance, ~40 drought/famine deaths) and 2015/16 (~2.7M affected, ~495,000 severe food insecurity) figures, for stakes/context only -- not used in any calculation.
-- **Province livelihood/impact profiles** (`PROVINCE_LIVELIHOOD_PROFILES`, wired into `cdiExamplePopup()`): each CDI map popup now also shows the province's dominant livelihood system and likely drought impact, from the national plan's Table 1. That table is itself a draft and only 15 of 22 provinces were filled in as of 5 July 2026 (missing: Gulf, Milne Bay, Oro, East Sepik, Sandaun, Madang, National Capital District) -- the popup simply omits this section for provinces without an entry, the same graceful-degradation pattern used elsewhere for missing data. Re-run `scripts/update_cdi_data.py`'s output is unaffected; this table is hand-maintained from the source document, not pipeline-generated, so if FAO fills in the remaining provinces in a future draft, `PROVINCE_LIVELIHOOD_PROFILES` in `index.html` needs updating by hand.
-
-### 2. Overview
-The national operational snapshot:
-- latest ASIS screening period and national vegetation summary
-- number of provinces in higher concern classes
-- selected province briefing (with print/CSV export)
-- live drought and frost processing status
-- ENSO/IOD climate driver context
-- charts for the highest-stress provinces and stress-class distribution
-
-### 3. Interactive Map
-Interactive map for visual review of current conditions.
-
-Current map behaviour:
-- **Pixel-level Combined Drought Index (CDI)** is the main operational raster when the pipeline publishes `layers.cdi_tile_url` (see `data/integrated_priority_latest.json` below); otherwise the map falls back to composite stress
-- **Composite biophysical stress** and **live ASIS vegetation screening** remain available as reference layers
-- provincial polygons are symbolised by current integrated stress where available
-- province point summaries are displayed on top for quick inspection
-- popups summarise stress and exposure conditions by province
-
-### 4. Provincial Data
-Merges what were previously three separate tabs (Live ASIS Drought Stress, Integrated Priority, Population & Exposure) into one:
-- vegetation-index ranking chart and searchable/sortable ASIS provincial table, with plain-language screening meaning and verification priority
-- population exposure KPIs (exposed, high-exposure, affected provinces, watch-level population)
-- one combined, searchable/sortable provincial table covering composite stress, priority class, agricultural priority, exposure priority, population exposed, high-exposure population, ASIS vegetation index, rainfall % normal, soil moisture % normal, and frost mean
-
-### 5. Response & Tools
-Merges the former Operational Response, Live Processing Workspace, PNGNWS Outlook, and EarthMap tabs into one:
-- response framing by stress class and a field verification checklist (what district, provincial, DAL, NARI, NDC, and partner teams should collect on the ground)
-- embedded/linked **Live Processing Workspace** (Streamlit) for live technical review and processing of drought and frost layers
-- **PNGNWS Outlook**: official national forecast links and auto-synced preview imagery
-- embedded/linked **EarthMap** for contextual geospatial review
-
-## Background processing concept
-
-The dashboard depends on a few key data products stored in the repository and refreshed through scripts and workflows.
-
-### Core live inputs
-
-#### `data/asis_vhi_latest.json`
-Primary ASIS/GIEWS update used by the dashboard front end.
-
-This file feeds:
-- overview cards
-- ASIS charts
-- ASIS provincial table
-- province briefing content
-- live ASIS map layer when available
-
-#### `data/integrated_priority_latest.json`
-Integrated composite stress and exposure output.
-
-This file feeds:
-- Provincial Data tab
-- composite map layer
-- province popup content on the interactive map
-
-**Pixel-level CDI layer (automated):** `layers.cdi_tile_url` is generated
-and patched into this file every night by `scripts/build_cdi_pixel.py`,
-which runs as an extra step in `.github/workflows/update-integrated-composite.yml`
-right after `build_integrated_composite.py` (patching, not overwriting, so
-it survives that workflow's nightly full rewrite). It is an Earth-Engine
-XYZ tile URL for a single-band raster where every pixel is the same
-weighted CDI score used for the province-level CDI in `do_CDI.R`: ENSO and
-IOD applied as flat national flags read automatically from
-`data/cdi_example_latest.json`, combined per-pixel with a CHIRPS-based
-SPI-1 rainfall approximation, an ERA5-Land soil-moisture anomaly, and ASIS
-vegetation (VHI) -- all using calendar-month windows keyed to the same
-observation month `do_CDI.R` uses, not the composite score's own rolling
-90-day/30-day windows. The forecast SPI-3 term is a documented placeholder
-(no SEAS5 source in Earth Engine's public catalog yet -- see the script's
-docstring) until a seasonal forecast asset is wired in.
-
-When `cdi_tile_url` is present, the Interactive Map tab shows it as the
-default raster layer (ahead of composite stress), with its own legend and
-a "CDI raster (GeoTIFF)" download at `data/cdi_pixel_latest.tif`, also
-written by the same step (same convention as the existing
-`composite_biophysical_stress.tif` export). The CDI-pixel step is
-non-blocking (`continue-on-error: true`) so a failure there never breaks
-the already-working nightly composite commit -- if it fails (e.g. before
-the first `PNG_CDI.rds` has ever been committed, since it depends on
-`cdi_example_latest.json`), the map simply falls back to composite stress
-/ ASIS as before, same as if the field were absent.
-
-**Rainfall/soil-moisture approximation caveat:** SPI-1 and the soil-moisture
-anomaly here are empirical proxies (z-score / percent-departure), not a
-true Gamma-fitted SPI or whatever exact SMAPI formula `PNG_rain_CHIRPS.rds`
-/ `PNG_SM_ERA5.rds` use internally (their generation source wasn't in the
-material available when this was built). `build_cdi_pixel.py` prints
-per-province CDI means on every run specifically so they can be spot-checked
-against the corresponding `PNG_CDI_summary_*.csv` -- do that before treating
-this raster as authoritative at the 0 / 0.5 / 1 flag boundaries.
-
-#### `data/live_processing_status.json`
-Summary status file for the separate PNG live processing workspace.
-
-This file feeds:
-- analysis date
-- drought window
-- frost window
-- notes shown on the overview page
-- optional province-level drought and frost summary if included
-
-### Boundary layer
-
-#### `adm1_nso_province.geojson`
-Provincial boundary layer used for:
-- polygon display on the interactive map
-- province click popups
-- provincial styling against live or integrated summaries
-
-## Composite stress concept
-
-The dashboard is no longer relying on ASIS alone for the operational view.
-
-The current logic uses a **composite biophysical stress approach**, which is intended to combine several signals such as:
-- vegetation stress from ASIS/GIEWS
-- rainfall deficit
-- frost screening
-- other integrated weighting used by the backend script
-
-This produces a composite stress score used to:
-- rank provinces
-- style the integrated map
-- estimate exposed population within stressed zones
-- support the integrated priority and exposure tabs
-
-## Population exposure concept
-
-Population exposure is derived by intersecting or summarising gridded population against stressed areas or stress-weighted outputs.
-
-The dashboard currently focuses on public-facing exposure indicators such as:
-- total population exposed
-- high exposure population
-- watch-level population
-- province-level exposed population summaries
-
-This should still be treated as a **screening estimate**, not a final official affected-population count.
-
-### CDI-linked population exposure (NSO 2024 census units) -- 2026-09-01
-
-A second, separate population-exposure figure is now generated nightly by `scripts/build_cdi_population_exposure.py`, written to `data/cdi_population_exposure.json`. It samples the pixel-level CDI raster (`data/cdi_pixel_latest.tif`) at every PNG NSO 2024 census-unit point in `pipeline/CU_reference_imputed.gpkg` (~30,700 points; imputed coordinates used where the original point coordinates were missing), classifies each by the same CDI operational phase bands used elsewhere on the dashboard, and aggregates population and household counts by province and by phase.
-
-**This is deliberately a different data source and methodology from the population-exposure numbers described just above** (which come from WorldPop intersected with the composite biophysical stress layer, not the CDI). The two figures will not match and should never be merged, summed, or presented as a refinement of one another -- see the `methodology_note` field embedded in `cdi_population_exposure.json` itself, which repeats this caveat so it survives even if this README doesn't travel with the data. Some correlation between the two is expected and fine.
-
-Province name matching: the census-unit file uses PNG NSO's own `Adm 1 Name` spelling (e.g. `SIMBU`, `NORTHERN (ORO)`, `WEST SEPIK`, `AUTONOMOUS REGION OF BOUGAINVILLE`), mapped to this dashboard's canonical province names via `ADM1_NAME_ALIAS` in the script (e.g. `SIMBU` &rarr; `Chimbu`, `NORTHERN (ORO)` &rarr; `Oro`, `WEST SEPIK` &rarr; `Sandaun`). All 22 provinces map cleanly as of the current file; the script prints a warning and skips any Adm 1 Name it doesn't recognise, so a future renaming upstream would surface as a warning in the workflow log rather than silently mis-attributing population.
-
-This step runs nightly in `update-integrated-composite.yml`, right after `build_cdi_pixel.py` (it depends on that step's GeoTIFF output) and is non-blocking (`continue-on-error: true`), same as that step.
-
-**Front-end display:** a new card, `#cdiPopulationExposureCard`, at the end of the About ADAPT tab's CDI section (after the historical time series chart), rendered by `loadCdiPopulationExposure()`. It fetches `data/cdi_population_exposure.json` at runtime and stays hidden (`style="display:none"` in the markup) until that fetch succeeds -- same graceful-degradation pattern as the other optional live layers, so the card simply won't appear until the workflow has produced the file at least once. Shows national totals by phase as stat cards, then a per-province table sorted by Response-threshold population, with its own explicit callout that these numbers are a different source/methodology from the Provincial Data tab's population exposure and must not be combined with it.
-
-## Site-wide cohesion pass (2026-09-01)
-
-A full read-through of all five tabs found that the dashboard had accumulated **three parallel severity/response frameworks that never referenced each other**: the CDI operational phase (Readiness/Anticipatory Action/Response threshold -- the newest, government-endorsed trigger), the composite biophysical stress priority class (Severe/High/Moderate/Watch/Low, 0-100 scale, different weights, no ENSO/IOD), and the ASIS vegetation stress class (High/Moderate/Watch/Lower). A user could pull the same province from three different tabs and get three differently-labelled verdicts with no indication of how they relate. Fixed:
-
-- **Provincial Data tab**: both the "Composite stress, priority & exposure" and "Live ASIS/GIEWS drought and vegetation stress" cards now state explicitly that the CDI phase (About ADAPT tab) is the primary trigger, and frame their own metrics as complementary, higher-frequency screening layers (ASIS updates roughly every 10 days vs. CDI's monthly cycle) rather than competing verdicts.
-- **Response & Tools tab**: added a new lead card, `#cdiResponseGuidance`, at the top of the tab with the CDI phase &rarr; recommended action table (the same text as `cdiOperationalPhase()` in the About tab, kept in sync by hand). The pre-existing ASIS-based "Operational response framework" table is retitled "ASIS vegetation-stress framework (secondary layer)" and now sits underneath it as a faster-cadence complement, not the tab's only framework.
-- **Overview tab**: the "Executive interpretation" note was leftover pre-rebrand copy that described ADAPT purely as "ASIS/GIEWS screening and the PNG live processing workspace" with no mention of the CDI at all -- directly at odds with the About ADAPT tab's own framing. Rewritten to lead with the CDI as the primary trigger, with ASIS and the live processing workspace as supporting layers.
-- **Population exposure cross-reference**: About ADAPT's CDI-linked population card already noted it differs from Provincial Data's WorldPop-based figures; Provincial Data's own population section didn't point back. Added the reverse note so the relationship reads the same from either direction.
-- **This README's own opening line** had the same stale framing as the Overview tab and was updated to match (CDI as the primary trigger; ASIS/composite/live-processing as complementary layers).
-
-Not changed: the Overview vs. Provincial Data overlap in ASIS vegetation-ranking content (a chart on Overview, a full table on Provincial Data) was reviewed and left as-is -- summary-then-detail is a normal dashboard pattern, not a redundancy.
-
-## Repository structure
-
-Key files currently used by the dashboard include:
-
-- `index.html` — main GitHub Pages dashboard front end (ADAPT)
-- `README.md` — project documentation
-- `adm1_nso_province.geojson` — PNG provincial boundaries
-- `data/asis_vhi_latest.json` — latest ASIS/GIEWS update for dashboard use
-- `data/integrated_priority_latest.json` — latest integrated composite stress output
-- `data/integrated_priority_latest.csv` — tabular export of integrated priority results
-- `data/live_processing_status.json` — linked live workspace status summary
-- `data/cdi_example_latest.json` — current month's per-province CDI + indicators for the About ADAPT example map/table (see "Monthly update" above)
-- `data/cdi_archive.json` — full 1996-present CDI history for the "Recent CDI components" and "Historical CDI time series" charts
-- `pipeline/PNG_CDI.rds` — the CDI pipeline's latest monthly export; committing a new one here triggers `update-cdi-data.yml`
-- `scripts/update_cdi_data.py` — regenerates the two `cdi_*.json` files above from `pipeline/PNG_CDI.rds`
-- `scripts/build_cdi_pixel.py` — generates the pixel-level CDI raster and patches `layers.cdi_tile_url` into `data/integrated_priority_latest.json`; runs nightly as part of `update-integrated-composite.yml`
-- `data/cdi_pixel_latest.tif` — GeoTIFF export of the pixel-level CDI raster, written by `scripts/build_cdi_pixel.py`
-- `pipeline/CU_reference_imputed.gpkg` — PNG NSO 2024 census-unit population estimates (static reference data, not regenerated monthly)
-- `scripts/build_cdi_population_exposure.py` — samples the CDI raster at each census-unit point and aggregates population/households by province and CDI phase into `data/cdi_population_exposure.json`; runs nightly as part of `update-integrated-composite.yml`, after `build_cdi_pixel.py`
-- `data/cdi_population_exposure.json` — output of the above; see "CDI-linked population exposure" note above before using or displaying these figures
-- `.github/workflows/` — GitHub Actions workflows for automated updates and patching (including `update-cdi-data.yml` and `update-integrated-composite.yml`)
-- `scripts/` — backend processing scripts used to build outputs
-
-## Front-end stack
-
-The dashboard is a lightweight static site built with:
-- **HTML**
-- **CSS**
-- **vanilla JavaScript**
-- **Leaflet** for interactive mapping
-- **Chart.js** for charts
-- **GitHub Pages** for hosting
-
-This keeps deployment simple while allowing live JSON-driven updates.
-
-## Hosting and deployment
-
-The dashboard is hosted through **GitHub Pages** at **https://png-elnino.org**.
-
-Typical deployment flow:
-1. source JSON or HTML changes are committed to the repository
-2. GitHub Actions / Pages build runs
-3. the public site is updated at the Pages URL
-
-Because browser caching can delay visual updates, users may need to do a hard refresh after deployment.
-
-## Data refresh approach
-
-The dashboard can be updated in two main ways:
-
-### 1. Front-end updates
-Changes to:
-- layout
-- tab content
-- table columns
-- popup logic
-- map layer ordering
-- labels and explanatory text
-
-These are usually made in `index.html`.
-
-### 2. Data updates
-Changes to:
-- latest ASIS screening values
-- composite priority outputs
-- population exposure summaries
-- live processing status
-
-These are usually made by updating the JSON/CSV files in `data/` directly or through backend scripts and GitHub workflows.
-
-## Recommended operational interpretation
-
-This dashboard should be used to:
-- identify provinces needing verification
-- compare live vegetation and composite stress signals
-- review population exposure screening results
-- communicate a concise national and provincial briefing
-- support planning for follow-up field checks
-
-It should not be used on its own to:
-- declare official disaster status
-- assign final affected-population counts
-- replace ground validation or sector-specific assessment
-
-## Suggested future improvements
-
-Potential next enhancements include:
-- cleaner technical documentation for each workflow and script
-- better distinction between screening outputs and confirmed impacts
-- area-based stress metrics alongside population exposure
-- percent-of-population exposed by province
-- stronger audit trail for each automated data refresh
-- automated metadata display for all live layers
-- downloadable technical notes and methodology annexes
-
-## Maintainer notes
-
-When making updates, check both:
-- **front-end presentation logic** in `index.html`
-- **backend data products** in `data/`
-
-If a value looks wrong on the public page, the cause is usually one of these:
-1. stale browser cache
-2. JSON output not refreshed
-3. front-end renderer still using an old field structure
-4. GitHub Pages deployment not yet completed
-
-## Disclaimer
-
-This dashboard is a **screening and decision-support tool**. Results are intended for early warning, planning, and prioritisation. Final interpretation should always be supported by field evidence, technical review, and decisions by the appropriate PNG government authorities and partner institutions.
+[INDEX~1.HTM](https://github.com/user-attachments/files/31776519/INDEX.1.HTM)
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADAPt — Agricultural Draught Action Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--primary:#6699C2;--primary2:#4F82B3;--accent:#2F6FA3;--danger:#991b1b;--warning:#b45309;--success:#166534;--bg:#F3F8FC;--card:#fff;--ink:#102A43;--muted:#516173;--line:#C7D9EA;--soft:#E7F1F8;--shadow:0 8px 24px rgba(16,24,40,.08);--shadow2:0 18px 45px rgba(16,24,40,.14)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at top left,#E7F1F8 0,#F3F8FC 34%,#F8FBFD 100%);color:var(--ink)}
+header{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:42px 22px}
+header:after{content:"";position:absolute;right:-120px;top:-140px;width:410px;height:410px;border-radius:999px;background:rgba(255,255,255,.08)}
+.wrap,main{max-width:1240px;margin:auto;position:relative;z-index:1}
+.title-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.title-flag{width:54px;height:auto;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.35);background:#fff}
+h1{margin:.3rem 0 0;font-size:clamp(32px,5vw,58px);line-height:1.03;letter-spacing:-.055em;max-width:980px}h2{margin:0 0 8px;font-size:22px}h3{margin:14px 0 8px;font-size:17px}.tag{color:#EAF4FC;text-transform:uppercase;font-weight:800;letter-spacing:.12em;font-size:13px}.sub{max-width:920px;line-height:1.55;font-size:18px;color:#F8FBFD}.hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.hero-meta span{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;color:#F8FBFD}
+main{padding:20px}.tabs{position:sticky;top:0;z-index:900;background:rgba(243,248,252,.86);backdrop-filter:blur(10px);display:flex;gap:8px;flex-wrap:wrap;padding:10px 0 14px;margin-bottom:16px;border-bottom:1px solid rgba(199,217,234,.7)}.tab,.btn{border:1px solid rgba(102,153,194,.25);background:#fff;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer;transition:.16s;box-shadow:0 1px 2px rgba(16,24,40,.04);text-decoration:none;color:var(--ink);display:inline-block}.tab:hover,.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}.tab.active,.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border-color:var(--primary);color:#fff;box-shadow:0 10px 24px rgba(102,153,194,.28)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid rgba(102,153,194,.18);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.full{grid-column:1/-1}.half{grid-column:span 6}.third{grid-column:span 4}.wide{grid-column:span 8}.side{grid-column:span 4}.kpi{grid-column:span 3;position:relative;overflow:hidden;background:linear-gradient(180deg,#fff,#f9fbfb);padding:20px}.kpi:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--primary),var(--accent))}.kpi .muted{text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:800}.kpi b{font-size:30px;display:block;margin-top:4px;letter-spacing:-.04em;color:#102A43}.muted{color:var(--muted);font-size:14px}.small{font-size:13px;color:var(--muted);line-height:1.45}.note,.warn,.explain{border-radius:14px;padding:13px;line-height:1.5;margin:10px 0}.note{border-left:4px solid var(--primary2);background:linear-gradient(135deg,#E7F1F8,#F8FBFD)}.warn{border-left:4px solid #b45309;background:linear-gradient(135deg,#fff7ed,#fffdfa)}.explain{background:#f8fafc;border:1px solid #e5e7eb}.eyebrow{display:inline-block;margin-bottom:8px;color:var(--primary2);text-transform:uppercase;letter-spacing:.12em;font-weight:800;font-size:12px}
+.pill,.map-badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}.Severe{background:#7f0000;color:#fff}.High{background:#d73027;color:#fff}.Moderate{background:#fc8d59;color:#fff}.Watch{background:#fee08b;color:#854d0e}.Low{background:#91cf60;color:#166534}.Lower{background:#dcfce7;color:#166534}.NoData{background:#e2e8f0;color:#334155}.Response{background:#a50026;color:#fff}.AA{background:#fdae61;color:#7c2d12}.Readiness{background:#abd9e9;color:#0c4a6e}.Monitoring{background:#e2e8f0;color:#334155}.map-badge{background:#E7F1F8;color:#102A43;border:1px solid #C7D9EA;white-space:nowrap}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}th,td{padding:10px;border-bottom:1px solid #edf0f5;text-align:left;vertical-align:top}th{background:#E7F1F8;color:#344054;font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;position:sticky;top:0}tbody tr:hover td{background:#f8fafc}select,input{padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}.toolbar,.embed-actions,.table-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.table-controls{margin:10px 0 12px}.field{min-width:220px;flex:1}.tablewrap{overflow:auto;max-height:520px}canvas{max-height:390px}#map{height:620px;border-radius:20px;border:1px solid rgba(102,153,194,.28);background:#e5e7eb;box-shadow:var(--shadow2)}.mapbar{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:stretch}.map-legend{background:#fff!important;color:#111827!important;padding:10px;border-radius:10px;box-shadow:0 2px 10px #0002;line-height:1.35}.map-legend *{color:#111827!important}.swatch{display:inline-block;width:14px;height:14px;border:1px solid #777;margin-right:6px;vertical-align:middle}.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric div{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:12px}.metric b{font-size:20px;display:block}.source,.launch-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}.embed-frame{width:100%;height:760px;border:1px solid rgba(102,153,194,.28);border-radius:20px;background:#e5e7eb;box-shadow:var(--shadow2)}.site-footer{max-width:1240px;margin:28px auto 0;padding:22px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--line)}
+@media(max-width:950px){.kpi,.wide,.side,.half,.third{grid-column:1/-1}.mapbar,.metric{grid-template-columns:1fr}#map{height:500px}.embed-frame{height:620px}.site-footer{display:block}.hero-meta span{width:100%}.title-row{align-items:flex-start}.title-flag{width:42px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="tag">FAO ADAPt · PNG climate risk decision support</div><div class="title-row"><img class="title-flag" src="https://flagcdn.com/w80/pg.png" alt="Papua New Guinea flag"><h1>ADAPt</h1></div><p class="sub">Agricultural Draught Action Platform — live vegetation-health and agricultural drought screening using FAO ASIS/GIEWS information for Papua New Guinea.</p><div class="hero-meta"><span>FAO ASIS/GIEWS overview</span><span id="heroDekad">Latest screening period</span><span>Provincial outlook</span><span>Agricultural early warning</span></div></div></header>
+<main>
+<div class="tabs"><button class="tab active" data-panel="about">About ADAPt</button><button class="tab" data-panel="overview">Overview</button><button class="tab" data-panel="mapPanel">Interactive Map</button><button class="tab" data-panel="provincial">Provincial Data</button><button class="tab" data-panel="response">Response &amp; Tools</button></div>
+<section id="about" class="panel active"><div class="grid"><section class="card full" id="aboutAdaptIntro"><span class="eyebrow">FAO Papua New Guinea</span><h2>What is ADAPt?</h2><p>ADAPt is FAO Papua New Guinea’s public early-warning dashboard for El Niño-related agricultural drought risk. It is built around the <b>Combined Drought Index (CDI)</b>, developed jointly by PNG’s National Weather Service (NWS) and FAO, and brings together live vegetation-health screening, composite biophysical stress, and population exposure analysis in one place to support early warning, provincial prioritisation, and field verification planning.</p><p class="small">Use this tab to understand the CDI methodology behind ADAPt. The <b>Overview</b>, <b>Interactive Map</b> and <b>Provincial Data</b> tabs present the live screening outputs that ADAPt generates from it.</p></section><section class="card full" id="cdiReferenceCard"><span class="eyebrow">Official NWS/FAO methodology</span><h2>About the Combined Drought Index (CDI)</h2><p>The Combined Drought Index (CDI) is being developed jointly by Papua New Guinea's National Weather Service (NWS) and FAO to assess drought severity and trigger anticipatory action, complementing NWS's existing Drought Early Warning System. It is based on published research (Isaev E, Yuave N, Inape K, Jones C, Dawa L &amp; Sidle RC, 2024, <i>Agricultural Drought-Triggering for Anticipatory Action in Papua New Guinea</i>, Water 16, 2009) and computed at province level, monthly, from free/open, programmatically-accessible data sources with a historical archive back to 1996.</p><!-- Latest data used column: keep in sync with the "Example: PNG, <month>" heading/caption above and CDI_EXAMPLE_DATA below whenever the monthly CDI update is applied. --><div class="tablewrap"><table><thead><tr><th>Indicator</th><th>Source</th><th title="How this indicator is scored: 0 = normal, 0.5 = alert, 1 = declared/severe, before being multiplied by its weight below.">Flag rule</th><th title="This indicator's share of the final CDI weighted sum.">Weight</th><th>Latest data used</th></tr></thead><tbody><tr><td>ENSO (Relative Ni&ntilde;o3.4)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>20%</td><td class="cdi-obs-date">Loading&hellip;</td></tr><tr><td>Indian Ocean Dipole (DMI)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>10%</td><td class="cdi-obs-date">Loading&hellip;</td></tr><tr><td>Present rainfall (SPI-1)</td><td>CHIRPS, Climate Hazards Center (UCSB)</td><td>0.5 if -0.5&le;SPI&lt;0, 1 if SPI&lt;-0.5</td><td>20%</td><td class="cdi-obs-date">Loading&hellip;</td></tr><tr><td>Present soil moisture</td><td>ERA5-Land, ECMWF</td><td>0.5 if 5-15% below normal, 1 if &gt;15%</td><td>20%</td><td class="cdi-obs-date">Loading&hellip;</td></tr><tr><td>Present vegetation health</td><td>FAO ASIS</td><td>0.5 if VHI&lt;0.4, 1 if VHI&lt;0.3</td><td>10%</td><td class="cdi-obs-date">Loading&hellip;</td></tr><tr><td>Forecast rainfall (SPI-3)</td><td>ECMWF SEAS5</td><td>0.5 if -1&le;SPI&lt;0, 1 if SPI&lt;-1</td><td>20%</td><td id="cdiForecastDate">Loading&hellip;</td></tr></tbody></table></div><p class="note"><b>Combination:</b> these six flags are combined into a weighted sum ranging from 0 to 1. <b>Operational phase (FSC Food Security &amp; Agriculture Sectoral Plan, Aug 2026, Table 1):</b> 0.40&ndash;0.59 Readiness &middot; 0.60&ndash;0.79 Anticipatory Action &middot; 0.80&ndash;1.00 Response threshold (urgent field verification). The CDI signals where climate drivers are converging strongly enough to warrant action -- it does not by itself confirm crop failure or food insecurity; field verification and livelihood/market evidence determine the scale and type of response.</p></section><section class="card full"><h3 id="cdiExampleHeading">Example: PNG (interactive &mdash; click a province)</h3><p class="small" id="cdiExampleCaption">Loading latest CDI period&hellip;</p><div id="cdiExampleMap" style="height:480px;border-radius:14px;border:1px solid #e5e7eb"></div><div id="cdiExampleLegend" class="small" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;"></div></section><section class="card half"><h3>Recent CDI components (interactive, by observation month)</h3><div class="toolbar"><div style="min-width:220px"><label class="muted">Province</label><select id="cdiChartProvinceSelect"></select></div></div><canvas id="cdiComponentsChart"></canvas><p class="small" id="cdiComponentsCaption"></p></section><section class="card half"><h3>Historical CDI time series (1996-present, interactive)</h3><canvas id="cdiTimeseriesChart"></canvas><p class="small">The historical CDI record for any province can be used to inform and calibrate anticipatory-action thresholds. Dashed line marks CDI 0.6, the Anticipatory Action threshold (see phase bands above).</p></section><section class="card full" id="cdiPopulationExposureCard" style="display:none"><span class="eyebrow">PNG NSO 2024 Census Units &times; pixel-level CDI</span><h2>Population under CDI-indicated risk</h2><p class="small">Each of ~30,700 NSO 2024 census-unit population points is matched against the pixel-level CDI raster and classified by the same operational phase bands used above. <b>This is a different data source and methodology from the population-exposure figures on the Provincial Data tab</b> (those come from WorldPop intersected with the composite biophysical stress layer, not the CDI) &mdash; the two are not meant to match and should not be added together.</p><div id="cdiPopExposureSummary" style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0"></div><div class="table-wrap" style="overflow-x:auto"><table id="cdiPopExposureTable"><thead><tr><th>Province</th><th>Total population</th><th title="Population at points where the CDI raster reads 0.80-1.00.">Response threshold</th><th title="Population at points where the CDI raster reads 0.60-0.79.">Anticipatory Action</th><th title="Population at points where the CDI raster reads 0.40-0.59.">Readiness</th><th title="Population at points where the CDI raster reads below 0.40.">Monitoring</th><th title="Population at census-unit points that fall outside the CDI raster's coverage area (e.g. small offshore islands).">No CDI coverage</th></tr></thead><tbody></tbody></table></div><p class="small" id="cdiPopExposureMeta" style="margin-top:10px;color:#94a3b8"></p></section></div></section><section id="overview" class="panel"><div class="grid"><section class="card full"><h2>Executive interpretation</h2><div class="warn"><b>Interpretation note:</b> ADAPt's primary trigger is the <b>Combined Drought Index (CDI)</b> -- see the About ADAPt tab for its current phase (Readiness / Anticipatory Action / Response threshold) by province. This overview adds two supporting live layers underneath it: FAO ASIS/GIEWS vegetation-health screening (updated roughly every 10 days, faster than CDI's monthly cycle, useful for catching emerging stress between CDI updates) and the PNG live processing workspace for drought and frost review. Together they support early warning, prioritisation and field verification planning, but none of this replaces official declarations by mandated national authorities or detailed field assessment by DAL, NARI, NDC, provincial or district teams.</div><p>The national overview, graphs, tables, map and operational interpretation are designed to reflect the latest available ASIS/GIEWS screening period where that update is available, while the overview also reports the current PNG live processing workspace date and drought/frost analysis windows. For the CDI phase itself, see About ADAPt.</p><div id="liveStatus" class="note">Loading live ASIS/GIEWS screening update...</div></section><section class="card kpi"><span class="muted">Latest ASIS period</span><b id="cardDekad">--</b><span class="muted" id="cardGenerated">waiting for update</span></section><section class="card kpi"><span class="muted">National vegetation index</span><b id="cardMean">--</b><span class="muted">province mean average</span></section><section class="card kpi"><span class="muted">High / moderate stress</span><b id="cardHighModerate">--</b><span class="muted">provinces</span></section><section class="card kpi"><span class="muted">Watch / lower stress</span><b id="cardWatchLower">--</b><span class="muted">provinces</span></section><section class="card wide"><h2>Province screening details</h2><div class="toolbar"><div style="min-width:260px"><label class="muted">Select province</label><select id="provinceSelect"></select></div><button class="btn primary" id="printBtn">Print current brief</button><button class="btn" id="csvBtn">Download live ASIS CSV</button></div><div id="provinceBrief"></div></section><section class="card side"><h2>Overview focus</h2><p>This dashboard provides a province-level screening view of vegetation condition, drought monitoring and field verification priorities.</p><p>It combines live ASIS/GIEWS screening information with the separate PNG live processing workspace for drought and frost review.</p><p>Population exposure estimates should be interpreted alongside dedicated overlay analysis, field observations and sector-specific assessment.</p></section><section class="card full" id="liveWorkspaceOverviewCard"><span class="eyebrow">PNG live processing workspace</span><h2>Drought and frost processing status</h2><p class="note"><b>Source:</b> This summary provides the latest drought and frost screening windows from the live processing workspace and complements the full interactive workspace. It is intended to give users a quick public-facing overview.</p><div class="metric"><div><span class="muted">Analysis date</span><b id="liveProcDate">Pending</b></div><div><span class="muted">Drought window</span><b id="liveProcDroughtWindow">Pending</b></div><div><span class="muted">Frost window</span><b id="liveProcFrostWindow">Pending</b></div></div><p class="small" id="liveProcNotes">The latest drought and frost screening overview will appear here when available.</p><div class="embed-actions"><a class="btn primary" href="https://png-climate-workspace-v1.streamlit.app/" target="_blank" rel="noopener">Open live processing workspace</a></div></section><section class="card full" id="ensoIodCard"><span class="eyebrow">Climate driver context</span><h2>ENSO / IOD outlook</h2><p class="note"><b>About this card:</b> El Nino-Southern Oscillation (ENSO, measured by the ONI index) and the Indian Ocean Dipole (IOD, measured by the DMI index) are national-scale climate indices, not province-level measurements. They provide background context for the composite biophysical stress score and are not blended into it pixel-by-pixel.</p><div class="metric"><div><span class="muted">ENSO state (ONI)</span><b id="ensoPhase">Pending</b></div><div><span class="muted">IOD state (DMI)</span><b id="iodPhase">Pending</b></div><div><span class="muted">Composite weighting</span><b id="compositeWeightsText">Pending</b></div></div><p class="small" id="ensoIodNote">Climate driver context will appear here when available.</p></section><section class="card half"><h2>Highest vegetation stress provinces</h2><canvas id="vhiRankChart"></canvas></section><section class="card half"><h2>Stress class distribution</h2><canvas id="stressClassChart"></canvas></section></div></section><section id="mapPanel" class="panel"><div class="grid"><section class="card full"><h2>Interactive risk map</h2><div class="mapbar"><div class="explain"><b>About this map:</b> When available, the pixel-level Combined Drought Index (CDI) is the main operational layer, computed per-pixel from the same ENSO, IOD, rainfall, soil moisture, vegetation and forecast inputs used for the province-level CDI shown in the About ADAPt tab. The composite biophysical stress surface (vegetation stress, rainfall deficit and frost) and live ASIS vegetation screening remain available as reference layers.</div><div class="explain"><b>Map controls:</b> Use the layer control in the top-right corner to switch basemaps and turn the pixel-level CDI, composite stress, live ASIS screening, provincial polygons and province point summaries on or off. By default, the map shows the pixel-level CDI where available, otherwise composite stress, with province summaries.</div></div><div id="map"></div><div class="source" id="mapSource">Source: composite biophysical stress, live ASIS/GIEWS screening, and PNG provincial boundaries.</div></section><section class="card full"><h3>Download the underlying data</h3><p class="small">The map above is a live Earth Engine tile layer, not a downloadable file by itself. These are exported alongside it on the same daily schedule:</p><div class="embed-actions"><a class="btn primary" id="cdiRasterDownload" href="data/cdi_pixel_latest.tif" download style="display:none">CDI raster (GeoTIFF, pixel-level)</a><a class="btn" href="data/composite_biophysical_stress.tif" download>Composite stress raster (GeoTIFF, ~5km resolution)</a><a class="btn" href="data/integrated_priority_latest.csv" download>Per-province summary (CSV)</a><a class="btn" href="data/integrated_priority_latest.json" download>Full data (JSON)</a></div><p class="small">The GeoTIFF is single-band (composite score 0-100, EPSG:4326, ~5km/pixel -- a national-overview resolution, not survey-grade) and updates on the same daily schedule as the map and the other data files above.</p></section></div></section><section id="provincial" class="panel"><div class="grid"><section class="card full"><h2>Live ASIS/GIEWS drought and vegetation stress</h2><p class="note"><b>Source and method:</b> This section summarises the latest available FAO vegetation-health screening update for Papua New Guinea. Non-analytical classes are excluded before province summaries are calculated. This same ASIS vegetation signal is also one of six inputs into the CDI (10% weight, see About ADAPt) -- but updates roughly every 10 days versus CDI's monthly cycle, so treat it as a faster early-warning layer between CDI updates, not a substitute for the CDI phase itself.</p></section><section class="card wide"><h2>Province ranking by vegetation condition</h2><canvas id="asisVhiChart"></canvas></section><section class="card side"><h2>Vegetation condition guide</h2><p><b>&lt; 0.35:</b> high vegetation stress.</p><p><b>0.35-0.50:</b> moderate vegetation stress.</p><p><b>0.50-0.65:</b> watch / below-normal vegetation condition.</p><p><b>&gt; 0.65:</b> lower current vegetation stress.</p><p class="small">These values help compare current vegetation condition between provinces and identify where field verification should be prioritised.</p></section><section class="card full"><h2>Live ASIS provincial table</h2><div class="table-controls"><div class="field"><label class="muted">Find province</label><input id="asisSearch" type="text" placeholder="Type a province name"></div><div class="field"><label class="muted">Sort by</label><select id="asisSort"><option value="stress_desc">Highest stress first</option><option value="stress_asc">Lowest stress first</option><option value="province_asc">Province A-Z</option><option value="province_desc">Province Z-A</option></select></div></div><div class="tablewrap"><table id="asisTable"><thead><tr><th>Rank</th><th>Province</th><th title="FAO ASIS Vegetation Health Index, 0-1 scale -- lower means more vegetation stress.">Vegetation index</th><th title="High / Moderate / Watch / Lower -- see the Vegetation condition guide above for exact cutoffs.">Stress class</th><th>Recommended verification priority</th><th>Plain-language meaning</th></tr></thead><tbody></tbody></table></div></section><section class="card full"><h2>Composite stress, priority &amp; exposure</h2><p class="note"><b>About this table:</b> This table combines the vegetation, rainfall, soil-moisture and frost signals into a single composite stress score, an agricultural and exposure priority score, a priority class, and population exposure -- all summarised by province. These are screening and prioritisation metrics, not final impact declarations. <b>This is a different framework from the CDI phase</b> (Readiness/Anticipatory Action/Response threshold) shown on the About ADAPt tab -- the CDI is the primary FSC-endorsed trigger for anticipatory action; the composite score here is a complementary, more frequently-updated screening layer with its own weighting (no ENSO/IOD). The population figures below are also separate from About ADAPt's CDI-linked population figure (different source: WorldPop here vs. PNG NSO 2024 census units there) -- the two should not be added together.</p></section><section class="card kpi"><span class="muted">Population exposed</span><b id="provPopExposed">--</b><span class="muted">people in composite stress zones</span></section><section class="card kpi"><span class="muted">High-exposure population</span><b id="provPopHighExposure">--</b><span class="muted">people in higher composite stress zones</span></section><section class="card kpi"><span class="muted">Affected provinces</span><b id="provAffectedCount">--</b><span class="muted">provinces with exposed population</span></section><section class="card kpi"><span class="muted">Watch-level population</span><b id="provWatchPop">--</b><span class="muted">people in watch-level stress zones</span></section><section class="card full"><h2>Provincial indicators table</h2><div class="table-controls"><div class="field"><label class="muted">Find province</label><input id="provincialSearch" type="text" placeholder="Type a province name"></div><div class="field"><label class="muted">Sort by</label><select id="provincialSort"><option value="stress_desc">Highest composite stress first</option><option value="stress_asc">Lowest composite stress first</option><option value="population_desc">Highest population exposed first</option><option value="population_asc">Lowest population exposed first</option><option value="province_asc">Province A-Z</option><option value="province_desc">Province Z-A</option></select></div></div><div class="tablewrap"><table id="provincialTable"><thead><tr><th>Province</th><th title="Composite biophysical stress score (0-100): vegetation, rainfall, soil moisture and frost combined. Not the same as the CDI -- see note above.">Composite stress</th><th title="Priority class derived from the composite stress score: Severe / High / Moderate / Watch / Low.">Class</th><th title="Agricultural priority (0-100): composite stress weighted toward cropland-heavy areas.">Ag. priority</th><th title="Exposure priority (0-100): composite stress weighted toward population-dense areas.">Exposure priority</th><th title="Estimated people (WorldPop) in this province's composite-stress zones.">Population exposed</th><th title="Estimated people (WorldPop) in this province's higher composite-stress zones.">High-exposure pop.</th><th title="FAO ASIS Vegetation Health Index, 0-1 scale -- lower means more vegetation stress. One of the CDI's six inputs, but shown here as its own live signal.">ASIS veg. index</th><th title="Recent rainfall as a percentage of the long-term normal for this location.">Rainfall % normal</th><th title="Recent soil moisture as a percentage of the long-term normal for this location.">Soil moisture % normal</th><th title="Mean night-time land surface temperature -- a frost-risk proxy, degrees Celsius.">Frost mean &deg;C</th></tr></thead><tbody></tbody></table></div></section></div></section><section id="response" class="panel"><div class="grid"><section class="card full" id="cdiResponseGuidance"><span class="eyebrow">Primary trigger &mdash; FAO PNG Food Security &amp; Agriculture Sectoral Plan, Table 1</span><h2>CDI-based response guidance</h2><p class="note">The <b>Combined Drought Index (CDI) phase is ADAPt's primary, government-endorsed trigger</b> for anticipatory action -- see the About ADAPt tab's interactive map or the Interactive Map tab for each province's current phase. This table repeats the same phase-to-action guidance shown there so it sits directly alongside this tab's other response tools.</p><table><thead><tr><th>CDI phase</th><th>Recommended action</th></tr></thead><tbody><tr><td><span class="pill Readiness">Readiness</span><br><span class="small" style="color:#64748b">CDI 0.40&ndash;0.59</span></td><td>Maintain preparedness while supporting higher-phase operations elsewhere.</td></tr><tr><td><span class="pill AA">Anticipatory Action</span><br><span class="small" style="color:#64748b">CDI 0.60&ndash;0.79</span></td><td>Activate/scale anticipatory action now; complete field verification and prioritize hotspots.</td></tr><tr><td><span class="pill Response">Response threshold</span><br><span class="small" style="color:#64748b">CDI 0.80&ndash;1.00</span></td><td>Urgently verify severity and impacts; transition to response only where the CDI signal and field evidence converge.</td></tr></tbody></table><p class="small" style="margin-top:10px;color:#94a3b8">The ASIS vegetation-stress framework below is a complementary, higher-frequency layer (ASIS updates roughly every 10 days vs. CDI's monthly cycle) -- useful for catching emerging stress between CDI updates, not a replacement for the CDI phase above.</p></section><section class="card full"><h2>ASIS vegetation-stress framework (secondary layer)</h2><p class="note"><b>Field verification approach:</b> Verification should be coordinated through DAL, NARI, NDC, provincial disaster offices, district agriculture officers and relevant partner teams. Verification can use geotagged photos, GPS points, crop condition forms, water-source checks, community/key informant interviews and approved data-collection platforms such as KoboToolbox, ODK, Survey123 or other government/partner systems.</p><table><thead><tr><th>ASIS stress group</th><th>Interpretation</th><th>Recommended action</th></tr></thead><tbody><tr><td><span class="pill High">High</span></td><td>Current vegetation condition indicates strong stress relative to normal and should be treated as the highest verification priority.</td><td>Immediate district/province verification, crop and water checks, food-security screening, rapid advisory messaging and escalation where field evidence confirms impacts.</td></tr><tr><td><span class="pill Moderate">Moderate</span></td><td>Vegetation condition is below normal and should be monitored closely for further deterioration.</td><td>Rapid crop and rainfall review, repeat checks, local advisory support and targeted verification if market, water or crop concerns are already emerging.</td></tr><tr><td><span class="pill Watch">Watch</span></td><td>Conditions are below normal but not yet in the highest concern class.</td><td>Routine monitoring, district updates and trigger-based follow-up where reports worsen or additional indicators also show stress.</td></tr><tr><td><span class="pill Lower">Lower</span></td><td>Lower current vegetation stress in the latest dekad.</td><td>Routine monitoring, maintain surveillance and verify localised reports if communities flag issues not visible at province scale.</td></tr></tbody></table></section><section class="card full"><h2>Field verification checklist</h2><table><thead><tr><th>Check</th><th>What to collect</th><th>Who can verify</th></tr></thead><tbody><tr><td>Crop condition</td><td>Photos, GPS points, crop type, damage level, garden age and whether damage is drought-related or from another cause.</td><td>DAL/NARI officers, district agriculture officers, provincial teams and partner field teams.</td></tr><tr><td>Water availability</td><td>Water-source status, distance to water, quality concerns, low-flow or drying sources.</td><td>Provincial disaster offices, district teams, WASH partners and community focal points.</td></tr><tr><td>Food access</td><td>Meal changes, wild foods, market prices, shortages and coping mechanisms.</td><td>Provincial/district teams, partners and community key informants.</td></tr><tr><td>Hazard attribution</td><td>Separate drought stress from frost, pests, fire, flood or market shocks where possible.</td><td>Multi-sector assessment teams and technical specialists.</td></tr></tbody></table></section><section class="card full"><span class="eyebrow">Separate processing app</span><h2>Live Processing Workspace</h2><p class="note"><b>Purpose of this tab:</b> This section links to the separate Streamlit-based processing workspace used for live review, processing and export of climate-risk layers. It is separate from the main public briefing dashboard.</p><div class="embed-actions"><a class="btn primary" href="https://png-climate-workspace-v1.streamlit.app/" target="_blank" rel="noopener">Open live processing workspace in new tab</a></div></section><section class="card full"><iframe class="embed-frame" src="https://png-climate-workspace-v1.streamlit.app/?embed=true" title="Live Processing Workspace Streamlit App" loading="lazy" allow="fullscreen"></iframe><p class="launch-note">Embedded source: <b>png-climate-workspace-v1.streamlit.app</b>. If the embedded view does not load, use the button above to open the processing app directly.</p></section><section class="card full"><span class="eyebrow">PNG National Weather Service</span><h2>PNGNWS Outlook</h2><p class="note"><b>Official national reference:</b> This tab links to public outlook and satellite products published by the PNG National Weather Service. These products complement the dashboard screening outputs and provide an official national forecast context for interpretation and briefing.</p><div class="embed-actions"><a class="btn primary" href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener">3-Month Forecast</a><a class="btn" href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener">31-Day Forecast</a><a class="btn" href="https://www.pngmet.gov.pg/public-wx/" target="_blank" rel="noopener">Public Weather</a><a class="btn" href="https://www.pngmet.gov.pg/satellite/himawari/" target="_blank" rel="noopener">Satellite</a></div><p class="small">Official links open in a new tab. Preview images below are synced automatically into this dashboard on a schedule.</p></section><section class="card full"><h2>Forecast and imagery previews</h2><p class="note"><b>Preview note:</b> The previews below are mirrored automatically into this dashboard from public PNGNWS products. They refresh on a schedule so the tab remains stable without manual uploads.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px"><div class="explain"><h3>3-Month Rainfall Outlook (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener"><img src="assets/pngnws/three_month_rain_pngdomain.png" alt="PNGNWS 3-month rainfall outlook PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Seasonal rainfall outlook over the PNG domain.</p></div><div class="explain"><h3>3-Month Rainfall Outlook (Global)</h3><a href="https://www.pngmet.gov.pg/nwp/three-months-forecasts/" target="_blank" rel="noopener"><img src="assets/pngnws/three_month_rain_global.png" alt="PNGNWS 3-month rainfall outlook global domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Global seasonal rainfall outlook published by PNGNWS.</p></div><div class="explain"><h3>31-Day Rainfall Preview (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="assets/pngnws/thirtyone_day_rain_pngdomain.png" alt="PNGNWS 31-day rainfall forecast PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">PNG-domain daily rainfall forecast preview from the 31-day outlook.</p></div><div class="explain"><h3>31-Day Temperature Preview (PNG domain)</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="assets/pngnws/thirtyone_day_temperature_pngdomain.png" alt="PNGNWS 31-day temperature forecast PNG domain" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">PNG-domain near-surface temperature forecast preview.</p></div><div class="explain"><h3>Himawari Satellite Preview</h3><a href="https://www.pngmet.gov.pg/satellite/himawari/" target="_blank" rel="noopener"><img src="assets/pngnws/himawari_ir1s_latest.jpg" alt="PNGNWS Himawari IR1S satellite preview" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Quick-look infrared satellite frame from the PNGNWS Himawari page.</p></div><div class="explain"><h3>GSMaP Daily Rainfall Preview</h3><a href="https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/" target="_blank" rel="noopener"><img src="assets/pngnws/gsmap_daily_latest.png" alt="PNGNWS GSMaP daily rainfall preview" style="width:100%;border-radius:14px;border:1px solid #e5e7eb"></a><p class="small">Daily precipitation preview image available from the PNGNWS product stack.</p></div></div></section><section class="card half"><h2>How to use this tab</h2><p>Use the seasonal and monthly forecast links to compare official national outlook products with the live ASIS/GIEWS vegetation screening, composite stress patterns, and exposure summaries shown elsewhere in the dashboard.</p><p>The satellite link can support rapid visual review of current cloud patterns and synoptic conditions, while Public Weather provides day-to-day national reference information.</p></section><section class="card half"><h2>Suggested interpretation</h2><p>Use PNGNWS products as the official national forecast context, and use the dashboard as a screening and prioritisation layer for provincial follow-up.</p><p>Where both the PNGNWS outlook and the dashboard indicators point in the same direction, confidence in follow-up targeting is stronger. Where they differ, additional technical review and field verification may be needed.</p></section><section class="card full"><span class="eyebrow">Separate FAO geospatial platform</span><h2>EarthMap</h2><p class="note"><b>Purpose of this tab:</b> EarthMap is a separate FAO geospatial platform for exploring contextual layers such as rainfall, vegetation condition, land cover, fire, surface water and other indicators relevant to drought and agricultural risk screening.</p><div class="embed-actions"><a class="btn primary" href="https://png.earthmap.org" target="_blank" rel="noopener">Open EarthMap in new tab</a></div></section><section class="card full"><iframe class="embed-frame" src="https://png.earthmap.org" title="PNG EarthMap" loading="lazy" allow="fullscreen"></iframe><p class="launch-note">Embedded source: <b>png.earthmap.org</b>. If the embedded view is restricted by the external site, open EarthMap directly using the button above.</p></section></div></section>
+</main>
+<footer class="site-footer"><div><b>ADAPt — Agricultural Draught Action Platform</b><br>Prepared for agricultural climate risk screening, field verification and operational planning.</div><div id="footerMeta">Source: FAO ASIS/GIEWS screening update<br>Waiting for live screening update</div></footer>
+<script>
+const LIVE_ASIS_URL='data/asis_vhi_latest.json?v='+Date.now();
+const LIVE_PROCESSING_URL='data/live_processing_status.json?v='+Date.now();
+const INTEGRATED_PRIORITY_URL='data/integrated_priority_latest.json?v='+Date.now();
+const CENTROIDS={Central:[-9.15,147.55],Enga:[-5.55,143.65],Hela:[-5.95,142.95],Morobe:[-6.8,146.9],'Western Highlands':[-5.75,144.5],'Southern Highlands':[-6.25,143.35],'West Sepik':[-3.85,141.75],Jiwaka:[-5.55,144.75],'Eastern Highlands':[-6.25,145.65],Northern:[-8.8,148.3],Chimbu:[-6.0,144.95],'East Sepik':[-4.15,143.65],Madang:[-5.2,145.7],Western:[-7.3,142.0],'Milne Bay':[-10.3,150.4],Bougainville:[-6.2,155.4],Gulf:[-7.8,145.0],'National Capital District':[-9.45,147.18],'West New Britain':[-5.75,150.05],Manus:[-2.1,147.0],'East New Britain':[-4.5,152.1],'New Ireland':[-3.3,151.6],'Sandaun':[-3.85,141.75]};
+const fmt=x=>x==null?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+const fmt3=x=>x==null?'No data':Number(x).toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3});
+const fmtInt=x=>x==null?'No data':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+const norm=s=>(s||'').toLowerCase().replace(/province|autonomous|region|district|capital|national/g,'').replace(/[^a-z]/g,'');
+const alias={sandaun:'West Sepik',westsepik:'West Sepik',eastsepik:'East Sepik',ncd:'National Capital District',nationalcapital:'National Capital District',nationalcapitaldistrict:'National Capital District',oro:'Northern',northern:'Northern',simbu:'Chimbu',chimbu:'Chimbu',bougainville:'Bougainville',northernsolomons:'Bougainville',westernhighlands:'Western Highlands',southernhighlands:'Southern Highlands',eastnewbritain:'East New Britain',westnewbritain:'West New Britain',newireland:'New Ireland',milnebay:'Milne Bay',gulf:'Gulf',western:'Western',enga:'Enga',madang:'Madang',morobe:'Morobe',easternhighlands:'Eastern Highlands',manus:'Manus',central:'Central',jiwaka:'Jiwaka'};
+let liveData=null,liveRows=[],rowIndex={},liveProcessingData=null,liveProcessingRows=[],integratedData=null,integratedRows=[],map,mapStarted=false,asisTile,integratedCompositeTile,cdiPixelTile,cdiLegendControl,markerLayer,provinceLayer,baseLayerRefs={},overlayLayersRef={},charts={};
+function stressClass(v){if(v==null||Number.isNaN(v))return'No data';if(v<0.35)return'High vegetation stress';if(v<0.50)return'Moderate vegetation stress';if(v<0.65)return'Watch / below-normal vegetation condition';return'Lower current vegetation stress'}
+function stressShort(v){if(v==null||Number.isNaN(v))return'NoData';if(v<0.35)return'High';if(v<0.50)return'Moderate';if(v<0.65)return'Watch';return'Lower'}
+function priority(v){if(v==null||Number.isNaN(v))return'Await live data';if(v<0.35)return'Immediate field verification priority';if(v<0.50)return'High monitoring priority';if(v<0.65)return'Watch and verify if additional signs worsen';return'Routine monitoring'}
+function meaning(r){if(!r||r.mean==null)return'No live ASIS/GIEWS summary available for this province yet.';if(r.mean<0.35)return'Vegetation condition is strongly below normal and should be treated as the highest concern class.';if(r.mean<0.50)return'Vegetation condition is below normal and should be monitored closely for worsening conditions.';if(r.mean<0.65)return'Vegetation condition is somewhat below normal and should remain under watch.';return'Current vegetation condition is relatively healthier in the latest screening period.'}
+function compositeClass(v){if(v==null||Number.isNaN(v))return'No data';if(v>=80)return'Severe';if(v>=60)return'High';if(v>=40)return'Moderate';if(v>=20)return'Watch';return'Low'}
+function compositeShort(v){if(v==null||Number.isNaN(v))return'NoData';if(v>=80)return'Severe';if(v>=60)return'High';if(v>=40)return'Moderate';if(v>=20)return'Watch';return'Low'}
+function compositeColor(v){if(v==null||Number.isNaN(v))return'#cbd5e1';if(v>=80)return'#7f0000';if(v>=60)return'#d73027';if(v>=40)return'#fc8d59';if(v>=20)return'#fee08b';return'#91cf60'}
+function dataDateText(data){if(!data)return'Pending';if(data.dekad_label)return data.dekad_label;const m=data.metadata||{};if(m.DEKAD_year&&m.DEKAD_month&&m.DEKAD_dekadAlt)return `${m.DEKAD_year}-${m.DEKAD_month}-D${m.DEKAD_dekadAlt}`;return'Latest available period'}
+function sourceText(data){return (data&&data.source)||'FAO ASIS/GIEWS';}
+function chart(id,type,labels,data,label,opts={}){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets:[{label,data}]},options:Object.assign({responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}},opts)});return charts[id]}
+function normalizeLiveRows(data){return (data.provinces||[]).map((r,i)=>({rank:i+1,province:r.province||r.ADM1_NAME||'Unknown',mean:r.mean==null?null:Number(r.mean),interpretation:r.interpretation||stressClass(r.mean),population:r.population??r.pop??null,households:r.households??r.hh??null})).sort((a,b)=>(a.mean??999)-(b.mean??999))}
+function buildIndex(){rowIndex={};liveRows.forEach(r=>{const key=norm(r.province);if(key)rowIndex[key]=r})}
+function counts(){return liveRows.reduce((a,r)=>{a[stressShort(r.mean)]=(a[stressShort(r.mean)]||0)+1;return a},{High:0,Moderate:0,Watch:0,Lower:0,NoData:0})}
+function filterByProvince(rows,query){const q=(query||'').trim().toLowerCase();if(!q)return rows.slice();return rows.filter(r=>(r.province||'').toLowerCase().includes(q))}
+function sortAsisRows(rows,choice){const out=rows.slice();if(choice==='province_asc')return out.sort((a,b)=>(a.province||'').localeCompare(b.province||''));if(choice==='province_desc')return out.sort((a,b)=>(b.province||'').localeCompare(a.province||''));if(choice==='stress_asc')return out.sort((a,b)=>(b.mean??-1)-(a.mean??-1));return out.sort((a,b)=>(a.mean??999)-(b.mean??999))}
+function sortLiveProcessingRows(rows,choice){const out=rows.slice();if(choice==='province_asc')return out.sort((a,b)=>(a.province||'').localeCompare(b.province||''));if(choice==='province_desc')return out.sort((a,b)=>(b.province||'').localeCompare(a.province||''));if(choice==='rain_asc')return out.sort((a,b)=>(b.rainfall_pct_normal??-1)-(a.rainfall_pct_normal??-1));if(choice==='rain_desc')return out.sort((a,b)=>(a.rainfall_pct_normal??999)-(b.rainfall_pct_normal??999));if(choice==='frost_asc')return out.sort((a,b)=>(b.mean_night_lst_c??-999)-(a.mean_night_lst_c??-999));if(choice==='frost_desc')return out.sort((a,b)=>(a.mean_night_lst_c??999)-(b.mean_night_lst_c??999));return out}
+function updateStatus(ok,msg){const el=document.getElementById('liveStatus');if(ok){el.className='note';el.innerHTML=`<b>Live ASIS/GIEWS data loaded.</b> Latest period: <b>${dataDateText(liveData)}</b>. Updated: <b>${liveData.generated_utc||'latest update'}</b>. Source: <b>${sourceText(liveData)}</b>.`}else{el.className='warn';el.innerHTML=`<b>Live ASIS/GIEWS data not available yet.</b> ${msg||'The latest ASIS/GIEWS screening update will appear here when available.'}`}}
+function updateOverview(){const c=counts();const valid=liveRows.filter(r=>r.mean!=null);const mean=valid.length?valid.reduce((s,r)=>s+r.mean,0)/valid.length:null;cardDekad.textContent=liveData?.dekad_label||'Pending';cardGenerated.textContent=liveData?.generated_utc||'waiting for update';cardMean.textContent=fmt3(mean);cardHighModerate.textContent=String((c.High||0)+(c.Moderate||0));cardWatchLower.textContent=String((c.Watch||0)+(c.Lower||0));heroDekad.textContent=liveData?.dekad_label||'Latest period pending';footerMeta.innerHTML=`Source: ${sourceText(liveData)}<br>Latest period: ${dataDateText(liveData)} · updated ${liveData?.generated_utc||'pending'}`;provinceSelect.innerHTML=liveRows.map(r=>`<option>${r.province}</option>`).join('');if(liveRows.length){provinceSelect.value=liveRows[0].province;showProvince(liveRows[0].province)}chart('vhiRankChart','bar',liveRows.slice(0,12).reverse().map(r=>r.province),liveRows.slice(0,12).reverse().map(r=>r.mean),'Vegetation index',{indexAxis:'y',scales:{x:{beginAtZero:true,max:1}}});chart('stressClassChart','doughnut',['High','Moderate','Watch','Lower','No data'],[c.High,c.Moderate,c.Watch,c.Lower,c.NoData],'Provinces',{plugins:{legend:{position:'bottom'}}})}
+function showProvince(name){const r=matchProvince(name);provinceBrief.innerHTML=r?`<div class="explain"><h3>${r.province}</h3><table><tr><th>Latest screening period</th><td>${dataDateText(liveData)}</td></tr><tr><th>Vegetation index</th><td><b>${fmt3(r.mean)}</b></td></tr><tr><th>Stress class</th><td><span class="pill ${stressShort(r.mean)}">${stressClass(r.mean)}</span></td></tr><tr><th>Operational priority</th><td>${priority(r.mean)}</td></tr><tr><th>Plain-language meaning</th><td>${meaning(r)}</td></tr></table></div>`:'<div class="warn">No live ASIS/GIEWS record available for this province.</div>'}
+function renderAsisTable(){const query=document.getElementById('asisSearch')?.value||'';const sort=document.getElementById('asisSort')?.value||'stress_desc';const rows=sortAsisRows(filterByProvince(liveRows,query),sort);document.querySelector('#asisTable tbody').innerHTML=rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>${r.province}</b></td><td>${fmt3(r.mean)}</td><td><span class="pill ${stressShort(r.mean)}">${stressClass(r.mean)}</span></td><td>${priority(r.mean)}</td><td>${meaning(r)}</td></tr>`).join(''):'<tr><td colspan="6">No matching provinces found.</td></tr>'}
+function updateAsis(){renderAsisTable();chart('asisVhiChart','bar',liveRows.slice().reverse().map(r=>r.province),liveRows.slice().reverse().map(r=>r.mean),'Vegetation index',{indexAxis:'y',scales:{x:{beginAtZero:true,max:1}}})}
+
+
+
+function filterIntegratedRows(rows,query){const q=(query||'').trim().toLowerCase();if(!q)return rows.slice();return rows.filter(r=>(r.province||'').toLowerCase().includes(q))}
+function sortProvincialRows(rows,choice){const out=rows.slice();if(choice==='province_asc')return out.sort((a,b)=>(a.province||'').localeCompare(b.province||''));if(choice==='province_desc')return out.sort((a,b)=>(b.province||'').localeCompare(a.province||''));if(choice==='population_desc')return out.sort((a,b)=>(b.population_exposed_total??-1)-(a.population_exposed_total??-1));if(choice==='population_asc')return out.sort((a,b)=>(a.population_exposed_total??999999)-(b.population_exposed_total??999999));if(choice==='stress_asc')return out.sort((a,b)=>(a.composite_biophysical_stress_mean??999)-(b.composite_biophysical_stress_mean??999));return out.sort((a,b)=>(b.composite_biophysical_stress_mean??-999)-(a.composite_biophysical_stress_mean??-999))}function renderProvincialTable(){const tbody=document.querySelector('#provincialTable tbody');if(!tbody)return;const query=document.getElementById('provincialSearch')?.value||'';const sort=document.getElementById('provincialSort')?.value||'stress_desc';const rows=sortProvincialRows(filterIntegratedRows(integratedRows,query),sort);if(!rows.length){tbody.innerHTML='<tr><td colspan="11">No matching provinces found.</td></tr>';return}tbody.innerHTML=rows.map(r=>`<tr><td><b>${r.province||'Unknown'}</b></td><td>${r.composite_biophysical_stress_mean==null?'No data':Number(r.composite_biophysical_stress_mean).toFixed(1)}</td><td><span class="pill ${r.priority_class||'NoData'}">${r.priority_class||'No data'}</span></td><td>${r.agricultural_priority_mean==null?'No data':Number(r.agricultural_priority_mean).toFixed(1)}</td><td>${r.exposure_priority_mean==null?'No data':Number(r.exposure_priority_mean).toFixed(1)}</td><td>${fmtInt(r.population_exposed_total)}</td><td>${fmtInt(r.population_high_priority)}</td><td>${r.asis_vhi_mean==null?'No data':Number(r.asis_vhi_mean).toFixed(3)}</td><td>${r.rainfall_pct_normal_mean==null?'No data':Number(r.rainfall_pct_normal_mean).toFixed(1)}</td><td>${r.soil_moisture_pct_normal_mean==null?'No data':Number(r.soil_moisture_pct_normal_mean).toFixed(1)}</td><td>${r.night_lst_celsius_mean==null?'No data':Number(r.night_lst_celsius_mean).toFixed(1)}</td></tr>`).join('')}function updateProvincial(){const summary=integratedData?.national_summary||{};const rows=Array.isArray(integratedRows)?integratedRows:[];const affected=rows.filter(r=>(r.population_exposed_total||0)>0).length;const watchPop=rows.reduce((sum,r)=>sum+(Number(r.population_watch_priority)||0),0);if(document.getElementById('provPopExposed'))provPopExposed.textContent=fmtInt(summary.total_population_exposed);if(document.getElementById('provPopHighExposure'))provPopHighExposure.textContent=fmtInt(summary.total_population_high_priority);if(document.getElementById('provAffectedCount'))provAffectedCount.textContent=fmtInt(affected);if(document.getElementById('provWatchPop'))provWatchPop.textContent=fmtInt(watchPop);renderProvincialTable()}
+
+function matchIntegratedProvince(name){const q=norm(name);if(!q)return null;return integratedRows.find(r=>{const p=norm(r.province);const aliasName=alias[q]?norm(alias[q]):'';return p===q||(aliasName&&p===aliasName)})||null}
+function updateMapSourceText(){if(!document.getElementById('mapSource'))return;const integratedReady=!!integratedData?.layers?.composite_biophysical_stress_tile_url;const cdiPixelReady=!!integratedData?.layers?.cdi_tile_url;const asisReady=!!liveData?.tile_url;const parts=[];if(cdiPixelReady)parts.push('Pixel-level CDI');if(integratedReady)parts.push('Composite biophysical stress');if(asisReady)parts.push('Live ASIS/GIEWS screening');parts.push('PNG provincial boundaries');mapSource.innerHTML=`Source: ${parts.join(', ')}.`}
+function updateEnsoIodCard(data){const ctx=data?.enso_iod_context||null;const weights=data?.composite_weights||null;if(document.getElementById('ensoPhase'))ensoPhase.textContent=ctx?.enso_phase||'Pending';if(document.getElementById('iodPhase'))iodPhase.textContent=ctx?.iod_phase||'Pending';if(document.getElementById('compositeWeightsText')){compositeWeightsText.textContent=weights?`${Math.round(weights.asis*100)}% vegetation / ${Math.round(weights.rainfall*100)}% rainfall / ${Math.round(weights.soil_moisture*100)}% soil moisture / ${Math.round(weights.frost*100)}% frost`:'Pending'}if(document.getElementById('ensoIodNote')){if(!ctx){ensoIodNote.textContent='Climate driver context will appear here when available.'}else{const oniText=ctx.oni_value==null?'ONI not available':`ONI ${ctx.oni_value} (${ctx.oni_period||'latest period'})`;const dmiText=ctx.dmi_value==null?'DMI not available':`DMI ${ctx.dmi_value} (${ctx.dmi_period||'latest period'})`;const errNote=ctx.fetch_error?` Note: ${ctx.fetch_error}`:'';ensoIodNote.textContent=`${oniText}. ${dmiText}. ${ctx.source_note||''}${errNote}`}}}
+function updateIntegratedSection(data){integratedData=data||null;integratedRows=Array.isArray(data?.provinces)?data.provinces.slice():[];updateProvincial();updateMapSourceText();updateEnsoIodCard(data);if(mapStarted){if(provinceLayer)provinceLayer.setStyle(styleFeature);drawMarkers();refreshMapLayers()}}
+function matchProvince(name){const k=norm(name);if(!k)return null;const aliasName=alias[k];const aliasKey=aliasName?norm(aliasName):'';return rowIndex[k]||(aliasKey?rowIndex[aliasKey]:null)||null}
+const PROVNAME_FIXUPS={'Northern (Oro)':'Oro','Chimbu (Simbu)':'Chimbu','West Sepik (Sandaun)':'Sandaun','Milne Bay Province':'Milne Bay','Gulf Province':'Gulf'};
+function getFeatureName(f){const p=(f&&f.properties)||{};let name=p.shapeName||p.shape_name||p.name||p.NAME_1||p.ADM1_EN||p.province||p.PROVINCE||p.Province||p.ADM1_NAME||p.admin1Name||p.PROVNAME||'';return PROVNAME_FIXUPS[name]||name}
+function color(v){if(v==null)return'#cbd5e1';if(v<0.35)return'#662A00';if(v<0.50)return'#D8D8D8';if(v<0.65)return'#E5FFCC';return'#006633'}
+function popup(row,name){const integratedRow=matchIntegratedProvince(name)||(row&&matchIntegratedProvince(row.province));const liveRow=row||matchProvince(name);if(integratedRow){return`<b>${integratedRow.province||name||'Province'}</b><br><span class="pill ${compositeShort(integratedRow.composite_biophysical_stress_mean)}">${compositeClass(integratedRow.composite_biophysical_stress_mean)}</span><br>Composite stress: <b>${integratedRow.composite_biophysical_stress_mean==null?'No data':Number(integratedRow.composite_biophysical_stress_mean).toFixed(1)}</b><br>Population exposed: <b>${fmtInt(integratedRow.population_exposed_total)}</b><br>High exposure population: <b>${fmtInt(integratedRow.population_high_priority)}</b><br>ASIS mean: <b>${integratedRow.asis_vhi_mean==null?'No data':Number(integratedRow.asis_vhi_mean).toFixed(3)}</b><br>Rainfall % normal: <b>${integratedRow.rainfall_pct_normal_mean==null?'No data':Number(integratedRow.rainfall_pct_normal_mean).toFixed(1)}</b><br>Frost mean °C: <b>${integratedRow.night_lst_celsius_mean==null?'No data':Number(integratedRow.night_lst_celsius_mean).toFixed(1)}</b>`}if(!liveRow)return`<b>${name||'Province'}</b><br>Province summary is not available for this map feature yet.`;return`<b>${liveRow.province}</b><br><span class="pill ${stressShort(liveRow.mean)}">${stressClass(liveRow.mean)}</span><br>Vegetation index: <b>${fmt3(liveRow.mean)}</b><br><small>${meaning(liveRow)}</small>`}
+function styleFeature(f){const integratedRow=matchIntegratedProvince(getFeatureName(f));if(integratedRow)return{color:'#475569',weight:1,fillColor:compositeColor(integratedRow.composite_biophysical_stress_mean),fillOpacity:.72};const liveRow=matchProvince(getFeatureName(f));return{color:'#475569',weight:1,fillColor:color(liveRow?.mean),fillOpacity:.72}}
+function drawMarkers(){if(markerLayer){markerLayer.remove();markerLayer=null}markerLayer=L.layerGroup();const rows=integratedRows.length?integratedRows:liveRows;rows.forEach(r=>{const provinceName=r.province||'Unknown';const c=CENTROIDS[provinceName]||CENTROIDS[alias[norm(provinceName)]];if(!c)return;const compositeValue=r.composite_biophysical_stress_mean;const liveValue=r.mean;const markerFill=compositeValue==null?color(liveValue):compositeColor(compositeValue);L.circleMarker(c,{pane:'pointPane',radius:10,color:'#334155',weight:1,fillColor:markerFill,fillOpacity:.85}).bindPopup(popup(matchProvince(provinceName),provinceName)).addTo(markerLayer)});overlayLayersRef.points=markerLayer;if(map && !map.hasLayer(markerLayer))markerLayer.addTo(map)}
+function addLegend(){const legend=L.control({position:'bottomright'});legend.onAdd=()=>{const d=L.DomUtil.create('div','map-legend');d.innerHTML='<b>Composite biophysical stress</b><br><span class="swatch" style="background:#7f0000"></span>80-100 severe<br><span class="swatch" style="background:#d73027"></span>60-79 high<br><span class="swatch" style="background:#fc8d59"></span>40-59 moderate<br><span class="swatch" style="background:#fee08b"></span>20-39 watch<br><span class="swatch" style="background:#91cf60"></span>0-19 low<br><span class="swatch" style="background:#cbd5e1"></span>No data';return d};legend.addTo(map)}
+function refreshMapLayers(){if(!map)return;const overlayMaps={};const cdiPixelUrl=integratedData?.layers?.cdi_tile_url;if(document.getElementById('cdiRasterDownload'))document.getElementById('cdiRasterDownload').style.display=cdiPixelUrl?'inline-block':'none';if(cdiPixelUrl){if(!cdiPixelTile||cdiPixelTile._url!==cdiPixelUrl){if(cdiPixelTile&&map.hasLayer(cdiPixelTile))map.removeLayer(cdiPixelTile);cdiPixelTile=L.tileLayer(cdiPixelUrl,{pane:'rasterPane',attribution:'NWS/FAO Combined Drought Index (CDI)',opacity:.82})}overlayMaps['CDI (pixel-level)']=cdiPixelTile;if(!map.hasLayer(cdiPixelTile))cdiPixelTile.addTo(map);if(!cdiLegendControl){cdiLegendControl=L.control({position:'bottomleft'});cdiLegendControl.onAdd=()=>{const d=L.DomUtil.create('div','map-legend');const bands=[['>0.8',cdiExampleColor(0.9)],['0.7-0.8',cdiExampleColor(0.75)],['0.6-0.7 (drought)',cdiExampleColor(0.65)],['0.5-0.6',cdiExampleColor(0.55)],['0.4-0.5',cdiExampleColor(0.45)],['0.3-0.4',cdiExampleColor(0.35)],['0-0.3',cdiExampleColor(0.1)]];d.innerHTML='<b>CDI (pixel-level)</b><br>'+bands.map(([label,c])=>`<span class="swatch" style="background:${c}"></span>${label}<br>`).join('');return d};cdiLegendControl.addTo(map)}}else if(cdiLegendControl){map.removeControl(cdiLegendControl);cdiLegendControl=null}if(integratedData?.layers?.composite_biophysical_stress_tile_url){if(!integratedCompositeTile||integratedCompositeTile._url!==integratedData.layers.composite_biophysical_stress_tile_url){if(integratedCompositeTile&&map.hasLayer(integratedCompositeTile))map.removeLayer(integratedCompositeTile);integratedCompositeTile=L.tileLayer(integratedData.layers.composite_biophysical_stress_tile_url,{pane:'rasterPane',attribution:'Composite biophysical stress',opacity:.82})}overlayMaps['Composite biophysical stress']=integratedCompositeTile;if(!map.hasLayer(integratedCompositeTile)&&!cdiPixelUrl)integratedCompositeTile.addTo(map)}if(liveData?.tile_url){if(!asisTile||asisTile._url!==liveData.tile_url){if(asisTile&&map.hasLayer(asisTile))map.removeLayer(asisTile);asisTile=L.tileLayer(liveData.tile_url,{pane:'rasterPane',attribution:'FAO ASIS/GIEWS',opacity:.82})}overlayMaps['Live ASIS vegetation screening']=asisTile}if(provinceLayer)overlayMaps['Provincial polygons']=provinceLayer;if(markerLayer)overlayMaps['Province point summaries']=markerLayer;if(map._layerControl)map.removeControl(map._layerControl);map._layerControl=L.control.layers(baseLayerRefs,overlayMaps,{collapsed:false,position:'topright'}).addTo(map)}
+function initMap(){if(mapStarted)return;mapStarted=true;map=L.map('map',{scrollWheelZoom:false}).setView([-6.2,145.2],6);map.createPane('rasterPane');map.getPane('rasterPane').style.zIndex=220;map.createPane('provincePane');map.getPane('provincePane').style.zIndex=360;map.createPane('pointPane');map.getPane('pointPane').style.zIndex=420;baseLayerRefs={'OpenStreetMap':L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}),'Google Satellite (Hybrid)':L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',{subdomains:['mt0','mt1','mt2','mt3'],maxZoom:20,attribution:'Imagery &copy; Google'}),'World Imagery':L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles &copy; Esri'}),'Topographic':L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'Map data: &copy; OpenStreetMap contributors, SRTM | Map style: &copy; OpenTopoMap'})};baseLayerRefs['OpenStreetMap'].addTo(map);if(integratedData?.layers?.cdi_tile_url){cdiPixelTile=L.tileLayer(integratedData.layers.cdi_tile_url,{pane:'rasterPane',attribution:'NWS/FAO Combined Drought Index (CDI)',opacity:.82}).addTo(map)}else if(integratedData?.layers?.composite_biophysical_stress_tile_url){integratedCompositeTile=L.tileLayer(integratedData.layers.composite_biophysical_stress_tile_url,{pane:'rasterPane',attribution:'Composite biophysical stress',opacity:.82}).addTo(map)}else if(liveData?.tile_url){asisTile=L.tileLayer(liveData.tile_url,{pane:'rasterPane',attribution:'FAO ASIS/GIEWS',opacity:.82}).addTo(map)}drawMarkers();fetch('adm1_nso_province.geojson').then(r=>{if(!r.ok)throw new Error('Boundary service returned '+r.status);return r.json()}).then(g=>{provinceLayer=L.geoJSON(g,{pane:'provincePane',style:styleFeature,onEachFeature:(f,l)=>{const n=getFeatureName(f);l.on({mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),mouseout:e=>provinceLayer.resetStyle(e.target),click:()=>l.bindPopup(popup(matchProvince(n),n)).openPopup()})}}).addTo(map);overlayLayersRef.provinces=provinceLayer;if(markerLayer && !map.hasLayer(markerLayer))markerLayer.addTo(map);refreshMapLayers();map.fitBounds(provinceLayer.getBounds(),{padding:[12,12]})}).catch(e=>{console.warn('Boundary failed, using centroid fallback:',e);refreshMapLayers()});addLegend();updateMapSourceText();setTimeout(()=>map.invalidateSize(),150)}
+function downloadCSV(){const rows=[['Rank','Province','Vegetation index','Stress class','Updated UTC','Latest period','Source']];liveRows.forEach((r,i)=>rows.push([i+1,r.province,r.mean??'',stressClass(r.mean),liveData?.generated_utc||'',liveData?.dekad_label||'',sourceText(liveData)]));const csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='png_live_asis_screening_summary.csv';a.click();URL.revokeObjectURL(a.href)}
+function initTabs(){document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.panel).classList.add('active');if(b.dataset.panel==='mapPanel'){initMap();setTimeout(()=>map&&map.invalidateSize(),150)}setTimeout(()=>Object.values(charts).forEach(c=>c&&c.resize&&c.resize()),50)}))}
+function updateLiveProcessingCard(data){liveProcessingData=data||null;const dateText=data?.analysis_date||data?.generated_utc||'Pending';const droughtText=data?.drought_window||'Pending';const frostText=data?.frost_window||'Pending';const notes=data?.notes||'Latest drought and frost screening information will appear here when available.';if(document.getElementById('liveProcDate'))liveProcDate.textContent=dateText;if(document.getElementById('liveProcDroughtWindow'))liveProcDroughtWindow.textContent=droughtText;if(document.getElementById('liveProcFrostWindow'))liveProcFrostWindow.textContent=frostText;if(document.getElementById('liveProcNotes'))liveProcNotes.textContent=notes;renderLiveProcessingProvinceSummary(data)}
+function renderLiveProcessingProvinceTable(){const tbody=document.querySelector('#liveProcessingProvinceTable tbody');if(!tbody)return;const query=document.getElementById('liveProcessingSearch')?.value||'';const sort=document.getElementById('liveProcessingSort')?.value||'rain_desc';const rows=sortLiveProcessingRows(filterByProvince(liveProcessingRows,query),sort);tbody.innerHTML=rows.length?rows.map(row=>`<tr><td><b>${row.province??'Unknown'}</b></td><td>${row.rainfall_pct_normal==null?'No data':Number(row.rainfall_pct_normal).toFixed(1)}</td><td>${row.drought_interpretation??'No data'}</td><td>${row.mean_night_lst_c==null?'No data':Number(row.mean_night_lst_c).toFixed(1)}</td><td>${row.frost_interpretation??'No data'}</td></tr>`).join(''):'<tr><td colspan="5">No matching provinces found.</td></tr>'}
+function renderLiveProcessingProvinceSummary(data){liveProcessingRows=Array.isArray(data?.province_summary)?data.province_summary:[];let section=document.getElementById('liveProcessingProvinceSummaryCard');if(!section){const anchor=document.getElementById('liveWorkspaceOverviewCard');if(!anchor||!anchor.parentElement)return;section=document.createElement('section');section.id='liveProcessingProvinceSummaryCard';section.className='card full';section.innerHTML='<span class="eyebrow">PNG live processing workspace</span><h2>Provincial drought and frost screening summary</h2><p class="note"><b>Source:</b> This table summarises the latest provincial drought and frost screening results from the live processing workspace.</p><div class="table-controls"><div class="field"><label class="muted">Find province</label><input id="liveProcessingSearch" type="text" placeholder="Type a province name"></div><div class="field"><label class="muted">Sort by</label><select id="liveProcessingSort"><option value="rain_desc">Lowest rainfall first</option><option value="rain_asc">Highest rainfall first</option><option value="frost_desc">Coldest first</option><option value="frost_asc">Warmest first</option><option value="province_asc">Province A-Z</option><option value="province_desc">Province Z-A</option></select></div></div><div class="tablewrap"><table id="liveProcessingProvinceTable"><thead><tr><th>Province</th><th>Rainfall % normal</th><th>Drought interpretation</th><th>Mean night LST °C</th><th>Frost interpretation</th></tr></thead><tbody></tbody></table></div>';anchor.insertAdjacentElement('afterend',section);document.getElementById('liveProcessingSearch').addEventListener('input',renderLiveProcessingProvinceTable);document.getElementById('liveProcessingSort').addEventListener('change',renderLiveProcessingProvinceTable)}renderLiveProcessingProvinceTable()}
+function applyLiveProcessingPending(msg){updateLiveProcessingCard({analysis_date:'Pending',drought_window:'Pending',frost_window:'Pending',notes:msg||'Latest drought and frost screening information will appear here when available.',province_summary:[]})}
+function applyLiveData(data){liveData=data;liveRows=normalizeLiveRows(data);buildIndex();updateStatus(true);updateOverview();updateAsis();updateMapSourceText();if(mapStarted)refreshMapLayers()}
+function applyPending(){liveRows=[];buildIndex();updateStatus(false,'The latest ASIS/GIEWS screening update will appear here when available.');cardDekad.textContent='Pending';cardGenerated.textContent='waiting for update';cardMean.textContent='--';cardHighModerate.textContent='--';cardWatchLower.textContent='--';provinceSelect.innerHTML='<option>No live data</option>';provinceBrief.innerHTML='<div class="warn">Live ASIS/GIEWS data has not been generated yet.</div>';document.querySelector('#asisTable tbody').innerHTML='<tr><td colspan="6">Live ASIS/GIEWS data is not available yet.</td></tr>';updateMapSourceText()}
+function init(){initTabs();printBtn.addEventListener('click',()=>window.print());csvBtn.addEventListener('click',downloadCSV);provinceSelect.addEventListener('change',e=>showProvince(e.target.value));document.getElementById('asisSearch').addEventListener('input',renderAsisTable);document.getElementById('asisSort').addEventListener('change',renderAsisTable);document.getElementById('provincialSearch')?.addEventListener('input',renderProvincialTable);document.getElementById('provincialSort')?.addEventListener('change',renderProvincialTable);fetch(LIVE_ASIS_URL).then(r=>{if(!r.ok)throw new Error('Live ASIS JSON not found: '+r.status);return r.json()}).then(applyLiveData).catch(e=>{console.warn(e);applyPending()});fetch(LIVE_PROCESSING_URL).then(r=>{if(!r.ok)throw new Error('Live processing status JSON not found: '+r.status);return r.json()}).then(updateLiveProcessingCard).catch(e=>{console.warn(e);applyLiveProcessingPending()});fetch(INTEGRATED_PRIORITY_URL).then(r=>{if(!r.ok)throw new Error('Integrated priority JSON not found: '+r.status);return r.json()}).then(updateIntegratedSection).catch(e=>{console.warn(e);integratedRows=[];updateProvincial();updateMapSourceText();updateEnsoIodCard(null)})}
+document.addEventListener('DOMContentLoaded',init);
+
+// --- Interactive CDI example map (About ADAPt tab, "About the CDI" card) ---
+// Per-province CDI + indicator data, and the historical archive used by the
+// "Recent CDI components" / "Historical CDI time series" charts, are now
+// fetched at runtime from data/cdi_example_latest.json and data/cdi_archive.json
+// instead of being embedded here. Run scripts/update_cdi_data.py against the
+// pipeline's monthly PNG_CDI.rds to regenerate those two files -- no manual
+// edits to this file are needed for a routine monthly update.
+let CDI_EXAMPLE_DATA={};
+let CDI_EXAMPLE_LABELS={reporting_month_label:'',observation_month_label:'',forecast_window_label:''};
+
+
+// adm1_nso_province.geojson uses different names for 3 provinces than the
+// CDI data above -- same alias pattern already used elsewhere on this page.
+const CDI_EXAMPLE_NAME_ALIAS={'Northern':'Oro','Northern Solomons':'Bougainville','West Sepik':'Sandaun'};
+// Hela and Jiwaka now have real polygons in the current boundary file
+// (PNG_Province_boundary.geojson, replacing the older adm1_nso_province
+// source that was missing them) -- no marker fallback needed any more.
+
+function cdiExampleLookup(geojsonName){
+  const key=CDI_EXAMPLE_NAME_ALIAS[geojsonName]||geojsonName;
+  return CDI_EXAMPLE_DATA[key]?{name:key,...CDI_EXAMPLE_DATA[key]}:null;
+}
+
+// 7-band diverging scale matching the official map's blue(low)-to-orange(high) palette.
+function cdiExampleColor(cdi){
+  if(cdi==null)return'#cbd5e1';
+  if(cdi>0.8)return'#a50026';
+  if(cdi>0.7)return'#f46d43';
+  if(cdi>0.6)return'#fdae61';
+  if(cdi>0.5)return'#e0f3f8';
+  if(cdi>0.4)return'#abd9e9';
+  if(cdi>0.3)return'#74add1';
+  return'#313695';
+}
+
+// Same flag_from_thresholds logic as the CDI pipeline itself (0/0.5/1),
+// applied here just for display so the popup's flag matches the pipeline's
+// own combine.py exactly rather than a re-derived approximation.
+function cdiExampleFlag(value,alertThreshold,declaredThreshold,direction){
+  if(direction==='below'){
+    if(value<declaredThreshold)return 1;
+    if(value<alertThreshold)return 0.5;
+    return 0;
+  }
+  if(value>=declaredThreshold)return 1;
+  if(value>=alertThreshold)return 0.5;
+  return 0;
+}
+function cdiExampleFlagLabel(flag){return flag>=1?'Declared':flag>=0.5?'Alert':'OK';}
+
+function cdiExampleIndicatorTable(d){
+  const rows=[
+    {label:'ENSO',value:d.enso.toFixed(2),flag:d.enso,weight:'20%'},
+    {label:'IOD',value:d.iod.toFixed(2),flag:d.iod,weight:'10%'},
+    {label:'Rainfall (SPI-1)',value:d.rain.toFixed(2),flag:cdiExampleFlag(d.rain,0,-0.5,'below'),weight:'20%'},
+    {label:'Soil moisture',value:d.sm.toFixed(1)+'%',flag:cdiExampleFlag(d.sm,-5,-15,'below'),weight:'20%'},
+    {label:'Vegetation',value:d.vi.toFixed(2),flag:cdiExampleFlag(d.vi,0.4,0.3,'below'),weight:'10%'},
+    {label:'Forecast (SPI-3)',value:d.fcast3.toFixed(2),flag:cdiExampleFlag(d.fcast3,0,-1,'below'),weight:'20%'},
+  ];
+  const cell='padding:1px 4px;white-space:nowrap';
+  return '<table style="font-size:10.5px;line-height:1.25;margin-top:4px;width:100%;border-collapse:collapse"><thead><tr><th style="'+cell+'">Indicator</th><th style="'+cell+'">Value</th><th style="'+cell+'">Flag</th><th style="'+cell+'">Wt</th></tr></thead><tbody>'
+    + rows.map(r=>`<tr><td style="${cell}">${r.label}</td><td style="${cell}">${r.value}</td><td style="${cell}">${cdiExampleFlagLabel(r.flag)}</td><td style="${cell}">${r.weight}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+
+
+// Province livelihood/impact profiles, from Table 1 of the FAO PNG El Nino Plan of Action (5 July 2026). Keyed to the same canonical province names as CDI_EXAMPLE_DATA so cdiExampleLookup()'s resolved name works for both. This table is a draft and only covers the provinces the source document had filled in as of 5 July 2026 -- provinces not listed here simply don't show this section in the popup, same graceful-degradation pattern as missing CDI data.
+const PROVINCE_LIVELIHOOD_PROFILES={'Hela':{livelihoods:'Highlands kaukau\u2013pig farming system with Arabica coffee and village poultry.',impact:'Moisture stress reduces kaukau yields and planting material, lowers pig fertility and survival, reduces spring flows and affects coffee flowering and cherry development. Frost can cause widespread crop damage.'},'Enga':{livelihoods:'Highlands kaukau farming system with Arabica coffee and temperate vegetables.',impact:'Reduced kaukau production limits household food supplies and pig feed, while declining pasture, spring flows and frost reduce livestock productivity and coffee yields.'},'Southern Highlands':{livelihoods:'Mixed kaukau\u2013pig farming system with Arabica coffee, Irish potato and vegetables.',impact:'Reduced soil moisture lowers kaukau, Irish potato and vegetable yields, while coffee experiences poor flowering and bean filling. Frost further compounds production losses.'},'Western Highlands':{livelihoods:'Coffee\u2013vegetable production system with pigs and poultry.',impact:'Moisture deficits reduce Irish potato and vegetable production, constrain coffee development and increase livestock water stress. Frost compounds losses at higher elevations.'},'Jiwaka':{livelihoods:'Coffee\u2013kaukau farming system with Irish potato, vegetables, pigs and poultry.',impact:'Dry conditions reduce coffee flowering, vegetable production and kaukau yields, while declining water availability affects livestock productivity.'},'Chimbu':{livelihoods:'Highlands kaukau\u2013pig farming system with Irish potato, beans and vegetables.',impact:'Reduced kaukau yields, declining spring flows and frost reduce food production and pig productivity, increasing household food insecurity.'},'Eastern Highlands':{livelihoods:'Coffee\u2013kaukau farming system with Irish potato, temperate vegetables, pigs and poultry.',impact:'Moisture stress reduces kaukau, vegetable and coffee production, while frost and declining spring flows increase agricultural losses.'},'Central':{livelihoods:'Semi-arid mixed farming system with cassava, kaukau, vegetables, cattle, goats, pigs and coastal fisheries.',impact:'Rainfed food gardens experience poor establishment and lower yields, while declining pasture and water availability reduce livestock productivity and household water security.'},'Western':{livelihoods:'Sago\u2013freshwater fisheries system with banana, taro, cassava, hunting and small livestock.',impact:'Reduced river flows lower fish catches, slow sago growth and reduce water quality, affecting food security and river-dependent livelihoods.'},'Morobe':{livelihoods:'Mixed cocoa\u2013coffee farming system with coconut, food gardens, pigs and marine and freshwater fisheries.',impact:'Moisture stress reduces coffee and cocoa yields, lowers garden production and reduces freshwater availability and fisheries productivity.'},'East New Britain':{livelihoods:'Cocoa\u2013coconut agroforestry system with food gardens, reef fisheries and village livestock.',impact:'Reduced cocoa flowering and pod development, declining food garden production and increasing freshwater shortages.'},'West New Britain':{livelihoods:'Oil palm production system with food gardens and marine fisheries.',impact:'Moisture stress lowers oil palm yields, reduces production of kaukau, cassava and banana, and limits freshwater availability.'},'New Ireland':{livelihoods:'Cocoa\u2013coconut farming system with food gardens, pigs and coastal fisheries.',impact:'Dry conditions reduce food garden productivity, cocoa yields and freshwater availability, particularly in northern communities.'},'Manus':{livelihoods:'Island food garden and coastal fisheries system with coconut, breadfruit, pigs and poultry.',impact:'Limited groundwater results in rapid freshwater shortages, reducing food garden production and increasing reliance on fisheries.'},'Bougainville':{livelihoods:'Cocoa\u2013coconut agroforestry system with food gardens, pigs, poultry and coastal fisheries.',impact:'Reduced cocoa production, declining food garden yields and localized freshwater shortages during extended dry periods.'}};
+function cdiOperationalPhase(cdi){if(cdi==null)return{phase:'No data',action:'',cls:'NoData'};if(cdi>=0.8)return{phase:'Response threshold',action:'Urgently verify severity and impacts; transition to response only where the CDI signal and field evidence converge.',cls:'Response'};if(cdi>=0.6)return{phase:'Anticipatory Action',action:'Activate/scale anticipatory action now; complete field verification and prioritize hotspots.',cls:'AA'};if(cdi>=0.4)return{phase:'Readiness',action:'Maintain preparedness while supporting higher-phase operations elsewhere.',cls:'Readiness'};return{phase:'Monitoring',action:'Below the readiness threshold -- continue routine monitoring.',cls:'Monitoring'};}
+function cdiExamplePopup(name,d){if(!d)return `<b>${name}</b><br>No CDI data available for this province.`;const ph=cdiOperationalPhase(d.cdi);const lp=PROVINCE_LIVELIHOOD_PROFILES[d.name];const livelihoodBlock=lp?`<div class="small" style="margin-top:6px;padding-top:6px;border-top:1px solid #e5e7eb"><b>Main livelihoods:</b> ${lp.livelihoods}<br><b>Likely drought impact:</b> ${lp.impact}</div>`:'';return `<div style="min-width:230px;font-size:12px"><b>${d.name}</b><br>CDI: <b>${d.cdi.toFixed(2)}</b> &mdash; <span class="pill ${ph.cls}">${ph.phase}</span><div class="small" style="margin-top:3px;color:#475569">${ph.action}</div>${cdiExampleIndicatorTable(d)}${livelihoodBlock}<div class="small" style="margin-top:4px;color:#94a3b8">Phase bands per FAO PNG Food Security &amp; Agriculture Sectoral Plan (Aug 2026), Table 1${lp?'; livelihoods per FAO PNG El Nino Plan of Action (5 Jul 2026), Table 1':''}.</div></div>`;}
+
+function cdiExampleLegend(){const bands=[['>0.8',cdiExampleColor(0.9)],['0.7-0.8',cdiExampleColor(0.75)],['0.6-0.7',cdiExampleColor(0.65)],['0.5-0.6',cdiExampleColor(0.55)],['0.4-0.5',cdiExampleColor(0.45)],['0.3-0.4',cdiExampleColor(0.35)],['0-0.3',cdiExampleColor(0.1)]];const swatches=bands.map(([label,color])=>`<span><span class="swatch" style="background:${color}"></span>${label}</span>`).join('');const phases=[['Readiness','Readiness'],['Anticipatory Action','AA'],['Response threshold','Response']].map(([label,cls])=>`<span class="pill ${cls}" style="margin-right:4px">${label}</span>`).join('');document.getElementById('cdiExampleLegend').innerHTML=swatches+`<div style="flex-basis:100%;margin-top:6px;color:#64748b">Operational phase (FSC Sectoral Plan, Aug 2026): ${phases} <span style="color:#94a3b8">-- click a province for its current phase and recommended action.</span></div>`;}
+
+function initCdiExampleMap(){
+  const container=document.getElementById('cdiExampleMap');
+  if(!container)return;
+  const cdiMap=L.map('cdiExampleMap',{scrollWheelZoom:false}).setView([-6.2,145.2],5.5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(cdiMap);
+
+  fetch('adm1_nso_province.geojson').then(r=>r.json()).then(g=>{
+    const layer=L.geoJSON(g,{
+      style:f=>{
+        const p=cdiExampleLookup(getFeatureName(f));
+        return {color:'#475569',weight:1,fillColor:cdiExampleColor(p?p.cdi:null),fillOpacity:.75};
+      },
+      onEachFeature:(f,l)=>{
+        const name=getFeatureName(f);
+        const p=cdiExampleLookup(name);
+        l.on({
+          mouseover:e=>e.target.setStyle({weight:3,color:'#111827'}),
+          mouseout:e=>layer.resetStyle(e.target),
+          click:()=>l.bindPopup(cdiExamplePopup(name,p)).openPopup()
+        });
+      }
+    }).addTo(cdiMap);
+
+    cdiMap.fitBounds(layer.getBounds(),{padding:[8,8]});
+    setTimeout(()=>cdiMap.invalidateSize(),150);
+  }).catch(e=>{
+    container.innerHTML='<div class="warn">Could not load province boundaries for the example map.</div>';
+    console.warn('CDI example map boundary load failed:',e);
+  });
+
+  cdiExampleLegend();
+}
+
+
+// --- Interactive CDI historical charts (Overview tab) ---
+// Full CDI history (1996-present, all 22 provinces) and each province's
+// most recent 14 months of raw indicator values, from the same source as
+// the interactive map above (NWS/FAO CDI system's own output,
+// PNG_CDI_python_full_history.csv). Lets any province be explored, not
+// just the Milne Bay example the original static charts were limited to.
+// Fetched at runtime from data/cdi_archive.json (see scripts/update_cdi_data.py).
+let CDI_FULL_DATA={timeline:[],cdi_history:{},recent_indicators:{}};
+
+const CDI_COMPONENT_COLORS={enso:'#e11d1d',iod:'#9333ea',rain:'#06b6d4',sm:'#92400e',vi:'#84cc16',fcast3:'#2563eb'};
+const CDI_COMPONENT_LABELS={enso:'ENSO',iod:'IOD',rain:'SPI-1',sm:'SM',vi:'VI',fcast3:'forecast SPI-3'};
+const CDI_COMPONENT_WEIGHTS={enso:0.20,iod:0.10,rain:0.20,sm:0.20,vi:0.10,fcast3:0.20};
+const CDI_MONTH_ABBR=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let cdiComponentsChartInstance=null,cdiTimeseriesChartInstance=null;
+
+function cdiComponentFlagValue(key,value){
+  // Same flag_from_thresholds logic as the pipeline itself and the map
+  // popup above -- ENSO/IOD are already 0/0.5/1 in the source data.
+  if(key==='enso'||key==='iod')return value;
+  if(key==='rain')return cdiExampleFlag(value,0,-0.5,'below');
+  if(key==='sm')return cdiExampleFlag(value,-5,-15,'below');
+  if(key==='vi')return cdiExampleFlag(value,0.4,0.3,'below');
+  if(key==='fcast3')return cdiExampleFlag(value,0,-1,'below');
+  return 0;
+}
+
+function renderCdiComponentsChart(province){
+  const rec=CDI_FULL_DATA.recent_indicators[province];
+  if(!rec)return;
+  const labels=rec.months.map(([y,m])=>CDI_MONTH_ABBR[m]+' '+y);
+  const keys=['enso','iod','rain','sm','vi','fcast3'];
+  const datasets=keys.map(key=>({
+    label:CDI_COMPONENT_LABELS[key],
+    backgroundColor:CDI_COMPONENT_COLORS[key],
+    data:rec[key].map(v=>+(cdiComponentFlagValue(key,v)*CDI_COMPONENT_WEIGHTS[key]).toFixed(3)),
+    stack:'cdi'
+  }));
+  if(cdiComponentsChartInstance)cdiComponentsChartInstance.destroy();
+  cdiComponentsChartInstance=new Chart(document.getElementById('cdiComponentsChart'),{
+    type:'bar',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom'},tooltip:{callbacks:{
+        footer:items=>{
+          const total=items.reduce((s,i)=>s+i.parsed.y,0);
+          return 'CDI total: '+total.toFixed(2);
+        }
+      }}},
+      scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,max:1,title:{display:true,text:'CDI contribution'}}}
+    }
+  });
+  const obsLabel=CDI_EXAMPLE_LABELS.observation_month_label;
+  const repLabel=CDI_EXAMPLE_LABELS.reporting_month_label;
+  const offsetNote=(obsLabel&&repLabel&&obsLabel!==repLabel)
+    ? ` This chart runs through ${obsLabel}'s observations -- the same data the pipeline reports as "${repLabel}'s CDI" on the map above (see Data timing convention in the README): each CDI estimate is always one month behind the month it's named for, because that's how long the underlying climate data takes to become available.`
+    : '';
+  document.getElementById('cdiComponentsCaption').textContent=
+    'Each bar segment is that indicator\'s flag (0 / 0.5 / 1) multiplied by its weight -- segments sum to that month\'s CDI. Last 14 months shown for '+province+'.'+offsetNote;
+}
+
+function renderCdiTimeseriesChart(province){
+  const cdiValues=CDI_FULL_DATA.cdi_history[province];
+  if(!cdiValues)return;
+  const labels=CDI_FULL_DATA.timeline.map(([y,m])=>y+'-'+String(m).padStart(2,'0'));
+  if(cdiTimeseriesChartInstance)cdiTimeseriesChartInstance.destroy();
+  cdiTimeseriesChartInstance=new Chart(document.getElementById('cdiTimeseriesChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'CDI',data:cdiValues,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.08)',fill:true,pointRadius:0,borderWidth:1.5,tension:0.15},
+      {label:'Drought threshold (0.6)',data:cdiValues.map(()=>0.6),borderColor:'#dc2626',borderDash:[6,4],pointRadius:0,borderWidth:1.5}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom'}},
+      scales:{
+        x:{ticks:{maxTicksLimit:14,autoSkip:true}},
+        y:{min:0,max:1,title:{display:true,text:'CDI'}}
+      }
+    }
+  });
+}
+
+function initCdiCharts(){
+  const select=document.getElementById('cdiChartProvinceSelect');
+  if(!select)return;
+  const provinces=Object.keys(CDI_FULL_DATA.cdi_history).sort();
+  select.innerHTML=provinces.map(p=>`<option${p==='Milne Bay'?' selected':''}>${p}</option>`).join('');
+  const render=()=>{
+    renderCdiComponentsChart(select.value);
+    renderCdiTimeseriesChart(select.value);
+  };
+  select.addEventListener('change',render);
+  render();
+}
+function applyCdiExampleLabels(){
+  const el=(id)=>document.getElementById(id);
+  const L=CDI_EXAMPLE_LABELS;
+  if(el('cdiExampleHeading'))el('cdiExampleHeading').innerHTML='Example: PNG, '+(L.reporting_month_label||'latest period')+' (interactive &mdash; click a province)';
+  if(el('cdiExampleCaption'))el('cdiExampleCaption').textContent=(L.reporting_month_label||'This period')+"'s CDI is based on "+(L.observation_month_label||'the latest')+' observations plus a 3-month ('+(L.forecast_window_label||'upcoming')+') rainfall forecast. Click any province for its CDI, indicator flags, and underlying values. Source: NWS/FAO CDI presentation and data (real per-province results, not illustrative).';
+  document.querySelectorAll('.cdi-obs-date').forEach(t=>t.textContent=L.observation_month_label||'Pending');
+  if(el('cdiForecastDate'))el('cdiForecastDate').textContent=(L.forecast_window_label||'Pending')+' (forecast)';
+}
+function loadCdiData(){
+  Promise.all([
+    fetch('data/cdi_example_latest.json').then(r=>{if(!r.ok)throw new Error('cdi_example_latest.json '+r.status);return r.json()}),
+    fetch('data/cdi_archive.json').then(r=>{if(!r.ok)throw new Error('cdi_archive.json '+r.status);return r.json()})
+  ]).then(([example,archive])=>{
+    CDI_EXAMPLE_DATA=example.provinces||{};
+    CDI_EXAMPLE_LABELS={reporting_month_label:example.reporting_month_label,observation_month_label:example.observation_month_label,forecast_window_label:example.forecast_window_label};
+    CDI_FULL_DATA=archive;
+    applyCdiExampleLabels();
+    initCdiExampleMap();
+    initCdiCharts();
+  }).catch(e=>{
+    console.warn('CDI data failed to load:',e);
+    const cap=document.getElementById('cdiExampleCaption');
+    if(cap)cap.textContent='CDI example data is not available right now.';
+  });
+}
+document.addEventListener('DOMContentLoaded',loadCdiData);
+// CDI-linked population exposure (About ADAPt tab) -- fetched independently from loadCdiData() since it comes from a separate pipeline output (data/cdi_population_exposure.json, written by scripts/build_cdi_population_exposure.py) that may not exist yet (it depends on the pixel CDI raster having been generated at least once). The card stays hidden until this succeeds, same graceful-degradation pattern used for the other optional live layers.
+function loadCdiPopulationExposure(){fetch('data/cdi_population_exposure.json').then(r=>{if(!r.ok)throw new Error('not published yet');return r.json();}).then(d=>{const card=document.getElementById('cdiPopulationExposureCard');if(!card||!d.national)return;const phaseOrder=[['Response threshold','Response'],['Anticipatory Action','AA'],['Readiness','Readiness'],['Monitoring','Monitoring']];const nat=d.national;const total=nat.total_population||1;const summaryEl=document.getElementById('cdiPopExposureSummary');if(summaryEl){summaryEl.innerHTML=phaseOrder.map(([key,cls])=>{const val=nat.population_by_phase?.[key]||0;const pct=total?((val/total)*100).toFixed(1):'0.0';return `<div style="flex:1;min-width:150px;padding:10px 12px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc">`+`<div><span class="pill ${cls}">${key}</span></div>`+`<div style="font-weight:800;font-size:18px;margin-top:6px;color:#1e293b">${val.toLocaleString()}</div>`+`<div class="small" style="color:#64748b">${pct}% of national population</div></div>`;}).join('');}const tbody=document.querySelector('#cdiPopExposureTable tbody');if(tbody&&d.provinces){const rows=Object.entries(d.provinces).sort((a,b)=>(b[1].population_by_phase?.['Response threshold']||0)-(a[1].population_by_phase?.['Response threshold']||0));tbody.innerHTML=rows.map(([name,p])=>{const pbp=p.population_by_phase||{};return `<tr><td><b>${name}</b></td><td>${(p.total_population||0).toLocaleString()}</td>`+`<td>${(pbp['Response threshold']||0).toLocaleString()}</td>`+`<td>${(pbp['Anticipatory Action']||0).toLocaleString()}</td>`+`<td>${(pbp['Readiness']||0).toLocaleString()}</td>`+`<td>${(pbp['Monitoring']||0).toLocaleString()}</td>`+`<td>${(pbp['No data']||0).toLocaleString()}</td></tr>`;}).join('');}const metaEl=document.getElementById('cdiPopExposureMeta');if(metaEl){metaEl.textContent=`Generated ${d.generated_utc||'unknown'}${d.cdi_pixel_observation_month?' \u00b7 CDI observation month '+d.cdi_pixel_observation_month:''} \u00b7 ${nat.census_units_no_coverage||0} of ${nat.census_units||0} census units fell outside CDI raster coverage.`;}card.style.display='';}).catch(()=>{/* not published yet -- leave the card hidden */});}
+document.addEventListener('DOMContentLoaded',loadCdiPopulationExposure);
+
+
+
+</script>
+</body>
+</html>
