@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-03 07:25 UTC",
+  "generated_utc": "2026-09-04 07:27 UTC",
   "asis_date": "2026-08-21",
   "drought_window": "2026-05-08 to 2026-08-06",
   "frost_window": "2026-08-14 to 2026-08-21",
@@ -16,9 +16,9 @@
     "frost": 0.2
   },
   "enso_iod_context": {
-    "oni_value": 1.39,
-    "oni_period": "MJJ 2026",
-    "enso_phase": "Moderate El Nino",
+    "oni_value": 1.8,
+    "oni_period": "JJA 2026",
+    "enso_phase": "Strong El Nino",
     "dmi_value": 0.15,
     "dmi_period": "May 2026",
     "iod_phase": "Neutral IOD",
@@ -26,10 +26,10 @@
     "fetch_error": null
   },
   "layers": {
-    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/8da033eaefb9df8f22774167e3b19b35-6afcf9e5a2f2f88649976bc130a1848a/tiles/{z}/{x}/{y}",
-    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/ad5c056c02f9585d445a165a5ff826d6-93e751309ae58ac6ff80ea759eddb799/tiles/{z}/{x}/{y}",
-    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/f7e2b720183374ead152f6897a1c7676-4cda830c9c4d21e757341ae94d57dbf0/tiles/{z}/{x}/{y}",
-    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/2bc75a596c8e8db075d9fb02b3257ad7-d349e949f6e4280e486ebc7fb5c26379/tiles/{z}/{x}/{y}"
+    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/dc62cacac5854f01f9eaa2fe203a6c8e-3892d8c9c8963e869850b9038565ff7f/tiles/{z}/{x}/{y}",
+    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/428665a773524078477d4b0583b871a0-676b663053c3f2110401a1efed063a58/tiles/{z}/{x}/{y}",
+    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/7944820e2d2ec259d25c703e2fa99496-f338d696cba96fe6ebd278e324fda5fc/tiles/{z}/{x}/{y}",
+    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/2bc75a596c8e8db075d9fb02b3257ad7-4a802ab75c7c894f9d62893d3f4eaaa6/tiles/{z}/{x}/{y}"
   },
   "national_summary": {
     "total_population_exposed": 58179.0,
