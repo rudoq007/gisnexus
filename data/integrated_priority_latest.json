@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-14 08:08 UTC",
+  "generated_utc": "2026-09-15 08:03 UTC",
   "asis_date": "2026-08-21",
   "drought_window": "2026-05-08 to 2026-08-06",
   "frost_window": "2026-08-14 to 2026-08-21",
@@ -26,10 +26,10 @@
     "fetch_error": null
   },
   "layers": {
-    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/3e84347689c48bd183f387e41ccc2b52-d350072aad1fa482a65d22df418d3bc7/tiles/{z}/{x}/{y}",
-    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/c5d6e5b883fc98ea77cb3fc04d7901f2-740470bb2563ab17b3ff4a23289aba29/tiles/{z}/{x}/{y}",
-    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/6866c10729d6a8ed78c9048a84c870e0-9c567f22287be25f5792f14dc83f1c9c/tiles/{z}/{x}/{y}",
-    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fa4ea00762c3a31a6cde0f81688cec9e-1a43faa8f63de70c82026cd5b3a1f4ca/tiles/{z}/{x}/{y}"
+    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/3e84347689c48bd183f387e41ccc2b52-f70fc3aff6e090bdaea28a1b0d29fea7/tiles/{z}/{x}/{y}",
+    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/c5d6e5b883fc98ea77cb3fc04d7901f2-52157d1c0d69984171423a9fd1f6c5d4/tiles/{z}/{x}/{y}",
+    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/6866c10729d6a8ed78c9048a84c870e0-98d201d18111a3cd5e024ee13319aff8/tiles/{z}/{x}/{y}",
+    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fa4ea00762c3a31a6cde0f81688cec9e-376c78e7506a776fdf5edc6d398e50ea/tiles/{z}/{x}/{y}"
   },
   "national_summary": {
     "total_population_exposed": 57382.0,
