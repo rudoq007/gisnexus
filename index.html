@@ -306,7 +306,7 @@ function applyCdiExampleLabels(){
   const el=(id)=>document.getElementById(id);
   const L=CDI_EXAMPLE_LABELS;
   if(el('cdiExampleHeading'))el('cdiExampleHeading').innerHTML='Example: PNG, '+(L.reporting_month_label||'latest period')+' (interactive &mdash; click a province)';
-  if(el('cdiExampleCaption'))el('cdiExampleCaption').textContent=(L.reporting_month_label||'This period')+"'s CDI is based on "+(L.observation_month_label||'the latest')+' observations plus a 3-month ('+(L.forecast_window_label||'upcoming')+') rainfall forecast. Click any province for its CDI, indicator flags, and underlying values. Source: NWS/FAO CDI presentation and data (real per-province results, not illustrative).';
+  if(el('cdiExampleCaption'))el('cdiExampleCaption').textContent='This is the '+(L.reporting_month_label||'latest')+' Combined Drought Index. Click any province for its CDI, indicator flags, and underlying values. Source: NWS/FAO CDI presentation and data (real per-province results, not illustrative).';
   document.querySelectorAll('.cdi-obs-date').forEach(t=>t.textContent=L.observation_month_label||'Pending');
   if(el('cdiForecastDate'))el('cdiForecastDate').textContent=(L.forecast_window_label||'Pending')+' (forecast)';
 }
