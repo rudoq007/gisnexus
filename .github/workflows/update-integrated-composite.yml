@@ -1,9 +1,21 @@
 name: Update integrated composite priority
 
+# Runs on its own nightly cron (fresh ASIS/rainfall/soil-moisture pixels
+# every night regardless of the monthly rds), but is ALSO chained directly
+# off "Update CDI data from monthly PNG_CDI.rds" via workflow_run below --
+# so the moment Josh's PNG_CDI.rds is uploaded and that workflow commits
+# refreshed cdi_example_latest.json / cdi_archive.json, this workflow reruns
+# immediately on top of that commit instead of waiting up to ~24h for the
+# next 02:45 UTC cron. workflow_run always checks out the default branch's
+# latest commit, so by the time this job's checkout step runs, the rds
+# workflow's commit (including its own push) has already landed on main.
 on:
   workflow_dispatch:
   schedule:
     - cron: "45 2 * * *"
+  workflow_run:
+    workflows: ["Update CDI data from monthly PNG_CDI.rds"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -11,6 +23,13 @@ permissions:
 jobs:
   build-integrated-composite:
     runs-on: ubuntu-latest
+    # Only proceed on a workflow_run trigger if the upstream rds workflow
+    # actually succeeded -- a failed/cancelled rds run (bad upload, parse
+    # error) should not cascade into rebuilding the pixel/composite layers
+    # off stale or half-written cdi_example_latest.json. schedule and
+    # workflow_dispatch runs have no workflow_run context, so they always
+    # pass this check untouched.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout repo
