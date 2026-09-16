@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-09-15 08:03 UTC",
-  "cdi_pixel_observation_month": "2026-07",
+  "generated_utc": "2026-09-16 00:48 UTC",
+  "cdi_pixel_observation_month": "2026-08",
   "source": {
     "census_units": "PNG NSO 2024 Census Unit population estimates (pipeline/CU_reference_imputed.gpkg; imputed coordinates used where original point coordinates were missing)",
     "cdi_raster": "data/cdi_pixel_latest.tif"
@@ -10,13 +10,13 @@
     "total_population": 14617706,
     "total_households": 2235460,
     "census_units": 30708,
-    "census_units_no_coverage": 3980,
+    "census_units_no_coverage": 4774,
     "population_by_phase": {
       "Response threshold": 0,
-      "Anticipatory Action": 5568282,
-      "Readiness": 7080966,
-      "Monitoring": 0,
-      "No data": 1968458
+      "Anticipatory Action": 4658707,
+      "Readiness": 5251507,
+      "Monitoring": 2355590,
+      "No data": 2351902
     }
   },
   "provinces": {
@@ -24,286 +24,286 @@
       "total_population": 457807,
       "total_households": 73007,
       "census_units": 1340,
-      "census_units_no_coverage": 140,
+      "census_units_no_coverage": 224,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 161166,
-        "Readiness": 248366,
-        "Monitoring": 0,
-        "No data": 48275
+        "Anticipatory Action": 77820,
+        "Readiness": 130258,
+        "Monitoring": 177589,
+        "No data": 72140
       }
     },
     "Central": {
       "total_population": 526842,
       "total_households": 66317,
       "census_units": 1235,
-      "census_units_no_coverage": 173,
+      "census_units_no_coverage": 186,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 263668,
-        "Readiness": 183204,
-        "Monitoring": 0,
-        "No data": 79970
+        "Anticipatory Action": 163342,
+        "Readiness": 192613,
+        "Monitoring": 84921,
+        "No data": 85966
       }
     },
     "Chimbu": {
       "total_population": 789976,
       "total_households": 130573,
       "census_units": 1792,
-      "census_units_no_coverage": 176,
+      "census_units_no_coverage": 204,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 199051,
-        "Readiness": 516581,
-        "Monitoring": 0,
-        "No data": 74344
+        "Anticipatory Action": 177404,
+        "Readiness": 390620,
+        "Monitoring": 134771,
+        "No data": 87181
       }
     },
     "East New Britain": {
       "total_population": 621904,
       "total_households": 96121,
       "census_units": 1001,
-      "census_units_no_coverage": 238,
+      "census_units_no_coverage": 260,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 200811,
-        "Readiness": 241724,
-        "Monitoring": 0,
-        "No data": 179369
+        "Anticipatory Action": 137465,
+        "Readiness": 204314,
+        "Monitoring": 90054,
+        "No data": 190071
       }
     },
     "East Sepik": {
       "total_population": 807716,
       "total_households": 142002,
       "census_units": 1645,
-      "census_units_no_coverage": 189,
+      "census_units_no_coverage": 214,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 230265,
-        "Readiness": 490689,
-        "Monitoring": 0,
-        "No data": 86762
+        "Anticipatory Action": 239689,
+        "Readiness": 381836,
+        "Monitoring": 86477,
+        "No data": 99714
       }
     },
     "Eastern Highlands": {
       "total_population": 971670,
       "total_households": 179364,
       "census_units": 3061,
-      "census_units_no_coverage": 343,
+      "census_units_no_coverage": 418,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 474048,
-        "Readiness": 374019,
-        "Monitoring": 0,
-        "No data": 123603
+        "Anticipatory Action": 467171,
+        "Readiness": 223704,
+        "Monitoring": 132634,
+        "No data": 148161
       }
     },
     "Enga": {
       "total_population": 653752,
       "total_households": 96986,
       "census_units": 1043,
-      "census_units_no_coverage": 85,
+      "census_units_no_coverage": 102,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 152476,
-        "Readiness": 457145,
-        "Monitoring": 0,
-        "No data": 44131
+        "Anticipatory Action": 152432,
+        "Readiness": 376822,
+        "Monitoring": 70278,
+        "No data": 54220
       }
     },
     "Gulf": {
       "total_population": 271166,
       "total_households": 39527,
       "census_units": 582,
-      "census_units_no_coverage": 76,
+      "census_units_no_coverage": 81,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 70199,
-        "Readiness": 153383,
-        "Monitoring": 0,
-        "No data": 47584
+        "Anticipatory Action": 58274,
+        "Readiness": 127036,
+        "Monitoring": 35296,
+        "No data": 50560
       }
     },
     "Hela": {
       "total_population": 662054,
       "total_households": 100878,
       "census_units": 1959,
-      "census_units_no_coverage": 432,
+      "census_units_no_coverage": 468,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 232582,
-        "Readiness": 281099,
-        "Monitoring": 0,
-        "No data": 148373
+        "Anticipatory Action": 157164,
+        "Readiness": 244154,
+        "Monitoring": 99715,
+        "No data": 161021
       }
     },
     "Jiwaka": {
       "total_population": 530173,
       "total_households": 89097,
       "census_units": 1139,
-      "census_units_no_coverage": 120,
+      "census_units_no_coverage": 141,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 120933,
-        "Readiness": 357184,
-        "Monitoring": 0,
-        "No data": 52056
+        "Anticipatory Action": 176729,
+        "Readiness": 225938,
+        "Monitoring": 68243,
+        "No data": 59263
       }
     },
     "Madang": {
       "total_population": 842685,
       "total_households": 127149,
       "census_units": 1785,
-      "census_units_no_coverage": 112,
+      "census_units_no_coverage": 147,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 549663,
-        "Readiness": 242517,
-        "Monitoring": 0,
-        "No data": 50505
+        "Anticipatory Action": 525071,
+        "Readiness": 167621,
+        "Monitoring": 83315,
+        "No data": 66678
       }
     },
     "Manus": {
       "total_population": 112498,
       "total_households": 17405,
       "census_units": 243,
-      "census_units_no_coverage": 58,
+      "census_units_no_coverage": 67,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 67850,
-        "Readiness": 19087,
-        "Monitoring": 0,
-        "No data": 25561
+        "Anticipatory Action": 59550,
+        "Readiness": 7220,
+        "Monitoring": 15299,
+        "No data": 30429
       }
     },
     "Milne Bay": {
       "total_population": 572222,
       "total_households": 91208,
       "census_units": 1327,
-      "census_units_no_coverage": 269,
+      "census_units_no_coverage": 313,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 273819,
-        "Readiness": 186004,
-        "Monitoring": 0,
-        "No data": 112399
+        "Anticipatory Action": 264049,
+        "Readiness": 90073,
+        "Monitoring": 83431,
+        "No data": 134669
       }
     },
     "Morobe": {
       "total_population": 1390825,
       "total_households": 197913,
       "census_units": 2811,
-      "census_units_no_coverage": 331,
+      "census_units_no_coverage": 434,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 414902,
-        "Readiness": 792601,
-        "Monitoring": 0,
-        "No data": 183322
+        "Anticipatory Action": 497529,
+        "Readiness": 424134,
+        "Monitoring": 230722,
+        "No data": 238440
       }
     },
     "National Capital District": {
       "total_population": 1529094,
       "total_households": 166369,
       "census_units": 723,
-      "census_units_no_coverage": 163,
+      "census_units_no_coverage": 178,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 867942,
-        "Readiness": 433786,
-        "Monitoring": 0,
-        "No data": 227366
+        "Anticipatory Action": 453833,
+        "Readiness": 402945,
+        "Monitoring": 411337,
+        "No data": 260979
       }
     },
     "New Ireland": {
       "total_population": 390832,
       "total_households": 61807,
       "census_units": 802,
-      "census_units_no_coverage": 162,
+      "census_units_no_coverage": 197,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 231428,
-        "Readiness": 82622,
-        "Monitoring": 0,
-        "No data": 76782
+        "Anticipatory Action": 220588,
+        "Readiness": 37370,
+        "Monitoring": 40808,
+        "No data": 92066
       }
     },
     "Oro": {
       "total_population": 321429,
       "total_households": 44686,
       "census_units": 991,
-      "census_units_no_coverage": 94,
+      "census_units_no_coverage": 121,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 74469,
-        "Readiness": 215150,
-        "Monitoring": 0,
-        "No data": 31810
+        "Anticipatory Action": 69072,
+        "Readiness": 168261,
+        "Monitoring": 41155,
+        "No data": 42941
       }
     },
     "Sandaun": {
       "total_population": 550892,
       "total_households": 79943,
       "census_units": 1238,
-      "census_units_no_coverage": 155,
+      "census_units_no_coverage": 187,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 172683,
-        "Readiness": 303916,
-        "Monitoring": 0,
-        "No data": 74293
+        "Anticipatory Action": 123607,
+        "Readiness": 267503,
+        "Monitoring": 71535,
+        "No data": 88247
       }
     },
     "Southern Highlands": {
       "total_population": 1147849,
       "total_households": 193327,
       "census_units": 2982,
-      "census_units_no_coverage": 414,
+      "census_units_no_coverage": 483,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 294989,
-        "Readiness": 685878,
-        "Monitoring": 0,
-        "No data": 166982
+        "Anticipatory Action": 155842,
+        "Readiness": 630829,
+        "Monitoring": 160127,
+        "No data": 201051
       }
     },
     "West New Britain": {
       "total_population": 414852,
       "total_households": 67783,
       "census_units": 746,
-      "census_units_no_coverage": 78,
+      "census_units_no_coverage": 127,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 213932,
-        "Readiness": 153183,
-        "Monitoring": 0,
-        "No data": 47737
+        "Anticipatory Action": 223080,
+        "Readiness": 67257,
+        "Monitoring": 44368,
+        "No data": 80147
       }
     },
     "Western": {
       "total_population": 352699,
       "total_households": 51228,
       "census_units": 916,
-      "census_units_no_coverage": 69,
+      "census_units_no_coverage": 96,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 137191,
-        "Readiness": 184471,
-        "Monitoring": 0,
-        "No data": 31037
+        "Anticipatory Action": 138701,
+        "Readiness": 106165,
+        "Monitoring": 64059,
+        "No data": 43774
       }
     },
     "Western Highlands": {
       "total_population": 698769,
       "total_households": 122770,
       "census_units": 1347,
-      "census_units_no_coverage": 103,
+      "census_units_no_coverage": 126,
       "population_by_phase": {
         "Response threshold": 0,
-        "Anticipatory Action": 164215,
-        "Readiness": 478357,
-        "Monitoring": 0,
-        "No data": 56197
+        "Anticipatory Action": 120295,
+        "Readiness": 384834,
+        "Monitoring": 129456,
+        "No data": 64184
       }
     }
   }
