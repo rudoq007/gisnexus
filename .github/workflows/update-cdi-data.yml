@@ -8,6 +8,13 @@ name: Update CDI data from monthly PNG_CDI.rds
 # 2. That's it. This workflow runs automatically on the push, regenerates
 #    data/cdi_example_latest.json and data/cdi_archive.json, and commits
 #    them back to main. GitHub Pages then redeploys the live site.
+# 3. That commit's push then automatically kicks off "Update integrated
+#    composite priority" (see update-integrated-composite.yml, triggered
+#    via workflow_run below) so the pixel-level CDI layer, the composite
+#    biophysical stress layer, and the population-exposure numbers all
+#    pick up the same new ENSO/IOD scalars and observation month in the
+#    same cycle -- instead of waiting for that workflow's own nightly
+#    02:45 UTC cron. No separate manual "Run workflow" click needed.
 #
 # No local Python/R setup, no manual JSON editing, no chat session needed.
 
