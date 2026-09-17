@@ -35,8 +35,17 @@ automatically from cdi_example_latest.json's observation_month_label
 (e.g. "July 2026") unless overridden with --obs-year/--obs-month.
 
 Forecast SPI-3 (ECMWF SEAS5 seasonal rainfall) is NOT in Earth Engine's
-public data catalog and is left at a documented neutral placeholder
-(--forecast-flag, default 0) until a seasonal forecast source is wired in.
+public data catalog, so it can't be computed per-pixel the way rain/SM/VI
+are. Unlike ENSO/IOD it is NOT a national scalar -- do_CDI.R computes a
+distinct SPI-3 forecast per province -- so instead of one placeholder
+constant for the whole country, this script rasterizes each province's own
+forecast flag (already sitting in cdi_example_latest.json's per-province
+"fcast3" field, computed the same way as ENSO/IOD/rain/SM/VI) onto the
+FAO/GAUL/2015/level1 province polygons via build_forecast_flag_image().
+This is what actually made the pixel-level map disagree with the
+"About ADAPt" example map's per-province colors -- see that function's
+docstring for the remaining Hela/Jiwaka caveat and --forecast-flag's new,
+narrower meaning (a fallback, not the value used everywhere).
 
 Meant to run as an extra step in .github/workflows/update-integrated-composite.yml,
 immediately after build_integrated_composite.py and before that workflow's
@@ -123,7 +132,11 @@ def build_asis_vhi(latest_img: ee.Image, boundary) -> ee.Image:
 
 
 def read_enso_iod_and_month(example_path: Path):
-    """Returns (enso, iod, obs_year, obs_month) read from cdi_example_latest.json."""
+    """Returns (enso, iod, obs_year, obs_month, provinces) read from
+    cdi_example_latest.json. `provinces` is the raw per-province dict (each
+    record has cdi/enso/iod/rain/sm/vi/fcast3) -- returned here too, rather
+    than re-parsed elsewhere, so build_forecast_flag_image() reads the exact
+    same fcast3 values as the ENSO/IOD flags above, from one file read."""
     if not example_path.exists():
         raise RuntimeError(
             f"{example_path} not found -- run scripts/update_cdi_data.py first. This "
@@ -155,7 +168,90 @@ def read_enso_iod_and_month(example_path: Path):
         )
     obs_month = MONTH_NAME_TO_NUM[match.group(1)]
     obs_year = int(match.group(2))
-    return enso, iod, obs_year, obs_month
+    return enso, iod, obs_year, obs_month, provinces
+
+
+# FAO/GAUL/2015/level1's ADM1_NAME spells 3 of PNG's 22 provinces differently
+# than cdi_example_latest.json's province keys -- the exact same 3-province
+# mismatch index.html's front-end already documents and corrects for
+# (CDI_EXAMPLE_NAME_ALIAS, used for the "About ADAPt" example map). Confirmed
+# against the real ADM1_NAME values already sitting in this repo's committed
+# data/integrated_priority_latest.json (build_integrated_composite.py's own
+# reduceRegions output) -- keep this in sync with index.html's table if
+# either ever changes.
+GAUL_TO_EXAMPLE_NAME_ALIAS = {
+    "Northern": "Oro",
+    "Northern Solomons": "Bougainville",
+    "West Sepik": "Sandaun",
+}
+
+
+def fcast3_to_flag(value: float) -> float:
+    """Mirrors index.html's cdiExampleFlag(value, 0, -1, 'below') exactly --
+    the same thresholds do_CDI.R and the front-end's Forecast (SPI-3) row
+    both use -- so the flag baked into this pixel raster always matches what
+    a user sees for that province in the "About ADAPt" example map's popup."""
+    if value < -1:
+        return 1.0
+    if value < 0:
+        return 0.5
+    return 0.0
+
+
+def build_forecast_flag_image(example_provinces: dict, boundary, fallback_flag: float):
+    """Per-province forecast-SPI3 flag, rasterized onto FAO/GAUL/2015/level1
+    polygons -- replaces the old single ee.Image.constant(placeholder) with
+    each province's own flag, since (unlike ENSO/IOD) do_CDI.R computes a
+    distinct SPI-3 forecast per province rather than one national scalar.
+    This was the actual source of the pixel-vs-province-map disagreement:
+    the placeholder always contributed 0 of this term's 20% weight, while
+    the official per-province CDI used each province's real (often strongly
+    negative, "Declared") forecast flag.
+
+    GAUL 2015 predates PNG's 2012 Hela/Jiwaka split -- confirmed by this
+    repo's own committed data/integrated_priority_latest.json listing only
+    20 provinces, not 22 -- so there is no separate Hela or Jiwaka polygon
+    to paint here. Their pixels inherit Southern Highlands' and Western
+    Highlands' flags respectively, the same resolution limit
+    build_integrated_composite.py's province breakdown already has; this
+    isn't a new gap introduced by this function.
+
+    fallback_flag (the old --forecast-flag CLI default, still 0/neutral) is
+    now used only for a GAUL province name that fails to resolve to a
+    cdi_example_latest.json entry at all -- should not happen given the
+    alias table above, but a fallback keeps this non-blocking layer from
+    hard-failing the whole workflow step over one bad match.
+    """
+    gaul_names = province_collection().aggregate_array("ADM1_NAME").getInfo()
+    flag_by_gaul_name = {}
+    unmatched = []
+    for gaul_name in gaul_names:
+        example_name = GAUL_TO_EXAMPLE_NAME_ALIAS.get(gaul_name, gaul_name)
+        record = example_provinces.get(example_name)
+        if record is None or "fcast3" not in record:
+            unmatched.append(gaul_name)
+            flag_by_gaul_name[gaul_name] = fallback_flag
+        else:
+            flag_by_gaul_name[gaul_name] = fcast3_to_flag(float(record["fcast3"]))
+    if unmatched:
+        print(
+            f"  ! Warning: no fcast3 value for GAUL province(s) {unmatched} in "
+            f"cdi_example_latest.json -- using fallback flag {fallback_flag} there. "
+            "(Hela/Jiwaka are NOT expected here -- they inherit their parent "
+            "province's flag above, not this fallback. An unexpected name here "
+            "means the alias table needs updating.)"
+        )
+
+    flag_dict = ee.Dictionary(flag_by_gaul_name)
+    painted = province_collection().map(
+        lambda f: f.set("forecast_flag", flag_dict.get(f.get("ADM1_NAME"), fallback_flag))
+    )
+    return (
+        painted.reduceToImage(properties=["forecast_flag"], reducer=ee.Reducer.first())
+        .unmask(fallback_flag)
+        .clip(boundary)
+        .rename("forecast_flag")
+    )
 
 
 def month_bounds(year: int, month: int):
@@ -256,12 +352,11 @@ def export_geotiff(image: ee.Image, boundary, output_path: Path, scale: int = 50
     raise RuntimeError("CDI raster GeoTIFF export failed after 3 attempts") from last_exc
 
 
-def build_cdi_image(obs_year: int, obs_month: int, enso: float, iod: float, forecast_flag_value: float, boundary):
+def build_cdi_image(obs_year: int, obs_month: int, enso: float, iod: float, forecast_flag_image, boundary):
     vhi = build_asis_vhi(latest_asis_image(), boundary)
     vi_flag = flag_below(vhi, 0.4, 0.3)
     rain_flag = build_rainfall_flag(obs_year, obs_month, boundary)
     sm_flag = build_soil_moisture_flag(obs_year, obs_month, boundary)
-    forecast_flag = ee.Image.constant(forecast_flag_value).clip(boundary)
     enso_img = ee.Image.constant(enso).clip(boundary)
     iod_img = ee.Image.constant(iod).clip(boundary)
 
@@ -271,7 +366,7 @@ def build_cdi_image(obs_year: int, obs_month: int, enso: float, iod: float, fore
         .add(rain_flag.multiply(0.20))
         .add(sm_flag.multiply(0.20))
         .add(vi_flag.multiply(0.10))
-        .add(forecast_flag.multiply(0.20))
+        .add(forecast_flag_image.multiply(0.20))
         .rename("CDI")
         .clip(boundary)
     )
@@ -311,24 +406,27 @@ def main():
     parser.add_argument("--obs-month", type=int, default=None, help="Override the observation month 1-12 (normally auto-read)")
     parser.add_argument(
         "--forecast-flag", type=float, default=0.0,
-        help="Manual override for the forecast SPI-3 flag (0/0.5/1) until a SEAS5 source is wired "
-        "in. Default 0 (neutral placeholder -- see script docstring).",
+        help="Fallback forecast SPI-3 flag (0/0.5/1) used only for a GAUL province name that "
+        "fails to match cdi_example_latest.json's per-province fcast3 values (see "
+        "build_forecast_flag_image) -- NOT the value used everywhere, as it was before. "
+        "Default 0 (neutral).",
     )
     args = parser.parse_args()
 
-    enso, iod, auto_year, auto_month = read_enso_iod_and_month(Path(args.example_json))
+    enso, iod, auto_year, auto_month, example_provinces = read_enso_iod_and_month(Path(args.example_json))
     obs_year = args.obs_year if args.obs_year is not None else auto_year
     obs_month = args.obs_month if args.obs_month is not None else auto_month
 
     print(
         f"Observation month: {obs_year}-{obs_month:02d} | ENSO flag={enso} | IOD flag={iod} | "
-        f"forecast flag={args.forecast_flag} (placeholder)"
+        f"forecast flag=per-province from cdi_example_latest.json (fallback={args.forecast_flag})"
     )
 
     initialise_earth_engine()
     boundary = png_geometry()
 
-    cdi = build_cdi_image(obs_year, obs_month, enso, iod, args.forecast_flag, boundary)
+    forecast_flag_image = build_forecast_flag_image(example_provinces, boundary, args.forecast_flag)
+    cdi = build_cdi_image(obs_year, obs_month, enso, iod, forecast_flag_image, boundary)
 
     print("Validating against province means (compare with PNG_CDI_summary CSV)...")
     province_means = cdi.reduceRegions(collection=province_collection(), reducer=ee.Reducer.mean(), scale=5000)
