@@ -79,6 +79,29 @@ def load_rds_last_rows(rds_path: Path):
     return result
 
 
+# The forecast SPI-3 column's name in the .rds has changed between monthly
+# drops at least once already (do_CDI.R called it "fcast3" through the
+# August 2026 file; the September 2026 re-run Josh sent after NOAA's IOD
+# correction uses "fcRain3" instead -- same values/meaning, just renamed
+# upstream). Read whichever is present rather than hard-coding one name, so
+# a future rename doesn't silently break this script's monthly run again.
+# The JSON output key stays "fcast3" either way -- that's this dashboard's
+# own schema (index.html, build_cdi_pixel.py), independent of whatever
+# do_CDI.R happens to call the column this month.
+FCAST3_COLUMN_ALIASES = ("fcast3", "fcRain3")
+
+
+def read_fcast3(row) -> float:
+    for col in FCAST3_COLUMN_ALIASES:
+        if col in row.index:
+            return float(row[col])
+    raise KeyError(
+        f"None of {FCAST3_COLUMN_ALIASES} found in this .rds's columns "
+        f"({list(row.index)}) -- the forecast SPI-3 column has been renamed "
+        "again upstream. Add its new name to FCAST3_COLUMN_ALIASES above."
+    )
+
+
 def build_example_data(province_dfs: dict):
     """Per-province current-month indicator snapshot for the example map/table."""
     provinces_out = {}
@@ -95,7 +118,7 @@ def build_example_data(province_dfs: dict):
             "rain": round(float(last["rain"]), 3),
             "sm": round(float(last["SM"]), 2),
             "vi": round(float(last["VI"]), 3),
-            "fcast3": round(float(last["fcast3"]), 3),
+            "fcast3": round(read_fcast3(last), 3),
         }
     return {
         "reporting_month_label": month_label(fc_year, fc_month),
@@ -106,35 +129,57 @@ def build_example_data(province_dfs: dict):
 
 
 def update_archive(province_dfs: dict, existing_archive: dict, new_month: tuple):
-    """Append the new observation month to the archive if not already present."""
+    """Append the new observation month to the archive, or -- if this .rds is a
+    CORRECTED RE-RUN of the same observation month already at the archive's
+    latest point (e.g. Josh's "NOAA updated their IOD data... I have re-run
+    the September CDI" emails) -- overwrite that latest point in place instead
+    of silently skipping it. Before this, a same-month resubmission left the
+    archive (and so the Overview tab's "Recent CDI components" /
+    "Historical CDI time series" charts) stuck on the pre-correction values
+    forever, even though cdi_example_latest.json (rebuilt fresh every run,
+    not append-only) always got the corrected ones -- the exact same kind of
+    two-numbers-disagree bug already fixed elsewhere in this pipeline, just
+    between the archive and the example snapshot instead of between the
+    province and pixel maps."""
     year, month = new_month
     timeline = existing_archive.setdefault("timeline", [])
     cdi_history = existing_archive.setdefault("cdi_history", {})
     recent = existing_archive.setdefault("recent_indicators", {})
 
-    already_present = timeline and timeline[-1] == [year, month]
+    already_present = bool(timeline) and timeline[-1] == [year, month]
     if already_present:
         print(f"Archive already has {month_label(year, month)} as its latest "
-              f"point -- no changes made to data/cdi_archive.json.")
-        return existing_archive, False
-
-    timeline.append([year, month])
+              f"point -- treating this as a corrected re-run and updating it "
+              f"in place (not appending a duplicate month).")
+    else:
+        timeline.append([year, month])
 
     for name, df in province_dfs.items():
         last = df.iloc[-1]
         cdi_val = round(float(last["CDI"]), 3)
-        cdi_history.setdefault(name, []).append(cdi_val)
+        history_list = cdi_history.setdefault(name, [])
+        if already_present and history_list:
+            history_list[-1] = cdi_val
+        else:
+            history_list.append(cdi_val)
 
         ri = recent.setdefault(name, {
             "months": [], "enso": [], "iod": [], "rain": [], "sm": [], "vi": [], "fcast3": []
         })
-        ri["months"].append([year, month])
-        ri["enso"].append(round(float(last["ENSO"]), 3))
-        ri["iod"].append(round(float(last["IOD"]), 3))
-        ri["rain"].append(round(float(last["rain"]), 3))
-        ri["sm"].append(round(float(last["SM"]), 2))
-        ri["vi"].append(round(float(last["VI"]), 3))
-        ri["fcast3"].append(round(float(last["fcast3"]), 3))
+        new_values = {
+            "months": [year, month],
+            "enso": round(float(last["ENSO"]), 3),
+            "iod": round(float(last["IOD"]), 3),
+            "rain": round(float(last["rain"]), 3),
+            "sm": round(float(last["SM"]), 2),
+            "vi": round(float(last["VI"]), 3),
+            "fcast3": round(read_fcast3(last), 3),
+        }
+        for key, value in new_values.items():
+            if already_present and ri[key]:
+                ri[key][-1] = value
+            else:
+                ri[key].append(value)
         for key in ("months", "enso", "iod", "rain", "sm", "vi", "fcast3"):
             if len(ri[key]) > RECENT_WINDOW_MONTHS:
                 ri[key] = ri[key][-RECENT_WINDOW_MONTHS:]
