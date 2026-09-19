@@ -113,4 +113,27 @@ jobs:
           done
           git diff --cached --quiet && echo "No changes to commit." && exit 0
           git commit -m "Update integrated composite priority and pixel-level CDI outputs"
-          git push
+          # Another workflow (update-live-asis-vhi.yml is much shorter and
+          # often finishes first, or update-cdi-data.yml) may push to main
+          # while this job is still running its multi-minute EE steps -- a
+          # plain `git push` then fails with "fetch first"
+          # (non-fast-forward) and this whole run's output is silently
+          # lost (this happened in practice: a "Update live FAO ASIS
+          # VHI-D data" run pushed mid-run and this step's git push was
+          # rejected). These workflows touch disjoint files, so rebasing
+          # onto whatever landed in the meantime applies cleanly; retry a
+          # few times in case of a second near-simultaneous push.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              echo "Push failed after $attempt attempts." >&2
+              exit 1
+            fi
+            echo "Push rejected (attempt $attempt) -- another workflow likely pushed in the meantime. Rebasing and retrying..."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 5))
+          done
