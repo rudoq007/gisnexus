@@ -19,15 +19,25 @@
     liveProc: 'data/live_processing_status.json'
   };
 
+  // Absolute base URL of the page this script is running on (e.g.
+  // "https://rudoq007.github.io/gisnexus/"), resolved at runtime rather than
+  // hardcoded so it keeps working under a custom domain, a fork, or local
+  // testing. The report's "direct links" must be absolute -- a relative
+  // "data/..." href only resolves correctly while viewed on the live page;
+  // once the browser turns the page into a PDF (Print / Save as PDF) or this
+  // script serialises a standalone HTML snapshot (Download report), the link
+  // needs to carry the full URL to still work outside that page context.
+  var BASE_URL = new URL('.', window.location.href).href;
+
   var LINKS = {
-    cdiExample: 'data/cdi_example_latest.json',
-    cdiArchive: 'data/cdi_archive.json',
-    cdiPop: 'data/cdi_population_exposure.json',
-    asis: 'data/asis_vhi_latest.json',
-    integratedJson: 'data/integrated_priority_latest.json',
-    integratedCsv: 'data/integrated_priority_latest.csv',
-    compositeTif: 'data/composite_biophysical_stress.tif',
-    cdiPixelTif: 'data/cdi_pixel_latest.tif',
+    cdiExample: BASE_URL + 'data/cdi_example_latest.json',
+    cdiArchive: BASE_URL + 'data/cdi_archive.json',
+    cdiPop: BASE_URL + 'data/cdi_population_exposure.json',
+    asis: BASE_URL + 'data/asis_vhi_latest.json',
+    integratedJson: BASE_URL + 'data/integrated_priority_latest.json',
+    integratedCsv: BASE_URL + 'data/integrated_priority_latest.csv',
+    compositeTif: BASE_URL + 'data/composite_biophysical_stress.tif',
+    cdiPixelTif: BASE_URL + 'data/cdi_pixel_latest.tif',
     liveWorkspace: 'https://png-climate-workspace-v1.streamlit.app/',
     pngnws3mo: 'https://www.pngmet.gov.pg/nwp/three-months-forecasts/',
     pngnws31d: 'https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/',
@@ -319,7 +329,7 @@
   }
 
   function buildLinksSection(data) {
-    function dataLink(url, label) { return '<a class="btn" href="' + url + '" download>' + esc(label) + '</a>'; }
+    function dataLink(url, label) { return '<a class="btn" href="' + url + '" target="_blank" rel="noopener">' + esc(label) + '</a>'; }
     function tabLink(panel, label) { return '<button class="btn no-print" data-goto-tab="' + panel + '">' + esc(label) + '</button>'; }
     function extLink(url, label) { return '<a class="btn" href="' + url + '" target="_blank" rel="noopener">' + esc(label) + '</a>'; }
 
