@@ -16,6 +16,7 @@ import rasterio
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CU_GPKG = REPO_ROOT / "pipeline" / "CU_reference_imputed.gpkg"
+PROVINCE_BOUNDARY_GEOJSON = REPO_ROOT / "pipeline" / "png_adm1_22province.geojson"
 
 DEFAULT_PROJECT = "trekky675"
 ASIS_COLLECTION = "projects/UNFAO/ASIS/VHI-D"
@@ -84,11 +85,32 @@ def png_geometry():
     )
 
 
+_province_fc_cache = None
+
+
 def province_collection():
-    return (
-        ee.FeatureCollection("FAO/GAUL/2015/level1")
-        .filter(ee.Filter.eq("ADM0_NAME", "Papua New Guinea"))
-    )
+    """PNG's real 22 provinces (PNG NSO boundary, including Hela and Jiwaka
+    as their own polygons), not FAO/GAUL/2015/level1 -- GAUL 2015 predates
+    PNG's 2012 Hela/Jiwaka split and only has 20. Loaded from a local
+    GeoJSON (pipeline/png_adm1_22province.geojson -- the same boundary the
+    front-end map renders, simplified to ~1km vertex tolerance here since
+    reduceRegions() below runs at 1000m/5000m scale anyway) and built as a
+    client-side ee.FeatureCollection, so no persistent EE asset upload is
+    needed. Every feature's ADM1_NAME is already the SAME canonical name
+    cdi_example_latest.json and the census-unit population data use -- see
+    CU_ADM1_NAME_TO_PROVINCE below, which no longer needs to fold Hela/Jiwaka
+    into their former parent province."""
+    global _province_fc_cache
+    if _province_fc_cache is not None:
+        return _province_fc_cache
+    with open(PROVINCE_BOUNDARY_GEOJSON, encoding="utf-8") as f:
+        geojson = json.load(f)
+    features = [
+        ee.Feature(ee.Geometry(feat["geometry"]), {"ADM1_NAME": feat["properties"]["ADM1_NAME"]})
+        for feat in geojson["features"]
+    ]
+    _province_fc_cache = ee.FeatureCollection(features)
+    return _province_fc_cache
 
 
 def latest_asis_image():
@@ -99,38 +121,35 @@ def latest_asis_image():
 
 
 # PNG NSO's own Adm 1 Name spelling/casing -> this script's own province
-# names, i.e. FAO/GAUL/2015/level1's ADM1_NAME values (the same 20 names
-# used throughout this file's province_collection()-based reduceRegions()).
-# This is deliberately NOT the same alias table as
-# build_cdi_population_exposure.py's ADM1_NAME_ALIAS: that script produces
-# its own independent 22-province breakdown (dashboard-friendly names,
-# Hela/Jiwaka kept separate); this script's province list comes from GAUL,
-# which only has 20 PNG provinces (no Hela/Jiwaka -- they split from
-# Southern Highlands/Western Highlands in 2012) and uses GAUL's own raw
-# names ("Northern Solomons" not "Bougainville", "Northern" not "Oro",
-# "West Sepik" not "Sandaun"). Every value on the right must exactly match
-# an ADM1_NAME this script's province_collection() actually returns.
+# names (see province_collection() above). Now that province_collection()
+# uses the real 22-province boundary instead of FAO/GAUL/2015/level1, this
+# is the SAME mapping build_cdi_population_exposure.py's ADM1_NAME_ALIAS
+# already uses (Hela and Jiwaka kept separate, dashboard-canonical spelling
+# for Bougainville/Oro/Sandaun) -- no more folding into a 2012-pre-split
+# parent province, and no more GAUL-specific spelling ("Northern Solomons",
+# "Northern", "West Sepik"). Every value on the right must exactly match an
+# ADM1_NAME this script's province_collection() actually returns.
 CU_ADM1_NAME_TO_PROVINCE = {
-    "AUTONOMOUS REGION OF BOUGAINVILLE": "Northern Solomons",
+    "AUTONOMOUS REGION OF BOUGAINVILLE": "Bougainville",
     "CENTRAL": "Central",
     "EAST NEW BRITAIN": "East New Britain",
     "EAST SEPIK": "East Sepik",
     "EASTERN HIGHLANDS": "Eastern Highlands",
     "ENGA": "Enga",
     "GULF": "Gulf",
-    "HELA": "Southern Highlands",   # folded -- GAUL has no separate Hela
-    "JIWAKA": "Western Highlands",  # folded -- GAUL has no separate Jiwaka
+    "HELA": "Hela",
+    "JIWAKA": "Jiwaka",
     "MADANG": "Madang",
     "MANUS": "Manus",
     "MILNE BAY": "Milne Bay",
     "MOROBE": "Morobe",
     "NATIONAL CAPITAL DISTRICT": "National Capital District",
     "NEW IRELAND": "New Ireland",
-    "NORTHERN (ORO)": "Northern",
+    "NORTHERN (ORO)": "Oro",
     "SIMBU": "Chimbu",
     "SOUTHERN HIGHLANDS": "Southern Highlands",
     "WEST NEW BRITAIN": "West New Britain",
-    "WEST SEPIK": "West Sepik",
+    "WEST SEPIK": "Sandaun",
     "WESTERN": "Western",
     "WESTERN HIGHLANDS": "Western Highlands",
 }
@@ -138,9 +157,8 @@ CU_ADM1_NAME_TO_PROVINCE = {
 
 def read_census_units(gpkg_path: Path):
     """Yields (province, lon, lat, pop) for every census unit whose Adm 1
-    Name maps to one of this script's 20 GAUL provinces, skipping rows with
-    missing coordinates. See CU_ADM1_NAME_TO_PROVINCE above for the mapping
-    (and the Hela/Jiwaka folding it does)."""
+    Name maps to one of this script's 22 provinces, skipping rows with
+    missing coordinates. See CU_ADM1_NAME_TO_PROVINCE above for the mapping."""
     unknown_names = set()
     with fiona.open(str(gpkg_path), layer="census_units") as src:
         for feat in src:
