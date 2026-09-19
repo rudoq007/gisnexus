@@ -3,19 +3,24 @@
 Link PNG NSO 2024 Census Unit population estimates to the pixel-level CDI
 raster, aggregated by province and CDI operational phase.
 
-This produces a population-exposure figure with a genuinely different (and
-more precise) source than data/integrated_priority_latest.json's own
-population exposure numbers: this one samples the CDI raster directly at
-~30,000 real census-unit locations (PNG NSO 2024 population estimates,
-with imputed coordinates where original ones were missing), rather than
-intersecting WorldPop's gridded population surface with the composite
-biophysical stress layer.
+data/integrated_priority_latest.json's own population exposure numbers
+(population_high_priority etc.) now use this SAME PNG NSO 2024 Census Unit
+source too (build_integrated_composite.py switched off WorldPop -- see that
+script's build_population_by_province()), so the two files no longer
+disagree about how many people PNG has or where they live. They still
+report different numbers, because each samples a different raster and
+applies different classification bands: this script samples the CDI pixel
+raster and buckets by CDI operational phase (Response threshold /
+Anticipatory Action / Readiness / Monitoring); build_integrated_composite.py
+samples the composite biophysical stress raster and buckets by composite
+exposure threshold (high / moderate / watch).
 
-IMPORTANT: these two population figures come from different data sources
-and different methodologies and must never be merged, summed, or presented
-as if they were the same number or a refinement of each other. Some
-correlation between them is expected and fine; treating one as a subtotal
-of the other is not, and misrepresents both.
+IMPORTANT: these two population figures must still never be merged, summed,
+or presented as if they were the same number or a refinement of each other
+-- they answer different questions ("how many people are in a CDI phase"
+vs. "how many are under composite biophysical stress"). Some correlation
+between them is expected and fine; treating one as a subtotal of the other
+is not, and misrepresents both.
 
 Pipeline:
   1. Read every census-unit point from the CU geopackage (Adm 1 Name,
@@ -261,11 +266,14 @@ def main():
             "Population figures here are PNG NSO 2024 census-unit population estimates "
             "sampled against the pixel-level CDI raster and classified by the same "
             "operational phase bands used elsewhere on the dashboard (Table 1, FAO PNG "
-            "Food Security & Agriculture Sectoral Plan, Aug 2026). This is a DIFFERENT "
-            "data source and methodology from data/integrated_priority_latest.json's own "
-            "population exposure figures (WorldPop intersected with the composite "
-            "biophysical stress layer) -- the two must not be merged, summed, or treated "
-            "as a refinement of one another."
+            "Food Security & Agriculture Sectoral Plan, Aug 2026). "
+            "data/integrated_priority_latest.json's own population exposure figures use "
+            "this SAME census-unit population source (as of Sep 2026 it switched off "
+            "WorldPop), sampled against the composite biophysical stress raster instead "
+            "and classified by composite exposure thresholds -- so the two files' numbers "
+            "still differ (different raster, different bands), but never because of a "
+            "different underlying population count. The two must still not be merged, "
+            "summed, or treated as a refinement of one another."
         ),
         "national": national,
         "provinces": provinces,
