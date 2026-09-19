@@ -134,9 +134,18 @@ IOD applied as flat national flags read automatically from
 SPI-1 rainfall approximation, an ERA5-Land soil-moisture anomaly, and ASIS
 vegetation (VHI) -- all using calendar-month windows keyed to the same
 observation month `do_CDI.R` uses, not the composite score's own rolling
-90-day/30-day windows. The forecast SPI-3 term is a documented placeholder
-(no SEAS5 source in Earth Engine's public catalog yet -- see the script's
-docstring) until a seasonal forecast asset is wired in.
+90-day/30-day windows. The forecast SPI-3 term (no SEAS5 source in Earth
+Engine's public catalog) is rasterized per province instead of one
+national placeholder: each province's own `fcast3`-derived flag from
+`data/cdi_example_latest.json` is painted onto that province's polygon,
+so this layer's forecast contribution always matches what a user sees for
+that province in the "About ADAPt" example map's popup. This, and
+`build_integrated_composite.py`'s province-level stats, both use PNG's
+real 22-province boundary (`pipeline/png_adm1_22province.geojson`,
+including Hela and Jiwaka as their own polygons) rather than
+FAO/GAUL/2015/level1, which predates PNG's 2012 Hela/Jiwaka split and only
+has 20 provinces -- see `build_cdi_pixel.py`'s `province_collection()`
+docstring.
 
 When `cdi_tile_url` is present, the Interactive Map tab shows it as the
 default raster layer (ahead of composite stress), with its own legend and
