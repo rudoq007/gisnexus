@@ -40,12 +40,14 @@ are. Unlike ENSO/IOD it is NOT a national scalar -- do_CDI.R computes a
 distinct SPI-3 forecast per province -- so instead of one placeholder
 constant for the whole country, this script rasterizes each province's own
 forecast flag (already sitting in cdi_example_latest.json's per-province
-"fcast3" field, computed the same way as ENSO/IOD/rain/SM/VI) onto the
-FAO/GAUL/2015/level1 province polygons via build_forecast_flag_image().
-This is what actually made the pixel-level map disagree with the
-"About ADAPt" example map's per-province colors -- see that function's
-docstring for the remaining Hela/Jiwaka caveat and --forecast-flag's new,
-narrower meaning (a fallback, not the value used everywhere).
+"fcast3" field, computed the same way as ENSO/IOD/rain/SM/VI) onto this
+script's own 22-province polygons via build_forecast_flag_image() -- see
+province_collection() below, which uses PNG's real 22-province boundary
+(with Hela and Jiwaka as their own polygons) rather than
+FAO/GAUL/2015/level1. This is what actually made the pixel-level map
+disagree with the "About ADAPt" example map's per-province colors -- see
+that function's docstring for --forecast-flag's new, narrower meaning (a
+fallback, not the value used everywhere).
 
 Meant to run as an extra step in .github/workflows/update-integrated-composite.yml,
 immediately after build_integrated_composite.py and before that workflow's
@@ -86,6 +88,7 @@ CDI_PALETTE = ["313695", "74add1", "abd9e9", "e0f3f8", "fdae61", "f46d43", "a500
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_JSON_OUTPUT = REPO_ROOT / "data" / "integrated_priority_latest.json"
 DEFAULT_EXAMPLE_PATH = REPO_ROOT / "data" / "cdi_example_latest.json"
+PROVINCE_BOUNDARY_GEOJSON = REPO_ROOT / "pipeline" / "png_adm1_22province.geojson"
 
 MONTH_NAME_TO_NUM = {name: num for num, name in enumerate(calendar.month_name) if name}
 
@@ -112,10 +115,31 @@ def png_geometry():
     )
 
 
+_province_fc_cache = None
+
+
 def province_collection():
-    return ee.FeatureCollection("FAO/GAUL/2015/level1").filter(
-        ee.Filter.eq("ADM0_NAME", "Papua New Guinea")
-    )
+    """PNG's real 22 provinces (PNG NSO boundary, including Hela and Jiwaka
+    as their own polygons), not FAO/GAUL/2015/level1 -- GAUL 2015 predates
+    PNG's 2012 Hela/Jiwaka split and only has 20. Loaded from a local
+    GeoJSON (pipeline/png_adm1_22province.geojson -- the same boundary the
+    front-end map renders, simplified to ~1km vertex tolerance here since
+    this script's raster is exported at 5km anyway) and built as a
+    client-side ee.FeatureCollection, so no persistent EE asset upload is
+    needed. Every feature's ADM1_NAME is already the SAME canonical name
+    cdi_example_latest.json/cdi_archive.json use, so no alias table is
+    needed to match them (see build_forecast_flag_image() below)."""
+    global _province_fc_cache
+    if _province_fc_cache is not None:
+        return _province_fc_cache
+    with open(PROVINCE_BOUNDARY_GEOJSON, encoding="utf-8") as f:
+        geojson = json.load(f)
+    features = [
+        ee.Feature(ee.Geometry(feat["geometry"]), {"ADM1_NAME": feat["properties"]["ADM1_NAME"]})
+        for feat in geojson["features"]
+    ]
+    _province_fc_cache = ee.FeatureCollection(features)
+    return _province_fc_cache
 
 
 def latest_asis_image():
@@ -171,21 +195,6 @@ def read_enso_iod_and_month(example_path: Path):
     return enso, iod, obs_year, obs_month, provinces
 
 
-# FAO/GAUL/2015/level1's ADM1_NAME spells 3 of PNG's 22 provinces differently
-# than cdi_example_latest.json's province keys -- the exact same 3-province
-# mismatch index.html's front-end already documents and corrects for
-# (CDI_EXAMPLE_NAME_ALIAS, used for the "About ADAPt" example map). Confirmed
-# against the real ADM1_NAME values already sitting in this repo's committed
-# data/integrated_priority_latest.json (build_integrated_composite.py's own
-# reduceRegions output) -- keep this in sync with index.html's table if
-# either ever changes.
-GAUL_TO_EXAMPLE_NAME_ALIAS = {
-    "Northern": "Oro",
-    "Northern Solomons": "Bougainville",
-    "West Sepik": "Sandaun",
-}
-
-
 def fcast3_to_flag(value: float) -> float:
     """Mirrors index.html's cdiExampleFlag(value, 0, -1, 'below') exactly --
     the same thresholds do_CDI.R and the front-end's Forecast (SPI-3) row
@@ -199,50 +208,48 @@ def fcast3_to_flag(value: float) -> float:
 
 
 def build_forecast_flag_image(example_provinces: dict, boundary, fallback_flag: float):
-    """Per-province forecast-SPI3 flag, rasterized onto FAO/GAUL/2015/level1
-    polygons -- replaces the old single ee.Image.constant(placeholder) with
-    each province's own flag, since (unlike ENSO/IOD) do_CDI.R computes a
-    distinct SPI-3 forecast per province rather than one national scalar.
-    This was the actual source of the pixel-vs-province-map disagreement:
-    the placeholder always contributed 0 of this term's 20% weight, while
-    the official per-province CDI used each province's real (often strongly
-    negative, "Declared") forecast flag.
+    """Per-province forecast-SPI3 flag, rasterized onto this script's own
+    22-province polygons (see province_collection()) -- replaces the old
+    single ee.Image.constant(placeholder) with each province's own flag,
+    since (unlike ENSO/IOD) do_CDI.R computes a distinct SPI-3 forecast per
+    province rather than one national scalar. This was the actual source of
+    the pixel-vs-province-map disagreement: the placeholder always
+    contributed 0 of this term's 20% weight, while the official per-province
+    CDI used each province's real (often strongly negative, "Declared")
+    forecast flag.
 
-    GAUL 2015 predates PNG's 2012 Hela/Jiwaka split -- confirmed by this
-    repo's own committed data/integrated_priority_latest.json listing only
-    20 provinces, not 22 -- so there is no separate Hela or Jiwaka polygon
-    to paint here. Their pixels inherit Southern Highlands' and Western
-    Highlands' flags respectively, the same resolution limit
-    build_integrated_composite.py's province breakdown already has; this
-    isn't a new gap introduced by this function.
+    Now that province_collection() has real Hela and Jiwaka polygons (not
+    FAO/GAUL/2015/level1, which predates their 2012 split), every province
+    name here matches a cdi_example_latest.json key directly -- Hela and
+    Jiwaka get their own real fcast3-derived flag instead of inheriting
+    Southern Highlands' / Western Highlands' the way they used to.
 
     fallback_flag (the old --forecast-flag CLI default, still 0/neutral) is
-    now used only for a GAUL province name that fails to resolve to a
-    cdi_example_latest.json entry at all -- should not happen given the
-    alias table above, but a fallback keeps this non-blocking layer from
-    hard-failing the whole workflow step over one bad match.
+    now used only for a province name that fails to resolve to a
+    cdi_example_latest.json entry at all -- should not happen since both
+    files share the same canonical 22 names, but a fallback keeps this
+    non-blocking layer from hard-failing the whole workflow step over one
+    bad match.
     """
-    gaul_names = province_collection().aggregate_array("ADM1_NAME").getInfo()
-    flag_by_gaul_name = {}
+    province_names = province_collection().aggregate_array("ADM1_NAME").getInfo()
+    flag_by_province = {}
     unmatched = []
-    for gaul_name in gaul_names:
-        example_name = GAUL_TO_EXAMPLE_NAME_ALIAS.get(gaul_name, gaul_name)
-        record = example_provinces.get(example_name)
+    for name in province_names:
+        record = example_provinces.get(name)
         if record is None or "fcast3" not in record:
-            unmatched.append(gaul_name)
-            flag_by_gaul_name[gaul_name] = fallback_flag
+            unmatched.append(name)
+            flag_by_province[name] = fallback_flag
         else:
-            flag_by_gaul_name[gaul_name] = fcast3_to_flag(float(record["fcast3"]))
+            flag_by_province[name] = fcast3_to_flag(float(record["fcast3"]))
     if unmatched:
         print(
-            f"  ! Warning: no fcast3 value for GAUL province(s) {unmatched} in "
+            f"  ! Warning: no fcast3 value for province(s) {unmatched} in "
             f"cdi_example_latest.json -- using fallback flag {fallback_flag} there. "
-            "(Hela/Jiwaka are NOT expected here -- they inherit their parent "
-            "province's flag above, not this fallback. An unexpected name here "
-            "means the alias table needs updating.)"
+            "An unexpected name here means pipeline/png_adm1_22province.geojson's "
+            "ADM1_NAME values no longer match cdi_example_latest.json's province keys."
         )
 
-    flag_dict = ee.Dictionary(flag_by_gaul_name)
+    flag_dict = ee.Dictionary(flag_by_province)
     painted = province_collection().map(
         lambda f: f.set("forecast_flag", flag_dict.get(f.get("ADM1_NAME"), fallback_flag))
     )
@@ -406,7 +413,7 @@ def main():
     parser.add_argument("--obs-month", type=int, default=None, help="Override the observation month 1-12 (normally auto-read)")
     parser.add_argument(
         "--forecast-flag", type=float, default=0.0,
-        help="Fallback forecast SPI-3 flag (0/0.5/1) used only for a GAUL province name that "
+        help="Fallback forecast SPI-3 flag (0/0.5/1) used only for a province name that "
         "fails to match cdi_example_latest.json's per-province fcast3 values (see "
         "build_forecast_flag_image) -- NOT the value used everywhere, as it was before. "
         "Default 0 (neutral).",
