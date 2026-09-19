@@ -205,7 +205,7 @@
 
     return '<h3>Combined Drought Index (CDI) by province</h3>' +
       '<p class="small" style="color:#64748b">' + labelsLine + '</p>' +
-      '<div class="tablewrap" style="max-height:520px;overflow:auto"><canvas id="reportCdiChart" height="' + Math.max(240, rows.length * 20) + '"></canvas></div>' +
+      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportCdiChart"></canvas></div>' +
       '<div class="tablewrap"><table><thead><tr><th>Province</th><th>CDI</th><th>Phase</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>' +
       buildCdiTrend(data);
   }
@@ -229,7 +229,7 @@
       return n ? sum / n : null;
     });
     return '<h4 style="margin-top:18px">National average CDI trend, ' + lastYear + '</h4>' +
-      '<canvas id="reportCdiTrendChart" height="90" data-labels=\'' + esc(JSON.stringify(labels)) + '\' data-values=\'' + esc(JSON.stringify(avgs)) + '\'></canvas>';
+      '<div style="height:260px;position:relative"><canvas id="reportCdiTrendChart" data-labels=\'' + esc(JSON.stringify(labels)) + '\' data-values=\'' + esc(JSON.stringify(avgs)) + '\'></canvas></div>';
   }
 
   function buildAsisSection(data) {
@@ -254,7 +254,7 @@
       '<p class="small" style="color:#64748b">Dekad ' + esc(asis.dekad_label || '—') + ' &middot; generated ' + esc(asis.generated_utc || '—') +
       ' &middot; national mean vegetation index ' + (mean === null ? 'No data' : fmt2(mean)) +
       ' &middot; High ' + counts.High + ', Moderate ' + counts.Moderate + ', Watch ' + counts.Watch + ', Lower ' + counts.Lower + '</p>' +
-      '<canvas id="reportAsisChart" height="' + Math.max(240, rows.length * 20) + '" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, mean: r.mean }; }))) + '\'></canvas>' +
+      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportAsisChart" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, mean: r.mean }; }))) + '\'></canvas></div>' +
       '<div class="tablewrap"><table><thead><tr><th>Rank</th><th>Province</th><th>VHI</th><th>Class</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
   }
 
@@ -288,7 +288,7 @@
       '<div><span class="muted">High-priority population</span><b>' + fmtInt(nat.total_population_high_priority) + '</b></div>' +
       '<div><span class="muted">Cropland stressed (ha)</span><b>' + fmtInt(nat.total_cropland_stressed_ha) + '</b></div>' +
       '</div>' +
-      '<canvas id="reportCompositeChart" height="' + Math.max(240, rows.length * 20) + '" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, v: r.composite_biophysical_stress_mean }; }))) + '\'></canvas>' +
+      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportCompositeChart" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, v: r.composite_biophysical_stress_mean }; }))) + '\'></canvas></div>' +
       '<div class="tablewrap"><table><thead><tr><th>Province</th><th>Composite stress</th><th>Class</th><th>Pop., high priority</th><th>Pop., exposed</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
   }
 
@@ -314,7 +314,7 @@
     return '<h3>CDI-linked population exposure by province</h3>' +
       '<p class="small" style="color:#64748b">Generated ' + esc(cdiPop.generated_utc || '—') + ' &middot; ' + fmtInt(nat.total_population) + ' people, ' +
       fmtInt(nat.total_households) + ' households, ' + fmtInt(nat.census_units) + ' census units (' + pct(nat.census_units_no_coverage, nat.census_units) + ' with no CDI-raster coverage).</p>' +
-      '<canvas id="reportPopPhaseChart" height="140" data-values=\'' + esc(JSON.stringify(phaseOrder.map(function (p) { return byPhase[p[0]] || 0; }))) + '\'></canvas>' +
+      '<div style="height:220px;position:relative"><canvas id="reportPopPhaseChart" data-values=\'' + esc(JSON.stringify(phaseOrder.map(function (p) { return byPhase[p[0]] || 0; }))) + '\'></canvas></div>' +
       '<div class="tablewrap"><table><thead><tr><th>Province</th><th>Total population</th><th>Response threshold</th><th>Anticipatory Action</th><th>Readiness</th><th>No coverage</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
   }
 
