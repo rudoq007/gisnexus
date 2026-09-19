@@ -2,20 +2,36 @@ import argparse
 import csv
 import json
 import os
+import tempfile
 import time
 import urllib.error
 import urllib.request
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import ee
+import fiona
+import rasterio
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_CU_GPKG = REPO_ROOT / "pipeline" / "CU_reference_imputed.gpkg"
 
 DEFAULT_PROJECT = "trekky675"
 ASIS_COLLECTION = "projects/UNFAO/ASIS/VHI-D"
 CHIRPS_COLLECTION = "UCSB-CHG/CHIRPS/DAILY"
 MODIS_COLLECTION = "MODIS/061/MOD11A1"
 WORLDCOVER_COLLECTION = "ESA/WorldCover/v200"
-WORLDPOP_COLLECTION = "WorldPop/GP/100m/pop"
+
+# A value the 0-100 (clamped) composite_biophysical_stress score can never
+# legitimately take. Used to fill the exported GeoTIFF's out-of-PNG-boundary
+# pixels instead of the default 0 -- because 0 IS a valid score (a lowland
+# pixel with no stress on any of the four inputs is common in wet months),
+# and GDAL/rasterio's automatic nodata masking can't tell "outside PNG" from
+# "genuinely zero stress" if both are written as the same value. See
+# sample_composite_at_points() below, which checks against this sentinel
+# directly rather than trusting the GeoTIFF's own nodata tag.
+RASTER_NODATA_SENTINEL = -1.0
 
 # ERA5-Land reanalysis is used for soil moisture. It is a raster (gridded) product,
 # so — unlike ENSO/IOD below — it can legitimately be reduced per-province.
@@ -82,20 +98,143 @@ def latest_asis_image():
     return ee.Image(collection.sort("system:time_start", False).first()).clip(png_geometry())
 
 
-def latest_worldpop_image():
-    collection = (
-        ee.ImageCollection(WORLDPOP_COLLECTION)
-        .filter(ee.Filter.eq("country", "PNG"))
-        .sort("year", False)
-    )
+# PNG NSO's own Adm 1 Name spelling/casing -> this script's own province
+# names, i.e. FAO/GAUL/2015/level1's ADM1_NAME values (the same 20 names
+# used throughout this file's province_collection()-based reduceRegions()).
+# This is deliberately NOT the same alias table as
+# build_cdi_population_exposure.py's ADM1_NAME_ALIAS: that script produces
+# its own independent 22-province breakdown (dashboard-friendly names,
+# Hela/Jiwaka kept separate); this script's province list comes from GAUL,
+# which only has 20 PNG provinces (no Hela/Jiwaka -- they split from
+# Southern Highlands/Western Highlands in 2012) and uses GAUL's own raw
+# names ("Northern Solomons" not "Bougainville", "Northern" not "Oro",
+# "West Sepik" not "Sandaun"). Every value on the right must exactly match
+# an ADM1_NAME this script's province_collection() actually returns.
+CU_ADM1_NAME_TO_PROVINCE = {
+    "AUTONOMOUS REGION OF BOUGAINVILLE": "Northern Solomons",
+    "CENTRAL": "Central",
+    "EAST NEW BRITAIN": "East New Britain",
+    "EAST SEPIK": "East Sepik",
+    "EASTERN HIGHLANDS": "Eastern Highlands",
+    "ENGA": "Enga",
+    "GULF": "Gulf",
+    "HELA": "Southern Highlands",   # folded -- GAUL has no separate Hela
+    "JIWAKA": "Western Highlands",  # folded -- GAUL has no separate Jiwaka
+    "MADANG": "Madang",
+    "MANUS": "Manus",
+    "MILNE BAY": "Milne Bay",
+    "MOROBE": "Morobe",
+    "NATIONAL CAPITAL DISTRICT": "National Capital District",
+    "NEW IRELAND": "New Ireland",
+    "NORTHERN (ORO)": "Northern",
+    "SIMBU": "Chimbu",
+    "SOUTHERN HIGHLANDS": "Southern Highlands",
+    "WEST NEW BRITAIN": "West New Britain",
+    "WEST SEPIK": "West Sepik",
+    "WESTERN": "Western",
+    "WESTERN HIGHLANDS": "Western Highlands",
+}
 
-    if collection.size().getInfo() == 0:
-        collection = ee.ImageCollection(WORLDPOP_COLLECTION).filterBounds(png_geometry()).sort("year", False)
 
-    if collection.size().getInfo() == 0:
-        raise RuntimeError(f"No images found in {WORLDPOP_COLLECTION}")
+def read_census_units(gpkg_path: Path):
+    """Yields (province, lon, lat, pop) for every census unit whose Adm 1
+    Name maps to one of this script's 20 GAUL provinces, skipping rows with
+    missing coordinates. See CU_ADM1_NAME_TO_PROVINCE above for the mapping
+    (and the Hela/Jiwaka folding it does)."""
+    unknown_names = set()
+    with fiona.open(str(gpkg_path), layer="census_units") as src:
+        for feat in src:
+            props = feat["properties"]
+            adm1_raw = (props.get("Adm 1 Name") or "").strip()
+            province = CU_ADM1_NAME_TO_PROVINCE.get(adm1_raw)
+            if province is None:
+                unknown_names.add(adm1_raw)
+                continue
+            lon = props.get("Longitude_Imputed")
+            lat = props.get("Latitude_Imputed")
+            if lon is None or lat is None:
+                continue
+            pop = props.get("2024 Pop Est") or 0.0
+            yield province, float(lon), float(lat), float(pop)
+    if unknown_names:
+        print(f"  ! Warning: {len(unknown_names)} unmapped Adm 1 Name value(s) in "
+              f"census units, skipped: {sorted(unknown_names)}")
 
-    return ee.Image(collection.first()).clip(png_geometry())
+
+def sample_composite_at_points(raster_path: Path, points):
+    """points: list of (lon, lat). Returns a list of composite_biophysical_stress
+    values (float, or None where the point falls outside the exported
+    raster's coverage). Reads the raw band directly and checks against
+    RASTER_NODATA_SENTINEL rather than trusting rasterio's automatic
+    nodata masking -- see that constant's comment for why 0 can't be used
+    to mean "no coverage" here."""
+    results = []
+    with rasterio.open(str(raster_path)) as src:
+        band1 = src.read(1, masked=False)
+        for lon, lat in points:
+            try:
+                row, col = src.index(lon, lat)
+            except Exception:
+                results.append(None)
+                continue
+            if row < 0 or col < 0 or row >= band1.shape[0] or col >= band1.shape[1]:
+                results.append(None)
+                continue
+            val = float(band1[row, col])
+            if val <= RASTER_NODATA_SENTINEL + 0.5:
+                results.append(None)
+            else:
+                results.append(val)
+    return results
+
+
+def build_population_by_province(cu_gpkg_path: Path, raster_path: Path):
+    """Aggregates PNG NSO 2024 Census Unit population by province and by
+    composite_biophysical_stress exposure band (high/moderate/watch/
+    exposed-total, using the same COMPOSITE_*_THRESHOLD cut points as the
+    rest of this script), replacing the former WorldPop-based EE population
+    masks. This is the SAME census-unit source build_cdi_population_exposure.py
+    already uses for its own (CDI-phase-based) population figures, so the
+    dashboard now has one population count, not two -- the two outputs
+    still differ (different raster, different classification bands), but
+    never because of a different underlying population source."""
+    records = list(read_census_units(cu_gpkg_path))
+    print(f"Loaded {len(records)} census units with a mapped province and coordinates.")
+    points = [(lon, lat) for _, lon, lat, _ in records]
+    values = sample_composite_at_points(raster_path, points)
+
+    per_province = defaultdict(lambda: {
+        "population_high_priority": 0.0,
+        "population_moderate_priority": 0.0,
+        "population_watch_priority": 0.0,
+        "population_exposed_total": 0.0,
+        "census_units": 0,
+        "census_units_no_coverage": 0,
+    })
+
+    no_coverage_total = 0
+    for (province, _lon, _lat, pop), value in zip(records, values):
+        stats = per_province[province]
+        stats["census_units"] += 1
+        if value is None:
+            stats["census_units_no_coverage"] += 1
+            no_coverage_total += 1
+            continue
+        if value >= COMPOSITE_HIGH_THRESHOLD:
+            stats["population_high_priority"] += pop
+        elif value >= COMPOSITE_EXPOSED_THRESHOLD:
+            stats["population_moderate_priority"] += pop
+        elif value >= COMPOSITE_WATCH_THRESHOLD:
+            stats["population_watch_priority"] += pop
+        if value >= COMPOSITE_EXPOSED_THRESHOLD:
+            stats["population_exposed_total"] += pop
+
+    if no_coverage_total:
+        print(f"  ! {no_coverage_total} of {len(records)} census units fell outside the "
+              "composite raster's coverage (e.g. small offshore islands) -- excluded "
+              "from population totals, not silently counted as zero-stress.")
+
+    return per_province
 
 
 def build_asis_vhi(latest_img: ee.Image) -> ee.Image:
@@ -396,7 +535,7 @@ def export_composite_geotiff(image: ee.Image, boundary: "ee.Geometry", output_pa
     raise RuntimeError("GeoTIFF export failed after 3 attempts") from last_exc
 
 
-def build_outputs(tif_output_path: Path | None = None):
+def build_outputs(tif_output_path: Path | None = None, cu_gpkg_path: Path | None = None):
     boundary = png_geometry()
 
     asis_img = latest_asis_image()
@@ -429,8 +568,24 @@ def build_outputs(tif_output_path: Path | None = None):
         .clip(boundary)
     )
 
-    if tif_output_path is not None:
-        export_composite_geotiff(composite_biophysical, boundary, tif_output_path)
+    # The census-unit population sampling below (build_population_by_province)
+    # needs the composite raster as a local GeoTIFF -- it's a rasterio point
+    # sample, not an EE computation -- so the export now always runs, not
+    # only when --tif-output is passed. When the caller does supply
+    # --tif-output, that same download is reused for both purposes (no
+    # double export); otherwise a scratch temp file is used and removed
+    # once sampling is done. Out-of-boundary pixels are filled with
+    # RASTER_NODATA_SENTINEL instead of the EE default of 0, which a
+    # genuinely zero-stress pixel can legitimately also be (see that
+    # constant's comment).
+    keep_raster_file = tif_output_path is not None
+    if keep_raster_file:
+        raster_path = tif_output_path
+    else:
+        tmp_fd, tmp_name = tempfile.mkstemp(suffix=".tif")
+        os.close(tmp_fd)
+        raster_path = Path(tmp_name)
+    export_composite_geotiff(composite_biophysical.unmask(RASTER_NODATA_SENTINEL), boundary, raster_path)
 
     # ENSO/IOD are national-scale scalars, not spatial layers - fetched separately
     # and reported as context (see fetch_enso_iod_state docstring for rationale).
@@ -440,24 +595,17 @@ def build_outputs(tif_output_path: Path | None = None):
     agricultural_priority = composite_biophysical.rename("agricultural_priority")
     exposure_priority = composite_biophysical.rename("exposure_priority")
 
-    worldpop = latest_worldpop_image()
-    population = worldpop.select([0]).rename("population")
-    population_year = worldpop.get("year").getInfo()
-
     cropland_mask = build_cropland_mask().clip(boundary)
 
-    population_high_priority = population.updateMask(composite_biophysical.gte(COMPOSITE_HIGH_THRESHOLD)).rename(
-        "population_high_priority"
+    population_by_province = build_population_by_province(
+        Path(cu_gpkg_path) if cu_gpkg_path else DEFAULT_CU_GPKG, raster_path
     )
-    population_moderate_priority = population.updateMask(
-        composite_biophysical.gte(COMPOSITE_EXPOSED_THRESHOLD).And(composite_biophysical.lt(COMPOSITE_HIGH_THRESHOLD))
-    ).rename("population_moderate_priority")
-    population_watch_priority = population.updateMask(
-        composite_biophysical.gte(COMPOSITE_WATCH_THRESHOLD).And(composite_biophysical.lt(COMPOSITE_EXPOSED_THRESHOLD))
-    ).rename("population_watch_priority")
-    population_exposed_total = population.updateMask(composite_biophysical.gte(COMPOSITE_EXPOSED_THRESHOLD)).rename(
-        "population_exposed_total"
-    )
+
+    if not keep_raster_file:
+        try:
+            raster_path.unlink()
+        except OSError:
+            pass
 
     cropland_high_ha = ee.Image.pixelArea().divide(10000).updateMask(
         cropland_mask.eq(1).And(composite_biophysical.gte(COMPOSITE_HIGH_THRESHOLD))
@@ -475,10 +623,6 @@ def build_outputs(tif_output_path: Path | None = None):
             composite_biophysical.rename("composite_biophysical_stress"),
             agricultural_priority.unmask(0),
             exposure_priority.unmask(0),
-            population_high_priority.unmask(0),
-            population_moderate_priority.unmask(0),
-            population_watch_priority.unmask(0),
-            population_exposed_total.unmask(0),
             cropland_high_ha.unmask(0),
             cropland_stressed_ha.unmask(0),
         ]
@@ -503,6 +647,7 @@ def build_outputs(tif_output_path: Path | None = None):
 
     for feature in features:
         props = feature.get("properties", {})
+        pop_stats = population_by_province.get(props.get("ADM1_NAME"), {})
         province_record = {
             "province": props.get("ADM1_NAME"),
             "asis_vhi_mean": safe_round(props.get("asis_vhi_mean"), 3),
@@ -513,10 +658,12 @@ def build_outputs(tif_output_path: Path | None = None):
             "agricultural_priority_mean": safe_round(props.get("agricultural_priority_mean"), 1),
             "exposure_priority_mean": safe_round(props.get("exposure_priority_mean"), 1),
             "priority_class": classify_priority(props.get("composite_biophysical_stress_mean")),
-            "population_high_priority": safe_round(props.get("population_high_priority_sum"), 0),
-            "population_moderate_priority": safe_round(props.get("population_moderate_priority_sum"), 0),
-            "population_watch_priority": safe_round(props.get("population_watch_priority_sum"), 0),
-            "population_exposed_total": safe_round(props.get("population_exposed_total_sum"), 0),
+            "population_high_priority": safe_round(pop_stats.get("population_high_priority", 0.0), 0),
+            "population_moderate_priority": safe_round(pop_stats.get("population_moderate_priority", 0.0), 0),
+            "population_watch_priority": safe_round(pop_stats.get("population_watch_priority", 0.0), 0),
+            "population_exposed_total": safe_round(pop_stats.get("population_exposed_total", 0.0), 0),
+            "census_units": pop_stats.get("census_units", 0),
+            "census_units_no_coverage": pop_stats.get("census_units_no_coverage", 0),
             "cropland_high_ha": safe_round(props.get("cropland_high_ha_sum"), 0),
             "cropland_stressed_ha": safe_round(props.get("cropland_stressed_ha_sum"), 0),
         }
@@ -539,7 +686,24 @@ def build_outputs(tif_output_path: Path | None = None):
         "asis_date": asis_date,
         "drought_window": f"{start_90} to {safe_end}",
         "frost_window": f"{start_7} to {anchor_date}",
-        "population_year": population_year,
+        "population_source": {
+            "name": "PNG NSO 2024 Census Unit population estimates",
+            "path": "pipeline/CU_reference_imputed.gpkg",
+            "note": (
+                "Population figures in this file (population_high_priority, "
+                "population_moderate_priority, population_watch_priority, "
+                "population_exposed_total, total_population_exposed, "
+                "total_population_high_priority) are PNG NSO 2024 census-unit "
+                "population counts sampled against the composite_biophysical_stress "
+                "raster at each census unit's location and classified using the "
+                "composite thresholds below. This is now the SAME underlying "
+                "population source as data/cdi_population_exposure.json -- the two "
+                "files' numbers still differ, because they classify people against "
+                "different rasters (composite biophysical stress bands here vs. CDI "
+                "operational phases there), but never because of a different "
+                "population count."
+            ),
+        },
         "thresholds": {
             "composite_high_threshold": COMPOSITE_HIGH_THRESHOLD,
             "composite_exposed_threshold": COMPOSITE_EXPOSED_THRESHOLD,
@@ -586,6 +750,8 @@ def write_csv(rows, output_path: Path):
         "population_moderate_priority",
         "population_watch_priority",
         "population_exposed_total",
+        "census_units",
+        "census_units_no_coverage",
         "cropland_high_ha",
         "cropland_stressed_ha",
     ]
@@ -604,14 +770,27 @@ def main():
     parser.add_argument(
         "--tif-output",
         default=None,
-        help="Optional path to also export the composite_biophysical_stress raster as a GeoTIFF "
-        "(e.g. data/composite_biophysical_stress.tif). Skipped if not provided.",
+        help="Optional path to keep a copy of the exported composite_biophysical_stress "
+        "GeoTIFF (e.g. data/composite_biophysical_stress.tif). The export itself always "
+        "runs now -- the census-unit population step below depends on it -- this flag only "
+        "controls whether the file is kept afterwards or written to a scratch temp path "
+        "and discarded.",
+    )
+    parser.add_argument(
+        "--cu-gpkg",
+        default=str(DEFAULT_CU_GPKG),
+        help="Path to the PNG NSO 2024 Census Unit GeoPackage used for population exposure "
+        "(same file build_cdi_population_exposure.py uses).",
     )
     args = parser.parse_args()
 
+    cu_gpkg_path = Path(args.cu_gpkg)
+    if not cu_gpkg_path.exists():
+        raise SystemExit(f"Census unit GeoPackage not found: {cu_gpkg_path}")
+
     initialise_earth_engine()
     tif_path = Path(args.tif_output) if args.tif_output else None
-    output = build_outputs(tif_output_path=tif_path)
+    output = build_outputs(tif_output_path=tif_path, cu_gpkg_path=cu_gpkg_path)
 
     json_path = Path(args.json_output)
     csv_path = Path(args.csv_output)
