@@ -8,6 +8,8 @@ import ee
 ASIS_COLLECTION_ID = "projects/UNFAO/ASIS/VHI-D"
 PROJECT_ID = os.getenv("EARTHENGINE_PROJECT", "trekky675")
 OUT = Path("data/asis_vhi_latest.json")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PROVINCE_BOUNDARY_GEOJSON = REPO_ROOT / "pipeline" / "png_adm1_22province.geojson"
 
 
 def initialise_ee():
@@ -21,9 +23,19 @@ def initialise_ee():
 
 
 def png_provinces():
-    return ee.FeatureCollection("FAO/GAUL/2015/level1").filter(
-        ee.Filter.eq("ADM0_NAME", "Papua New Guinea")
-    )
+    """PNG's real 22 provinces (PNG NSO boundary, including Hela and Jiwaka
+    as their own polygons), not FAO/GAUL/2015/level1 -- see
+    build_integrated_composite.py's province_collection() for the full
+    rationale; this mirrors it. Loaded from the same local GeoJSON
+    (pipeline/png_adm1_22province.geojson) all three EE pipeline scripts
+    now share, built as a client-side ee.FeatureCollection."""
+    with open(PROVINCE_BOUNDARY_GEOJSON, encoding="utf-8") as f:
+        geojson = json.load(f)
+    features = [
+        ee.Feature(ee.Geometry(feat["geometry"]), {"ADM1_NAME": feat["properties"]["ADM1_NAME"]})
+        for feat in geojson["features"]
+    ]
+    return ee.FeatureCollection(features)
 
 
 def mask_asis_flags(image):
