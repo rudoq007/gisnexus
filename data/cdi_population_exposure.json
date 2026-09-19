@@ -1,11 +1,11 @@
 {
-  "generated_utc": "2026-09-18 23:29 UTC",
+  "generated_utc": "2026-09-19 00:12 UTC",
   "cdi_pixel_observation_month": "2026-08",
   "source": {
     "census_units": "PNG NSO 2024 Census Unit population estimates (pipeline/CU_reference_imputed.gpkg; imputed coordinates used where original point coordinates were missing)",
     "cdi_raster": "data/cdi_pixel_latest.tif"
   },
-  "methodology_note": "Population figures here are PNG NSO 2024 census-unit population estimates sampled against the pixel-level CDI raster and classified by the same operational phase bands used elsewhere on the dashboard (Table 1, FAO PNG Food Security & Agriculture Sectoral Plan, Aug 2026). This is a DIFFERENT data source and methodology from data/integrated_priority_latest.json's own population exposure figures (WorldPop intersected with the composite biophysical stress layer) -- the two must not be merged, summed, or treated as a refinement of one another.",
+  "methodology_note": "Population figures here are PNG NSO 2024 census-unit population estimates sampled against the pixel-level CDI raster and classified by the same operational phase bands used elsewhere on the dashboard (Table 1, FAO PNG Food Security & Agriculture Sectoral Plan, Aug 2026). data/integrated_priority_latest.json's own population exposure figures use this SAME census-unit population source (as of Sep 2026 it switched off WorldPop), sampled against the composite biophysical stress raster instead and classified by composite exposure thresholds -- so the two files' numbers still differ (different raster, different bands), but never because of a different underlying population count. The two must still not be merged, summed, or treated as a refinement of one another.",
   "national": {
     "total_population": 14617706,
     "total_households": 2235460,
