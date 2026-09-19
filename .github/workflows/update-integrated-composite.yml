@@ -60,11 +60,17 @@ jobs:
           PY
 
       - name: Build integrated composite outputs
+        # --cu-gpkg: population exposure here now comes from the same PNG NSO
+        # 2024 Census Unit source as the "Link CDI raster to census-unit
+        # population" step below, sampled against the composite biophysical
+        # stress raster instead of the CDI raster (see build_integrated_composite.py's
+        # build_population_by_province() docstring).
         run: |
           python scripts/build_integrated_composite.py \
             --json-output data/integrated_priority_latest.json \
             --csv-output data/integrated_priority_latest.csv \
-            --tif-output data/composite_biophysical_stress.tif
+            --tif-output data/composite_biophysical_stress.tif \
+            --cu-gpkg pipeline/CU_reference_imputed.gpkg
 
       - name: Build pixel-level CDI layer and patch composite output
         # Non-blocking: this layer is newer and still approximates SPI-1/soil-moisture
