@@ -51,4 +51,24 @@ jobs:
           git add data/cdi_example_latest.json data/cdi_archive.json
           git diff --staged --quiet && echo "No changes to commit." && exit 0
           git commit -m "Auto-update CDI data from pipeline/PNG_CDI.rds [skip ci]"
-          git push
+          # Another workflow (update-integrated-composite.yml or
+          # update-live-asis-vhi.yml) may push to main while this job is
+          # still running -- a plain `git push` then fails with "fetch
+          # first" (non-fast-forward) and this run's output is silently
+          # lost. These workflows touch disjoint files, so rebasing onto
+          # whatever landed in the meantime applies cleanly; retry a few
+          # times in case of a second near-simultaneous push.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              break
+            fi
+            if [ "$attempt" -eq 5 ]; then
+              echo "Push failed after $attempt attempts." >&2
+              exit 1
+            fi
+            echo "Push rejected (attempt $attempt) -- another workflow likely pushed in the meantime. Rebasing and retrying..."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 5))
+          done
