@@ -1,8 +1,8 @@
 {
-  "generated_utc": "2026-09-19 06:27 UTC",
-  "analysis_date": "2026-09-19",
-  "drought_window": "2026-06-06 to 2026-09-04",
-  "frost_window": "2026-09-12 to 2026-09-19",
+  "generated_utc": "2026-09-20 06:50 UTC",
+  "analysis_date": "2026-09-20",
+  "drought_window": "2026-06-07 to 2026-09-05",
+  "frost_window": "2026-09-13 to 2026-09-20",
   "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
   "notes": "Live PNG drought and frost screening workspace summary from the separate Streamlit/GEE processing workflow.",
   "available_layers": [
@@ -13,7 +13,7 @@
   "province_summary": [
     {
       "province": "Central",
-      "rainfall_pct_normal": 37.9,
+      "rainfall_pct_normal": 37.8,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 9.4,
       "frost_interpretation": "Warmer / lower frost signal"
@@ -27,14 +27,14 @@
     },
     {
       "province": "East New Britain",
-      "rainfall_pct_normal": 67.9,
+      "rainfall_pct_normal": 64.1,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "East Sepik",
-      "rainfall_pct_normal": 42.9,
+      "rainfall_pct_normal": 42.8,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
@@ -97,8 +97,8 @@
     },
     {
       "province": "New Ireland",
-      "rainfall_pct_normal": 70.6,
-      "drought_interpretation": "Moderate deficit",
+      "rainfall_pct_normal": 68.2,
+      "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
@@ -111,7 +111,7 @@
     },
     {
       "province": "Northern Solomons",
-      "rainfall_pct_normal": 76.4,
+      "rainfall_pct_normal": 76.2,
       "drought_interpretation": "Moderate deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
@@ -125,14 +125,14 @@
     },
     {
       "province": "West New Britain",
-      "rainfall_pct_normal": 43.4,
+      "rainfall_pct_normal": 41.2,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "West Sepik",
-      "rainfall_pct_normal": 50.7,
+      "rainfall_pct_normal": 50.1,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 5.3,
       "frost_interpretation": "Warmer / lower frost signal"
