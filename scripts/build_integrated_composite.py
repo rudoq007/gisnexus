@@ -45,7 +45,12 @@ SOIL_MOISTURE_BAND = "volumetric_soil_water_layer_1"  # 0-7 cm depth
 # the composite score. Both sources are public NOAA products; if either URL format
 # changes, fetch_enso_iod_state() below degrades gracefully rather than failing the job.
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
-DMI_URL = "https://psl.noaa.gov/gcos_wgsp/Timeseries/Data/dmi.had.long.data"
+# 2026-09-21: NOAA PSL retired the old gcos_wgsp/Timeseries path (it now just
+# redirects to a deprecation notice, which is why this was silently stuck on
+# "DMI 0.15, May 2026" / Neutral IOD for months while the data behind it never
+# advanced). Updated to PSL's new Monthly Time-series location, same standard
+# PSL ASCII format, so _parse_dmi() below needs no changes.
+DMI_URL = "https://psl.noaa.gov/data/timeseries/month/data/dmi.had.long.data"
 
 COMPOSITE_HIGH_THRESHOLD = 40
 COMPOSITE_EXPOSED_THRESHOLD = 25
