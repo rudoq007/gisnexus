@@ -45,12 +45,20 @@ SOIL_MOISTURE_BAND = "volumetric_soil_water_layer_1"  # 0-7 cm depth
 # the composite score. Both sources are public NOAA products; if either URL format
 # changes, fetch_enso_iod_state() below degrades gracefully rather than failing the job.
 ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
-# 2026-09-21: NOAA PSL retired the old gcos_wgsp/Timeseries path (it now just
-# redirects to a deprecation notice, which is why this was silently stuck on
-# "DMI 0.15, May 2026" / Neutral IOD for months while the data behind it never
-# advanced). Updated to PSL's new Monthly Time-series location, same standard
-# PSL ASCII format, so _parse_dmi() below needs no changes.
-DMI_URL = "https://psl.noaa.gov/data/timeseries/month/data/dmi.had.long.data"
+# 2026-09-21: switched from NOAA PSL's HadISST-based "long" DMI series to NOAA
+# CPC's ERSST.V6-based DMI monitoring product. Two separate problems, found in
+# sequence: (1) the old PSL gcos_wgsp/Timeseries path was retired and redirects
+# to a deprecation notice; (2) even PSL's *current* replacement location
+# (dmi.had.long.data) turned out to have no data past May 2026 -- HadISST is a
+# slower reanalysis product with an inherent multi-month publication lag, not a
+# broken link, so it was quietly returning a real-but-stale "last available"
+# value every run. CPC's ERSST.V6 product (https://www.cpc.ncep.noaa.gov/
+# products/international/ocean_monitoring/IODMI/DMI_month.html) is the
+# near-real-time one -- same family as ONI_URL above, same publisher -- and is
+# current through August 2026 (DMI +0.68, Positive IOD) as of this fix. CPC's
+# own page notes the most recent 1-2 months can still shift after publication
+# (high-frequency filtering), same caveat as ONI's most recent season.
+DMI_URL = "https://www.cpc.ncep.noaa.gov/products/international/ocean_monitoring/IODMI/mnth.ersstv6.clim19912020.dmi_current.txt"
 
 COMPOSITE_HIGH_THRESHOLD = 40
 COMPOSITE_EXPOSED_THRESHOLD = 25
@@ -409,33 +417,31 @@ def _parse_oni(raw_text: str):
 
 
 def _parse_dmi(raw_text: str):
-    """NOAA PSL DMI table: first line is 'start_year end_year', then one row per
-    year: 'YEAR jan feb mar ... dec', with a large negative sentinel (e.g. -9999)
-    marking months not yet available. We want the most recent non-sentinel month."""
-    lines = [ln.strip() for ln in raw_text.splitlines() if ln.strip()]
-    if not lines:
-        return None
-
+    """NOAA CPC DMI table (ERSST.V6-based): a metadata/header preamble (region
+    definitions, climatology period, column legend) followed by one data row
+    per MONTH -- 'YEAR MONTH WTIO SETIO DMI', whitespace-separated, DMI last.
+    Unlike the old PSL format there's no fixed, countable header size, so we
+    scan every line from the end and keep the first one that parses cleanly
+    as exactly 5 fields with a plausible year/month -- that's the most recent
+    month on file. CPC's own page notes the last 1-2 months can still revise
+    after publication; we don't special-case that, we just always report
+    whatever the most recent row says, same as ONI."""
     month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    lines = [ln.strip() for ln in raw_text.splitlines() if ln.strip()]
 
-    for line in reversed(lines[1:]):
+    for line in reversed(lines):
         parts = line.split()
-        if len(parts) < 13:
+        if len(parts) != 5:
             continue
         try:
-            year = int(float(parts[0]))
+            year = int(parts[0])
+            month = int(parts[1])
+            dmi = float(parts[4])
         except ValueError:
             continue
-        values = []
-        for p in parts[1:13]:
-            try:
-                values.append(float(p))
-            except ValueError:
-                values.append(None)
-        for month_idx in range(11, -1, -1):
-            val = values[month_idx]
-            if val is not None and val > -900:  # sentinel values are large negatives
-                return {"month": month_names[month_idx], "year": year, "value": val}
+        if not (1900 <= year <= 2100) or not (1 <= month <= 12):
+            continue
+        return {"month": month_names[month - 1], "year": year, "value": dmi}
     return None
 
 
@@ -453,8 +459,9 @@ def fetch_enso_iod_state() -> dict:
         "dmi_period": None,
         "iod_phase": "Unknown",
         "source_note": (
-            "ONI: NOAA CPC (cpc.ncep.noaa.gov). DMI: NOAA PSL (psl.noaa.gov). "
-            "Reported as national-scale context, not a per-province input."
+            "ONI: NOAA CPC (cpc.ncep.noaa.gov). DMI: NOAA CPC, ERSST.V6 "
+            "(cpc.ncep.noaa.gov). Reported as national-scale context, not a "
+            "per-province input."
         ),
         "fetch_error": None,
     }
