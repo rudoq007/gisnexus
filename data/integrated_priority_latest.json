@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-21 01:46 UTC",
+  "generated_utc": "2026-09-21 02:01 UTC",
   "asis_date": "2026-09-01",
   "drought_window": "2026-05-19 to 2026-08-17",
   "frost_window": "2026-08-25 to 2026-09-01",
@@ -23,17 +23,17 @@
     "oni_value": 1.8,
     "oni_period": "JJA 2026",
     "enso_phase": "Strong El Nino",
-    "dmi_value": 0.15,
-    "dmi_period": "May 2026",
-    "iod_phase": "Neutral IOD",
-    "source_note": "ONI: NOAA CPC (cpc.ncep.noaa.gov). DMI: NOAA PSL (psl.noaa.gov). Reported as national-scale context, not a per-province input.",
+    "dmi_value": 0.68,
+    "dmi_period": "Aug 2026",
+    "iod_phase": "Positive IOD",
+    "source_note": "ONI: NOAA CPC (cpc.ncep.noaa.gov). DMI: NOAA CPC, ERSST.V6 (cpc.ncep.noaa.gov). Reported as national-scale context, not a per-province input.",
     "fetch_error": null
   },
   "layers": {
-    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/222b9dcb2a44519d78378ea67be07521-cadbfd191f6cbab1f371b5f6e20abbfb/tiles/{z}/{x}/{y}",
-    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/4558bd49303722724cdf1e478624690e-56693a38d97c3c8dd4b53bd0b2f1c2b4/tiles/{z}/{x}/{y}",
-    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/baceda0f2254a7970e5f265db13f2b07-79e86914e14d561c99d1db4b297267fe/tiles/{z}/{x}/{y}",
-    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/d7b6d001fd2a63d568c26625c010eea9-936bdf898ffb7f88eb25987f90be7f76/tiles/{z}/{x}/{y}"
+    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/222b9dcb2a44519d78378ea67be07521-8735592fb20a4044efc3563d46a3d3b3/tiles/{z}/{x}/{y}",
+    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/4558bd49303722724cdf1e478624690e-518ebc50905efdf965f269baf4e41322/tiles/{z}/{x}/{y}",
+    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/baceda0f2254a7970e5f265db13f2b07-ea69bf2d40df4babda124f204cf59a1d/tiles/{z}/{x}/{y}",
+    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/d7b6d001fd2a63d568c26625c010eea9-158ef895ff25c0f4a89b69c6aa9dd93a/tiles/{z}/{x}/{y}"
   },
   "national_summary": {
     "total_population_exposed": 6295794.0,
