@@ -1,6 +1,6 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-09-27 21:13 UTC",
+  "generated_utc": "2026-09-28 23:09 UTC",
   "dekad_label": "2026-9-D26",
   "metadata": {
     "DEKAD_dekadAlt": 26,
@@ -9,7 +9,7 @@
     "system:time_end": 1789862400000,
     "system:time_start": 1789084800000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/ec1fe0b34947bd1ee9e4d12f2ceb67cd-0b02d90581d6d357674625dd0827d591/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/ec1fe0b34947bd1ee9e4d12f2ceb67cd-62b4d2b34355133cebef34dd1154818d/tiles/{z}/{x}/{y}",
   "provinces": [
     {
       "province": "Western Highlands",
