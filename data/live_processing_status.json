@@ -1,8 +1,8 @@
 {
-  "generated_utc": "2026-09-28 07:29 UTC",
-  "analysis_date": "2026-09-28",
-  "drought_window": "2026-06-15 to 2026-09-13",
-  "frost_window": "2026-09-21 to 2026-09-28",
+  "generated_utc": "2026-09-29 07:25 UTC",
+  "analysis_date": "2026-09-29",
+  "drought_window": "2026-06-16 to 2026-09-14",
+  "frost_window": "2026-09-22 to 2026-09-29",
   "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
   "notes": "Live PNG drought and frost screening workspace summary from the separate Streamlit/GEE processing workflow.",
   "available_layers": [
@@ -34,7 +34,7 @@
     },
     {
       "province": "East Sepik",
-      "rainfall_pct_normal": 37.5,
+      "rainfall_pct_normal": 37.4,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 10.5,
       "frost_interpretation": "Warmer / lower frost signal"
@@ -76,7 +76,7 @@
     },
     {
       "province": "Milne Bay",
-      "rainfall_pct_normal": 26.0,
+      "rainfall_pct_normal": 25.8,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 9.6,
       "frost_interpretation": "Warmer / lower frost signal"
@@ -132,7 +132,7 @@
     },
     {
       "province": "West Sepik",
-      "rainfall_pct_normal": 45.2,
+      "rainfall_pct_normal": 43.9,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 8.8,
       "frost_interpretation": "Warmer / lower frost signal"
