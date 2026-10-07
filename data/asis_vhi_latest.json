@@ -1,6 +1,6 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-10-06 22:34 UTC",
+  "generated_utc": "2026-10-07 22:58 UTC",
   "dekad_label": "2026-9-D27",
   "metadata": {
     "DEKAD_dekadAlt": 27,
@@ -9,7 +9,7 @@
     "system:time_end": 1790726400000,
     "system:time_start": 1789948800000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/7cc2c41c2ffaa4a510dd77f0e5d5a46b-2f129286f13d0397e9b1fd4f0d16b95e/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/7cc2c41c2ffaa4a510dd77f0e5d5a46b-37ab5bc85ce71433933973b19592bf84/tiles/{z}/{x}/{y}",
   "provinces": [
     {
       "province": "Manus",
