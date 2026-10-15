@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-10-15 07:47 UTC",
-  "cdi_pixel_observation_month": "2026-08",
+  "generated_utc": "2026-10-15 22:00 UTC",
+  "cdi_pixel_observation_month": null,
   "source": {
     "census_units": "PNG NSO 2024 Census Unit population estimates (pipeline/CU_reference_imputed.gpkg; imputed coordinates used where original point coordinates were missing)",
     "cdi_raster": "data/cdi_pixel_latest.tif"
