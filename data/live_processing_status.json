@@ -1,8 +1,8 @@
 {
-  "generated_utc": "2026-10-16 06:16 UTC",
-  "analysis_date": "2026-10-16",
-  "drought_window": "2026-07-03 to 2026-10-01",
-  "frost_window": "2026-10-09 to 2026-10-16",
+  "generated_utc": "2026-10-17 06:02 UTC",
+  "analysis_date": "2026-10-17",
+  "drought_window": "2026-07-04 to 2026-10-02",
+  "frost_window": "2026-10-10 to 2026-10-17",
   "workspace_url": "https://png-climate-workspace-v1.streamlit.app/",
   "notes": "Live PNG drought and frost screening workspace summary from the separate Streamlit/GEE processing workflow.",
   "available_layers": [
@@ -13,142 +13,142 @@
   "province_summary": [
     {
       "province": "Central",
-      "rainfall_pct_normal": 23.7,
+      "rainfall_pct_normal": 35.8,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 9.3,
+      "mean_night_lst_c": 9.8,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Chimbu",
-      "rainfall_pct_normal": 23.7,
+      "rainfall_pct_normal": 37.3,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 10.9,
+      "mean_night_lst_c": 7.4,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "East New Britain",
-      "rainfall_pct_normal": 32.0,
+      "rainfall_pct_normal": 33.9,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "East Sepik",
-      "rainfall_pct_normal": 27.4,
+      "rainfall_pct_normal": 35.9,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 13.8,
+      "mean_night_lst_c": 10.0,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Eastern Highlands",
-      "rainfall_pct_normal": 27.6,
+      "rainfall_pct_normal": 41.6,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 12.8,
+      "mean_night_lst_c": 8.4,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Enga",
-      "rainfall_pct_normal": 28.9,
+      "rainfall_pct_normal": 44.9,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 9.5,
+      "mean_night_lst_c": 10.0,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Gulf",
-      "rainfall_pct_normal": 28.9,
+      "rainfall_pct_normal": 36.6,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "Madang",
-      "rainfall_pct_normal": 18.4,
+      "rainfall_pct_normal": 25.3,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 12.2,
+      "mean_night_lst_c": 8.4,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Manus",
-      "rainfall_pct_normal": 20.2,
+      "rainfall_pct_normal": 23.7,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "Milne Bay",
-      "rainfall_pct_normal": 23.0,
+      "rainfall_pct_normal": 36.8,
+      "drought_interpretation": "Severe deficit",
+      "mean_night_lst_c": 10.2,
+      "frost_interpretation": "Warmer / lower frost signal"
+    },
+    {
+      "province": "Morobe",
+      "rainfall_pct_normal": 32.8,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": 9.9,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
-      "province": "Morobe",
-      "rainfall_pct_normal": 25.3,
-      "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 11.3,
-      "frost_interpretation": "Warmer / lower frost signal"
-    },
-    {
       "province": "National Capital District",
-      "rainfall_pct_normal": 27.1,
+      "rainfall_pct_normal": 42.5,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "New Ireland",
-      "rainfall_pct_normal": 35.1,
+      "rainfall_pct_normal": 40.5,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "Northern",
-      "rainfall_pct_normal": 22.4,
+      "rainfall_pct_normal": 34.5,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 9.1,
+      "mean_night_lst_c": 9.2,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Northern Solomons",
-      "rainfall_pct_normal": 42.3,
+      "rainfall_pct_normal": 51.2,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 12.0,
-      "frost_interpretation": "Warmer / lower frost signal"
+      "mean_night_lst_c": null,
+      "frost_interpretation": "No highland signal"
     },
     {
       "province": "Southern Highlands",
-      "rainfall_pct_normal": 30.8,
+      "rainfall_pct_normal": 42.1,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 10.7,
+      "mean_night_lst_c": 10.1,
       "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "West New Britain",
-      "rainfall_pct_normal": 22.1,
+      "rainfall_pct_normal": 22.3,
       "drought_interpretation": "Severe deficit",
       "mean_night_lst_c": null,
       "frost_interpretation": "No highland signal"
     },
     {
       "province": "West Sepik",
-      "rainfall_pct_normal": 32.5,
+      "rainfall_pct_normal": 47.0,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": null,
-      "frost_interpretation": "No highland signal"
+      "mean_night_lst_c": 11.2,
+      "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Western",
-      "rainfall_pct_normal": 33.7,
+      "rainfall_pct_normal": 40.1,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": null,
-      "frost_interpretation": "No highland signal"
+      "mean_night_lst_c": 9.4,
+      "frost_interpretation": "Warmer / lower frost signal"
     },
     {
       "province": "Western Highlands",
-      "rainfall_pct_normal": 24.5,
+      "rainfall_pct_normal": 39.0,
       "drought_interpretation": "Severe deficit",
-      "mean_night_lst_c": 10.8,
+      "mean_night_lst_c": 9.2,
       "frost_interpretation": "Warmer / lower frost signal"
     }
   ]
