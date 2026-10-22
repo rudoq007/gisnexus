@@ -4,22 +4,22 @@
     "three_month_rain_pngdomain.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/pngdomain/1_rain.png",
-      "bytes": 183174
+      "bytes": 183585
     },
     "three_month_rain_global.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/three-months-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/monthly/threeMonths/rain/globaldomain/1_rain.png",
-      "bytes": 228590
+      "bytes": 229198
     },
     "thirtyone_day_rain_pngdomain.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/daily/rain/png_domain/1_rain.png",
-      "bytes": 152256
+      "bytes": 169621
     },
     "thirtyone_day_temperature_pngdomain.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
       "asset_url": "https://www.pngmet.gov.pg/media/tcc_fc_images/daily/tsurf/png_domain/1_tsurf.png",
-      "bytes": 188835
+      "bytes": 183040
     },
     "gsmap_daily_latest.png": {
       "page_url": "https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/",
