@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-11-03 10:07 UTC",
+  "generated_utc": "2026-11-04 09:54 UTC",
   "asis_date": "2026-10-21",
   "drought_window": "2026-07-08 to 2026-10-06",
   "frost_window": "2026-10-14 to 2026-10-21",
@@ -20,8 +20,8 @@
     "frost": 0.2
   },
   "enso_iod_context": {
-    "oni_value": 2.16,
-    "oni_period": "JAS 2026",
+    "oni_value": 2.46,
+    "oni_period": "ASO 2026",
     "enso_phase": "Strong El Nino",
     "dmi_value": 0.68,
     "dmi_period": "Aug 2026",
@@ -30,10 +30,10 @@
     "fetch_error": null
   },
   "layers": {
-    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/c0ac718bb57e86c3786e9abb28716411-1581b05f337c2ae65a16f12316a39ed0/tiles/{z}/{x}/{y}",
-    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/b728d49eebf9baaafe5bc2ef71bf4095-e504d2b75cf739ce7e9dff98ebb736dc/tiles/{z}/{x}/{y}",
-    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/fa33c6b3225a0de7beae7fb459b5fa99-d64cdd7bc63e53eaeaee996739c4f557/tiles/{z}/{x}/{y}",
-    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/60e15eb1bd6f54131fc9715f5f0f1e77-e327b92534a570e76aa71a26b4ff5e5a/tiles/{z}/{x}/{y}"
+    "composite_biophysical_stress_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/d883a45531d1ad1074ec0fbd4f61cdf7-3dd93405b5d8262cccdcd58144524764/tiles/{z}/{x}/{y}",
+    "agricultural_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/e4e30eab0a7f5d3114983404dde89e4e-a9ed29343eb8598c6725a21bb9685d70/tiles/{z}/{x}/{y}",
+    "exposure_priority_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/995447a30f11b3c03bfc016356bb76cd-75ab9b4fd31111e993df0b86c3628052/tiles/{z}/{x}/{y}",
+    "cdi_tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/60e15eb1bd6f54131fc9715f5f0f1e77-bf1f663a50a50a7cd4db4ff796da6e86/tiles/{z}/{x}/{y}"
   },
   "national_summary": {
     "total_population_exposed": 9546655.0,
