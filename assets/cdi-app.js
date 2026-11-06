@@ -88,6 +88,7 @@ function renderHero(){const rows=provinceRows();const nat=rows.reduce((a,r)=>a+r
   countUp($('heroNat'),nat,{dp:2});countUp($('heroProv'),rows.filter(r=>r.phase==='Response').length,{format:v=>Math.round(v)+' / '+rows.length});
   if(S.admin){countUp($('heroLlg'),S.admin.summary.llgs.Response.units,{format:v=>Math.round(v)+' / '+S.admin.llgs.length});
     const p=S.admin.summary.llgs.Response.population_2024;countUp($('heroPop'),p/1e6,{format:v=>v.toFixed(1)+'M'})}
+  if($('buildNow')){const c=rows.filter(r=>r.phase==='Response').length;$('buildNow').innerHTML=`<b>${fmt(nat)}</b> national average in the ${esc(S.example.reporting_month_label||'latest')} report, with ${c} of ${rows.length} provinces at Response.`}
   const ex=S.example;$('heroPeriodTxt').textContent=(ex.reporting_month_label||'latest')+' report';}
 
 // ---------- Overview ----------
@@ -106,7 +107,7 @@ function renderOverview(){
     $('ovPopRespSub').textContent='in '+sl.Response.units+' of '+adm.llgs.length+' LLGs ('+sd.Response.units+' of '+adm.districts.length+' districts) at Response level';}
   const sorted=ns.map((v,i)=>[v,i]).filter(x=>x[0]!=null).sort((a,b)=>b[0]-a[0]);const rank=sorted.findIndex(x=>x[1]===ns.length-1)+1;
   const peak=sorted[0];
-  $('ovSummary').innerHTML=`<p class="lede">The ${esc(ex.reporting_month_label||'latest')} CDI puts Papua New Guinea's national average at <b>${fmt(nat)}</b>${rank?`, the <b>${rank===1?'highest':ordinal(rank)+' highest'}</b> monthly reading since ${S.archive.timeline[0][0]}`:''}${rank!==1&&peak?` (the record is ${fmt(peak[0])}, set in ${monthLabel(S.archive.timeline[peak[1]])})`:''}. <b>${count('Response')}</b> provinces are at the Response threshold and <b>${count('Anticipatory Action')}</b> are in Anticipatory Action.</p>`+
+  $('ovSummary').innerHTML=`<p class="lede">The ${esc(ex.reporting_month_label||'latest')} CDI puts Papua New Guinea's national average at <b>${fmt(nat)}</b>${rank?`, the <b>${rank===1?'highest':ordinal(rank)+' highest'}</b> monthly reading in the record rebuilt back to ${S.archive.timeline[0][0]}`:''}${rank!==1&&peak?` (the record is ${fmt(peak[0])}, set in ${monthLabel(S.archive.timeline[peak[1]])})`:''}. <b>${count('Response')}</b> provinces are at the Response threshold and <b>${count('Anticipatory Action')}</b> are in Anticipatory Action.</p>`+
     (adm?`<p>Inside those provinces, <b>${adm.summary.llgs.Response.units}</b> of ${adm.llgs.length} LLGs average at Response level. About <b>${int(adm.summary.llgs.Response.population_2024)}</b> people live in them (NSO 2024), and another <b>${int(adm.summary.llgs['Anticipatory Action'].population_2024)}</b> live in LLGs at Anticipatory Action.</p>`:'')+
     `<p class="small">The CDI shows where climate signals are converging. Field verification decides the response.</p>`;
   const ctx=S.integrated?.enso_iod_context;const anyP=rows[0]?.ind||{};
