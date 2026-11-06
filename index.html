@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="assets/adapt.css?v=20261106d">
-<script src="assets/theme.js?v=20261106d"></script>
+<link rel="stylesheet" href="assets/adapt.css?v=20261106e">
+<script src="assets/theme.js?v=20261106e"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -31,7 +31,7 @@
 <div class="ph"><i style="background:#7E8DA3"></i><span><b>Monitoring</b>below 0.40</span></div>
 <div class="cdi-now" id="buildNow"></div></div></div>
 <p class="build-foot">Each signal raises a flag: none, half or full. Flags are weighted and added up. The higher the score, the stronger the warning.</p>
-<details class="tech"><summary>Technical details: data sources and flag rules</summary><div class="tablewrap"><table><thead><tr><th>Indicator</th><th>Source</th><th title="How this indicator is scored: 0 = normal, 0.5 = alert, 1 = declared/severe, before being multiplied by its weight below.">Flag rule</th><th title="This indicator's share of the final CDI weighted sum.">Weight</th></tr></thead><tbody><tr><td>ENSO (Relative Ni&ntilde;o3.4)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>20%</td></tr><tr><td>Indian Ocean Dipole (DMI)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>10%</td></tr><tr><td>Present rainfall (SPI-1)</td><td>CHIRPS, Climate Hazards Center (UCSB)</td><td>0.5 if -0.5&le;SPI&lt;0, 1 if SPI&lt;-0.5</td><td>20%</td></tr><tr><td>Present soil moisture</td><td>ERA5-Land, ECMWF</td><td>0.5 if 5-15% below normal, 1 if &gt;15%</td><td>20%</td></tr><tr><td>Present vegetation health</td><td>FAO ASIS</td><td>0.5 if VHI&lt;0.4, 1 if VHI&lt;0.3</td><td>10%</td></tr><tr><td>Forecast rainfall (SPI-3)</td><td>ECMWF SEAS5</td><td>0.5 if -1&le;SPI&lt;0, 1 if SPI&lt;-1</td><td>20%</td></tr></tbody></table></div><p class="small" style="margin-top:12px">Phase bands: FAO PNG Food Security &amp; Agriculture Sectoral Plan (Aug 2026), Table 1. The CDI shows where climate signals are converging strongly enough to warrant action. It does not by itself confirm crop failure or food insecurity; field verification and livelihood and market evidence decide the scale and type of response.</p></details></section><section class="card full"><h3 id="cdiExampleHeading">PNG Combined Drought Index (CDI) (interactive &mdash; click a province)</h3><p class="small" id="cdiExampleCaption">Loading latest CDI period&hellip;</p><div class="lvl-controls" style="margin:10px 0 16px"><div class="field" style="max-width:420px"><label class="muted">Go to province</label><select id="aboutSelect"></select></div></div><div class="lvl-grid"><div><div id="cdiExampleMap" class="map-frame lvl-map"></div><p class="source">Hover for a quick reading; click a province to see what drives its score. The Province, District and LLG tabs go further.</p></div><div class="lvl-detail" id="aboutDetail"><div class="empty-state"><div><h2>Select a province</h2><p class="small">Click a province on the map.</p></div></div></div></div><div id="cdiExampleLegend" hidden></div></section><section class="card half"><h3>Recent CDI components (interactive)</h3><div class="toolbar"><div style="min-width:220px"><label class="muted">Province</label><select id="cdiChartProvinceSelect"></select></div></div><canvas id="cdiComponentsChart"></canvas><p class="small" id="cdiComponentsCaption"></p></section><section class="card half"><h3>Historical CDI record (rebuilt back to 1996, interactive)</h3><canvas id="cdiTimeseriesChart"></canvas><p class="small">The historical CDI record for any province can be used to inform and calibrate anticipatory-action thresholds. Dashed line marks CDI 0.6, the Anticipatory Action threshold (see phase bands above).</p></section></div></section><section id="overview" class="panel"><div class="grid">
+<details class="tech"><summary>Technical details: data sources and flag rules</summary><div class="tablewrap"><table><thead><tr><th>Indicator</th><th>Source</th><th title="How this indicator is scored: 0 = normal, 0.5 = alert, 1 = declared/severe, before being multiplied by its weight below.">Flag rule</th><th title="This indicator's share of the final CDI weighted sum.">Weight</th></tr></thead><tbody><tr><td>ENSO (Relative Ni&ntilde;o3.4)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>20%</td></tr><tr><td>Indian Ocean Dipole (DMI)</td><td>NOAA</td><td>0.5 if alert, 1 if declared</td><td>10%</td></tr><tr><td>Present rainfall (SPI-1)</td><td>CHIRPS, Climate Hazards Center (UCSB)</td><td>0.5 if -0.5&le;SPI&lt;0, 1 if SPI&lt;-0.5</td><td>20%</td></tr><tr><td>Present soil moisture</td><td>ERA5-Land, ECMWF</td><td>0.5 if 5-15% below normal, 1 if &gt;15%</td><td>20%</td></tr><tr><td>Present vegetation health</td><td>FAO ASIS</td><td>0.5 if VHI&lt;0.4, 1 if VHI&lt;0.3</td><td>10%</td></tr><tr><td>Forecast rainfall (SPI-3)</td><td>ECMWF SEAS5</td><td>0.5 if -1&le;SPI&lt;0, 1 if SPI&lt;-1</td><td>20%</td></tr></tbody></table></div><p class="small" style="margin-top:12px">Phase bands: FAO PNG Food Security &amp; Agriculture Sectoral Plan (Aug 2026), Table 1. The CDI shows where climate signals are converging strongly enough to warrant action. It does not by itself confirm crop failure or food insecurity; field verification and livelihood and market evidence decide the scale and type of response.</p></details></section><section class="card full"><h3 id="cdiExampleHeading">PNG Combined Drought Index (CDI) (interactive &mdash; click a province)</h3><p class="small" id="cdiExampleCaption">Loading latest CDI period&hellip;</p><div class="lvl-controls" style="margin:10px 0 16px"><div class="field" style="max-width:420px"><label class="muted">Go to province</label><select id="aboutSelect"></select></div></div><div class="lvl-grid"><div><div id="cdiExampleMap" class="map-frame lvl-map"></div><p class="source"><b>Linked:</b> picking a province here (on the map or in either dropdown) also updates the two charts below. Hover for a quick reading; the Province, District and LLG tabs go further.</p></div><div class="lvl-detail" id="aboutDetail"><div class="empty-state"><div><h2>Select a province</h2><p class="small">Click a province on the map.</p></div></div></div></div><div id="cdiExampleLegend" hidden></div></section><section class="card half"><h3>Recent CDI components: <span class="linkedProv">…</span></h3><div class="toolbar"><div style="min-width:220px"><label class="muted">Province</label><select id="cdiChartProvinceSelect"></select></div></div><canvas id="cdiComponentsChart"></canvas><p class="small" id="cdiComponentsCaption"></p></section><section class="card half"><h3>Historical CDI record: <span class="linkedProv">…</span> <span class="small" style="font-family:Inter,sans-serif">(rebuilt back to 1996)</span></h3><canvas id="cdiTimeseriesChart"></canvas><p class="small">The historical CDI record for any province can be used to inform and calibrate anticipatory-action thresholds. Dashed line marks CDI 0.6, the Anticipatory Action threshold (see phase bands above).</p></section></div></section><section id="overview" class="panel"><div class="grid">
 <section class="card full"><span class="eyebrow cdiPeriod">Latest CDI report</span><h2>National drought picture</h2><div id="ovSummary"><p>Loading the latest CDI&hellip;</p></div></section>
 <section class="card kpi"><span class="muted">CDI report</span><b id="ovReport">--</b><span class="muted" id="ovReportSub"></span></section>
 <section class="card kpi"><span class="muted">National average CDI</span><b id="ovNational">--</b><span class="muted" id="ovNationalSub"></span></section>
@@ -268,12 +268,16 @@ function initCdiCharts(){
   const select=document.getElementById('cdiChartProvinceSelect');
   if(!select)return;
   const provinces=Object.keys(CDI_FULL_DATA.cdi_history).sort();
-  select.innerHTML=provinces.map(p=>`<option${p==='Milne Bay'?' selected':''}>${p}</option>`).join('');
+  const start=window.ADAPT_ABOUT_SELECTED||'Milne Bay';
+  select.innerHTML=provinces.map(p=>`<option${p===start?' selected':''}>${p}</option>`).join('');
   const render=()=>{
     renderCdiComponentsChart(select.value);
     renderCdiTimeseriesChart(select.value);
+    document.querySelectorAll('.linkedProv').forEach(e=>e.textContent=select.value);
   };
-  select.addEventListener('change',render);
+  window.ADAPT_RENDER_ABOUT_CHARTS=(p)=>{if(!p||!CDI_FULL_DATA.cdi_history[p])return;select.value=p;render();};
+  // The map, this dropdown and both charts share one selected province (see aboutSelect in assets/cdi-app.js).
+  select.addEventListener('change',()=>{if(window.ADAPT_CDI&&ADAPT_CDI.aboutSelect)ADAPT_CDI.aboutSelect(select.value,true);else render();});
   render();
 }
 function applyCdiExampleLabels(){
@@ -302,7 +306,7 @@ function loadCdiData(){
 document.addEventListener('DOMContentLoaded',loadCdiData);
 
 </script>
-<script src="assets/cdi-app.js?v=20261106d"></script>
-<script src="assets/report-generator.js?v=20261106d"></script>
+<script src="assets/cdi-app.js?v=20261106e"></script>
+<script src="assets/report-generator.js?v=20261106e"></script>
 </body>
 </html>
