@@ -94,6 +94,19 @@ jobs:
             --cdi-raster data/cdi_pixel_latest.tif \
             --json-output data/cdi_population_exposure.json
 
+      - name: Summarise CDI by district and LLG (NSO boundaries)
+        # Non-blocking, like the two steps above. Reads the GeoTIFF from the
+        # pixel step plus static inputs (adm2_nso_district.geojson,
+        # adm3_nso_llg.geojson, pipeline/llg_population_2024.csv) and skips
+        # itself if no GeoTIFF was produced.
+        continue-on-error: true
+        run: |
+          python scripts/build_cdi_admin.py \
+            --cdi-raster data/cdi_pixel_latest.tif \
+            --json-output data/cdi_admin_latest.json \
+            --district-csv data/cdi_district_latest.csv \
+            --llg-csv data/cdi_llg_latest.csv
+
       - name: Commit and push outputs
         run: |
           git config user.name "github-actions[bot]"
@@ -104,7 +117,7 @@ jobs:
           # `git add` on a missing path fails with exit 128 and used to take
           # this whole (otherwise unrelated) step down with it, defeating the
           # point of continue-on-error on those steps.
-          for f in data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_population_exposure.json scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py .github/workflows/update-integrated-composite.yml; do
+          for f in data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_population_exposure.json data/cdi_admin_latest.json data/cdi_district_latest.csv data/cdi_llg_latest.csv scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py scripts/build_cdi_admin.py .github/workflows/update-integrated-composite.yml; do
             if [ -f "$f" ]; then
               git add "$f"
             else
