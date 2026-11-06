@@ -275,6 +275,7 @@ function aboutSelect(id,zoom){const r=ABOUT.T&&ABOUT.T.byId[id];if(!r)return;ABO
   const d=$('aboutDetail');d.innerHTML=`<div class="anim">${detailHtml('province',r,'aboutSpark')}<div class="embed-actions" style="margin-top:16px"><a class="btn primary" href="#province" data-open-prov="${esc(r.name)}">Open in Province tab</a></div></div>`;
   const bv=d.querySelector('.bigval [data-v]');if(bv)countUp(bv,+bv.dataset.v,{dp:2,dur:900});
   provinceSpark(r,'aboutSpark');
+  window.ADAPT_ABOUT_SELECTED=id;if(window.ADAPT_RENDER_ABOUT_CHARTS){ADAPT_RENDER_ABOUT_CHARTS(id);setTimeout(restyleForeignCharts,0)}
   d.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const [lvl,jid]=a.dataset.jump.split('|');openTab(lvl);setTimeout(()=>select(lvl,jid,true),300)}));
   const ob=d.querySelector('[data-open-prov]');if(ob)ob.addEventListener('click',e=>{e.preventDefault();openTab('province');setTimeout(()=>select('province',r.name,true),300)});
 }
@@ -312,6 +313,6 @@ function init(){chartTheme();stagger();initTabs();$('ovTrendSpan')?.addEventList
     const fromHash=()=>{const h=(location.hash||'').slice(1);if(h&&$(h)&&$(h).classList.contains('panel'))openTab(h)};fromHash();window.addEventListener('hashchange',fromHash);
     setTimeout(restyleForeignCharts,1500);
   }).catch(e=>{console.error(e);const s=$('ovSummary');if(s)s.innerHTML='<p>CDI data could not be loaded right now. Please try again later.</p>'})}
-window.ADAPT_CDI={state:S,openTab,select,phaseOf,colorOf};
+window.ADAPT_CDI={state:S,openTab,select,phaseOf,colorOf,aboutSelect:(id,z)=>aboutSelect(id,z)};
 document.addEventListener('DOMContentLoaded',init);
 })();
