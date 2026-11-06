@@ -170,6 +170,21 @@ def main():
             out[ph] = {"units": len(sel), "population_2024": sum(r["population_2024"] for r in sel)}
         return out
 
+    provinces = []
+    for name in sorted({l["province"] for l in llgs}):
+        kids = [l for l in llgs if l["province"] == name]
+        dk = [d for d in districts if d["province"] == name]
+        rec = {"name": name, "province_cdi": prov_cdi.get(name), "phase": phase(prov_cdi.get(name)),
+               "district_count": len(dk), "districts_in_response": sum(d["phase"] == "Response" for d in dk),
+               "llg_count": len(kids), "llgs_in_response": sum(l["phase"] == "Response" for l in kids),
+               "llgs_in_aa": sum(l["phase"] == "Anticipatory Action" for l in kids)}
+        for k in pop_fields:
+            rec[k] = sum(l[k] for l in kids)
+        rec["population_by_llg_phase"] = {
+            ph: sum(l["population_2024"] for l in kids if l["phase"] == ph)
+            for ph in ["Response", "Anticipatory Action", "Readiness", "Monitoring", "No data"]}
+        provinces.append(rec)
+
     payload = {
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "reporting_month_label": example.get("reporting_month_label"),
@@ -185,9 +200,10 @@ def main():
             "(Response >=0.80, Anticipatory Action 0.60-0.79). ENSO, IOD and the rainfall forecast flag "
             "(50% of the weight) do not vary within a province, so differences between districts/LLGs come "
             "from rainfall, soil moisture and vegetation. A district/LLG mean is not the official province "
-            "CDI, which is computed from province-average inputs. Population is the total living in the unit."
+            "CDI, which is computed from province-average inputs. Population is the total living in the unit. Province population by phase is the sum of its LLGs, each counted under its own phase."
         ),
         "summary": {"districts": summary(districts), "llgs": summary(llgs)},
+        "provinces": provinces,
         "districts": districts,
         "llgs": llgs,
     }
