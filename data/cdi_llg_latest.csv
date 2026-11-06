@@ -1,0 +1,327 @@
+province,district,name,geocode,cdi_mean,cdi_min,cdi_max,phase,pct_area_response,pct_area_aa,pixel_coverage,province_cdi,population_2024,households_2024,pop_multidim_poverty,pop_disability,census_2024_llgs
+Western,North Fly,Olsobip Rural,OCNPNG0010010209,0.852,0.7,1.0,Response,0.96,0.04,1.0,0.9,10369,1505,5688,415,Kiunga Urban; Olsobip Rural
+Western,Middle Fly,Nomad Rural,OCNPNG0010010105,0.951,0.75,1.0,Response,0.998,0.002,1.0,0.9,28992,4210,15909,1160,Nomad Rural
+Western,Middle Fly,Bamu Rural,OCNPNG0010010102,0.938,0.7,1.0,Response,0.995,0.005,0.988,0.9,19188,2796,10531,768,Bamu Rural
+Western,Middle Fly,Gogodala Rural,OCNPNG0010010103,0.964,0.8,1.0,Response,1.0,0.0,0.997,0.9,50637,7351,27802,2025,Aramia Gogodala; Fly Gogodala
+Western,Middle Fly,Balimo Urban,OCNPNG0010010101,0.917,0.9,0.95,Response,1.0,0.0,1.0,0.9,6008,881,3302,240,Balimo Urban
+Western,South Fly,Oriomo-Bituri Rural,OCNPNG0010010314,0.953,0.8,1.0,Response,1.0,0.0,1.0,0.9,23501,3408,12896,940,Oriomo-Bituri Rural
+Western,South Fly,Kiwai Rural,OCNPNG0010010312,0.932,0.8,1.0,Response,0.999,0.001,0.791,0.9,31139,4520,17091,1246,Fly Kiwai Rural; Fore-Coast Kiwai Rural
+Western,South Fly,Morehead Rural,OCNPNG0010010313,0.972,0.85,1.0,Response,1.0,0.0,1.0,0.9,37615,5454,20643,1505,Fore-Coast Kiwai Rural; Morehead Rural
+Western,Middle Fly,Lake Murray Rural,OCNPNG0010010104,0.987,0.7,1.0,Response,0.998,0.002,1.0,0.9,21989,3197,12072,880,Lake Murray Rural
+Western,North Fly,Star Mountains Rural,OCNPNG0010010210,0.867,0.75,0.9,Response,0.987,0.013,1.0,0.9,20356,2958,11164,814,Star Mountain Rural
+Western,North Fly,Ningerum Rural,OCNPNG0010010208,0.933,0.8,1.0,Response,1.0,0.0,1.0,0.9,37760,5497,20717,1510,Ningerum Rural
+Western,North Fly,Kiunga Urban,OCNPNG0010010207,1.0,1.0,1.0,Response,1.0,0.0,1.0,0.9,8209,1186,4501,328,Kiunga Urban
+Western,North Fly,Kiunga Rural,OCNPNG0010010206,0.97,0.8,1.0,Response,1.0,0.0,1.0,0.9,35143,5097,19281,1406,Kiunga Rural; Kiunga Urban
+Western,South Fly,Daru Urban,OCNPNG0010010311,0.928,0.9,1.0,Response,1.0,0.0,1.0,0.9,21793,3168,11962,872,Daru Urban
+Gulf,Kikori,West Kikori Rural,OCNPNG0010020210,0.833,0.7,1.0,Response,0.875,0.125,0.989,0.8,17217,2513,12108,689,West Kikori Rural
+Gulf,Kikori,East Kikori Rural,OCNPNG0010020208,0.782,0.7,1.0,Anticipatory Action,0.559,0.441,0.994,0.8,20152,2937,14184,806,East Kikori Rural
+Gulf,Kikori,Baimuru Rural,OCNPNG0010020207,0.825,0.7,1.0,Response,0.711,0.289,1.0,0.8,30183,4398,21236,1207,Baimuru Rural
+Gulf,Kikori,Ihu Rural,OCNPNG0010020209,0.835,0.7,1.0,Response,0.678,0.322,1.0,0.8,36506,5332,25678,1460,Ihu Rural
+Gulf,Kerema,East Kerema Rural,OCNPNG0010020102,0.958,0.85,1.0,Response,1.0,0.0,1.0,0.8,22919,3343,16125,917,East Kerema Rural
+Gulf,Kerema,Kotidanga Rural,OCNPNG0010020105,0.722,0.7,0.9,Anticipatory Action,0.107,0.893,1.0,0.8,61940,9020,43586,2478,Kotidanga Rural
+Gulf,Kerema,Kaintiba Rural,OCNPNG0010020103,0.709,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.8,21833,3181,15356,873,Kaintiba Rural
+Gulf,Kerema,Lakekamu-Tauri Rural,OCNPNG0010020106,0.837,0.7,1.0,Response,0.74,0.26,1.0,0.8,25416,3706,17880,1017,Lakekamu-Taure Rural
+Gulf,Kerema,Central Kerema Rural,OCNPNG0010020101,0.871,0.7,1.0,Response,0.85,0.15,1.0,0.8,27022,3935,19013,1081,Central Kerema Rural; Kerema Urban
+Gulf,Kerema,Kerema Urban,OCNPNG0010020104,1.0,1.0,1.0,Response,1.0,0.0,1.0,0.8,7978,1162,5617,319,Kerema Urban
+Central,Kairuku - Hiri,Kairuku Rural,OCNPNG0010030308,0.986,0.8,1.0,Response,1.0,0.0,1.0,0.9,65289,8208,30259,2612,Kairuku Rural
+Central,Rigo,Rigo Central Rural,OCNPNG0010030411,0.98,0.9,1.0,Response,1.0,0.0,1.0,0.9,27382,3438,12677,1095,Rigo Central Rural
+Central,Abau,Aroma Rural,OCNPNG0010030102,0.922,0.8,1.0,Response,1.0,0.0,1.0,0.9,55341,6962,25639,2214,Aroma Rural
+Central,Rigo,Rigo Coastal Rural,OCNPNG0010030412,0.942,0.9,1.0,Response,1.0,0.0,1.0,0.9,43226,5445,20022,1729,Rigo Coastal Rural
+Central,Abau,Cloudy Bay Rural,OCNPNG0010030103,0.887,0.8,1.0,Response,0.999,0.001,1.0,0.9,29771,3744,13800,1191,Cloudy Bay Rural
+Central,Abau,Amazon Bay Rural,OCNPNG0010030101,0.879,0.8,1.0,Response,1.0,0.0,1.0,0.9,18264,2304,8455,731,Amazon Bay Rural
+Central,Goilala,Guari Rural,OCNPNG0010030204,0.758,0.7,0.9,Anticipatory Action,0.458,0.542,1.0,0.9,12582,1580,5832,503,Guari Rural
+Central,Kairuku - Hiri,Mekeo Kuni Rural,OCNPNG0010030310,0.911,0.7,1.0,Response,0.943,0.057,1.0,0.9,54862,6920,25411,2194,Kuni Rural; Mekeo Rural
+Central,Goilala,Woitape Rural,OCNPNG0010030206,0.788,0.7,1.0,Anticipatory Action,0.685,0.315,1.0,0.9,42372,5343,19622,1695,Woitape Rural
+Central,Goilala,Tapini Rural,OCNPNG0010030205,0.728,0.7,0.9,Anticipatory Action,0.16,0.84,1.0,0.9,23094,2901,10701,924,Tapini Rural
+Central,Kairuku - Hiri,Koiari Rural,OCNPNG0010030309,0.89,0.7,1.0,Response,0.828,0.172,1.0,0.9,37311,4698,17309,1492,Koiari Rural
+Central,Rigo,Rigo Inland Rural,OCNPNG0010030413,0.919,0.8,1.0,Response,1.0,0.0,1.0,0.9,34468,4330,25122,1379,Rigo East Rural; Rigo North Rural
+Central,Kairuku - Hiri,Hiri Rural,OCNPNG0010030307,0.996,0.9,1.0,Response,1.0,0.0,0.999,0.9,82880,10444,47089,3315,Hiri Rural; Vanapa Brown Rural
+National Capital District,National Capital,National Capital,OCNPNG0010040101,0.991,0.9,1.0,Response,1.0,0.0,0.994,0.9,1529094,166369,951892,61164,Moresby North East_Ward 12; Moresby North East_Ward 5; Moresby North East_Ward 6; Moresby North East_Ward 9; Moresby North West_Ward 1; Moresby North West_Ward 10; Moresby North West_Ward 11; Moresby North West_Ward 7; Moresby North West_Ward 8; Moresby South_Ward 2; Moresby South_Ward 3; Moresby South_Ward 4
+Milne Bay,Alotau,Makamaka Rural,OCNPNG0010050101,0.948,0.8,1.0,Response,0.999,0.001,1.0,0.9,25338,4040,12889,1014,Makamaka Rural
+Milne Bay,Alotau,Weraura Rural,OCNPNG0010050103,0.956,0.8,1.0,Response,1.0,0.0,1.0,0.9,35227,5613,17924,1409,Maramatana Rural; Weraura Rural
+Milne Bay,Alotau,Maramatana Rural,OCNPNG0010050104,0.953,0.85,1.0,Response,1.0,0.0,0.973,0.9,22987,3659,11689,919,Maramatana Rural
+Milne Bay,Alotau,Daga Rural,OCNPNG0010050102,0.947,0.9,1.0,Response,1.0,0.0,1.0,0.9,13513,2153,6880,541,Daga Rural
+Milne Bay,Alotau,Suau Rural,OCNPNG0010050106,0.852,0.7,1.0,Response,0.945,0.055,0.995,0.9,31905,5076,16236,1276,Suau Rural
+Milne Bay,Samarai-Murua,Bwanabwana Rural,OCNPNG0010050208,0.894,0.8,1.0,Response,1.0,0.0,0.887,0.9,27417,4367,13952,1097,Bwanabwana Rural
+Milne Bay,Esa'ala,Duau Rural,OCNPNG0010050416,0.886,0.8,1.0,Response,1.0,0.0,1.0,0.9,33201,5296,16897,1328,Duau Rural
+Milne Bay,Esa'ala,Dobu Rural,OCNPNG0010050415,0.975,0.9,1.0,Response,1.0,0.0,0.92,0.9,49440,7889,25152,1978,Dobu Rural
+Milne Bay,Esa'ala,West Ferguson Rural,OCNPNG0010050414,0.971,0.9,1.0,Response,1.0,0.0,0.999,0.9,34031,5418,17312,1361,West Ferguson Rural
+Milne Bay,Samarai-Murua,Murua Rural,OCNPNG0010050211,0.949,0.8,1.0,Response,1.0,0.0,0.928,0.9,17115,2729,8711,685,Murua Rural
+Milne Bay,Kiriwina-Goodenough,Kiriwina Rural,OCNPNG0010050312,0.958,0.9,1.0,Response,1.0,0.0,0.772,0.9,71046,11337,36155,2842,Kiriwina Rural
+Milne Bay,Kiriwina-Goodenough,Goodenough Isla,OCNPNG0010050313,0.985,0.9,1.0,Response,1.0,0.0,1.0,0.9,46516,7412,23666,1861,Goodenough Island Rural
+Milne Bay,Samarai-Murua,Louisiade Rural,OCNPNG0010050209,0.896,0.8,1.0,Response,1.0,0.0,0.723,0.9,48960,7792,24916,1958,Louisiade Rural
+Milne Bay,Samarai-Murua,Yaleyemba Rural,OCNPNG0010050210,0.937,0.8,1.0,Response,0.999,0.001,0.887,0.9,26355,4206,13409,1054,Yeleyamba Rural
+Milne Bay,Alotau,Huhu Rural,OCNPNG0010050105,0.876,0.7,1.0,Response,0.996,0.004,1.0,0.9,63191,10066,32146,2528,Huhu Rural; Maramatana Rural
+Milne Bay,Alotau,Alotau Urban,OCNPNG0010050107,0.9,0.9,0.9,Response,1.0,0.0,1.0,0.9,25980,4155,13214,1039,Alotau Urban
+Oro,Sohe,Kira Rural,OCNPNG0010060208,0.741,0.7,0.9,Anticipatory Action,0.315,0.685,1.0,0.8,7115,989,4665,285,Kira Rural
+Oro,Sohe,Tamata Rural,OCNPNG0010060207,0.761,0.7,1.0,Anticipatory Action,0.445,0.555,1.0,0.8,26720,3711,17523,1069,Tamata Rural
+Oro,Ijivitari,Oro Bay Rural,OCNPNG0010060101,0.887,0.8,1.0,Response,1.0,0.0,1.0,0.8,50722,7049,33258,2029,Oro Bay Rural; Safia Rural
+Oro,Ijivitari,Afore Rural,OCNPNG0010060103,0.849,0.7,1.0,Response,0.819,0.181,1.0,0.8,29638,4121,19430,1186,Afore Rural
+Oro,Sohe,Kokoda Rural,OCNPNG0010060205,0.734,0.7,1.0,Anticipatory Action,0.252,0.748,1.0,0.8,35098,4882,23022,1404,Kokoda Rural
+Oro,Ijivitari,Popondetta Urban,OCNPNG0010060104,0.785,0.7,0.9,Anticipatory Action,0.585,0.415,1.0,0.8,34735,4828,22773,1389,Popondetta Urban
+Oro,Sohe,Higaturu Rural,OCNPNG0010060206,0.757,0.7,0.95,Anticipatory Action,0.361,0.639,1.0,0.8,89018,12368,58355,3561,Higaturu Rural; Popondetta Urban
+Oro,Ijivitari,Cape Nelson Rural,OCNPNG0010060102,0.926,0.8,1.0,Response,1.0,0.0,1.0,0.8,37848,5275,24810,1514,Tufi Rural
+Oro,Ijivitari,Safia Rural,OCNPNG0010060109,0.924,0.8,1.0,Response,1.0,0.0,1.0,0.8,10535,1463,6908,421,Safia Rural
+Southern Highlands,Nipa/Kutubu,Poroma Rural,OCNPNG0020070726,0.752,0.7,0.8,Anticipatory Action,0.511,0.489,1.0,0.8,102749,17329,84927,4110,Nembi Plateau Rural; Poroma Rural
+Southern Highlands,Ialibu/Pangia,Kewabi Rural,OCNPNG0020070103,0.708,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.8,36402,6140,30081,1456,Aiya Rural; Kewabi Rural
+Southern Highlands,Nipa/Kutubu,Nembi Plateau Rural,OCNPNG0020070724,0.723,0.7,0.8,Anticipatory Action,0.194,0.806,1.0,0.8,79550,13427,65795,3182,Nembi Plateau Rural
+Southern Highlands,Nipa/Kutubu,Nipa Rural,OCNPNG0020070725,0.718,0.7,0.8,Anticipatory Action,0.17,0.83,1.0,0.8,57372,9643,47424,2295,Nipa Rural
+Southern Highlands,Kagua/Erave,Kuare Rural,OCNPNG0020070310,0.7,0.7,0.7,Anticipatory Action,0.0,1.0,1.0,0.8,21760,3667,17989,870,Kuare Rural
+Southern Highlands,Ialibu/Pangia,Ialibu Urban,OCNPNG0020070102,0.745,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.8,14449,2435,11936,578,Ialibu Urban
+Southern Highlands,Mendi/Munihu,Karints Rural,OCNPNG0020070618,0.693,0.6,0.8,Anticipatory Action,0.104,0.896,1.0,0.8,83772,14098,69255,3351,Karints Rural; Nembi Plateau Rural; Upper Mendi Rural
+Southern Highlands,Mendi/Munihu,Upper Mendi Rural,OCNPNG0020070621,0.773,0.6,0.95,Anticipatory Action,0.555,0.445,1.0,0.8,151733,25526,125406,6069,Upper Mendi Rural
+Southern Highlands,Imbonggu,Ialibu Basin Rural,OCNPNG0020070205,0.792,0.7,0.95,Anticipatory Action,0.343,0.657,1.0,0.8,41542,6990,34335,1662,Ialibu Basin Rural; Ialibu Urban; Imbongu Rural
+Southern Highlands,Imbonggu,Imbongu Rural,OCNPNG0020070206,0.752,0.7,0.95,Anticipatory Action,0.167,0.833,1.0,0.8,40997,6920,33866,1640,Imbongu Rural
+Southern Highlands,Ialibu/Pangia,East Pangia Rural,OCNPNG0020070101,0.726,0.7,0.8,Anticipatory Action,0.018,0.982,1.0,0.8,26604,4474,21987,1064,East Pangia Rural; Ialibu Urban
+Southern Highlands,Ialibu/Pangia,Wiru Rural,OCNPNG0020070104,0.749,0.7,0.9,Anticipatory Action,0.206,0.794,1.0,0.8,51291,8647,42404,2052,Wiru Rural
+Southern Highlands,Kagua/Erave,Erave Rural,OCNPNG0020070308,0.759,0.7,0.9,Anticipatory Action,0.422,0.578,1.0,0.8,34905,5883,28858,1396,Aiya Rural; Erave Rural
+Southern Highlands,Nipa/Kutubu,Lake Kutubu Rural,OCNPNG0020070722,0.809,0.7,0.9,Response,0.93,0.07,1.0,0.8,35747,6015,29555,1430,Lake Kutubu Rural
+Southern Highlands,Mendi/Munihu,Mendi Urban,OCNPNG0020070620,0.781,0.7,0.8,Anticipatory Action,0.806,0.194,1.0,0.8,63419,10677,52433,2537,Mendi Urban
+Southern Highlands,Imbonggu,Lower Mendi Rural,OCNPNG0020070207,0.723,0.7,0.9,Anticipatory Action,0.161,0.839,1.0,0.8,57719,9707,47714,2309,Lower Mendi Rural; Poroma Rural
+Southern Highlands,Kagua/Erave,Kagua Rural,OCNPNG0020070309,0.733,0.7,0.8,Anticipatory Action,0.251,0.749,1.0,0.8,73234,12344,60525,2929,Aiya Rural; Kagua Rural; Kuare Rural
+Southern Highlands,Kagua/Erave,Aiya Rural,OCNPNG0020070332,0.739,0.7,0.8,Anticipatory Action,0.349,0.651,1.0,0.8,43815,7386,36217,1753,Aiya Rural
+Southern Highlands,Mendi/Munihu,Lai Valley Rural,OCNPNG0020070619,0.684,0.6,0.8,Anticipatory Action,0.021,0.979,1.0,0.8,116158,19555,96034,4646,Lai Valley Rural; Nembi Plateau Rural; Nipa Rural
+Hela,Koroba/Kopiago,South Koroba Rural,OCNPNG0020210517,0.806,0.8,0.9,Response,1.0,0.0,1.0,0.8,76688,11672,66696,3068,Hayapuga Rural; South Koroba Rural; Tari Urban
+Hela,Tari/Pori,Tari Urban,OCNPNG0020210829,0.849,0.8,0.85,Response,1.0,0.0,1.0,0.8,37308,5692,32461,1492,Tari Urban
+Hela,Komo/Magarima,Hulia Rural,OCNPNG0020210411,0.713,0.7,0.85,Anticipatory Action,0.112,0.888,1.0,0.8,87030,13295,72027,3481,Awi Lagayu Rural; Hulia Rural; Mt Sisa Rural
+Hela,Tari/Pori,Hayapuga Rural,OCNPNG0020210827,0.794,0.7,0.9,Anticipatory Action,0.626,0.374,1.0,0.8,73480,11169,63872,2939,Hayapuga Rural; Mt Sisa Rural; Tagali Rural
+Hela,Tari/Pori,Tebi Rural,OCNPNG0020210830,0.707,0.7,0.85,Anticipatory Action,0.028,0.972,1.0,0.8,38428,5861,33443,1537,Mt Sisa Rural; Tebi Rural
+Hela,Koroba/Kopiago,Lake Kopiago Rural,OCNPNG0020210515,0.902,0.7,1.0,Response,0.993,0.007,1.0,0.8,37295,5683,32440,1492,Lake Kopiago Rural; North Koroba Rural
+Hela,Koroba/Kopiago,North Koroba Rural,OCNPNG0020210516,0.831,0.8,1.0,Response,1.0,0.0,1.0,0.8,39116,5960,34018,1565,North Koroba Rural
+Hela,Koroba/Kopiago,Awi/Pori Rural,OCNPNG0020210514,0.873,0.7,0.95,Response,0.933,0.067,1.0,0.8,62108,9452,49814,2484,Awi Lagayu Rural; Mt Sisa Rural; North Koroba Rural; Pori Rural
+Hela,Tari/Pori,Tagali Rural,OCNPNG0020210828,0.763,0.6,0.9,Anticipatory Action,0.611,0.389,1.0,0.8,53974,8212,45515,2159,Awi Lagayu Rural; Tagali Rural
+Hela,Komo/Magarima,Komo Rural,OCNPNG0020210412,0.783,0.7,0.95,Anticipatory Action,0.634,0.366,1.0,0.8,69606,10621,58994,2784,Hayapuga Rural; Komo Rural; Mt Sisa Rural
+Hela,Komo/Magarima,Lower Wage,OCNPNG0020210413,0.696,0.6,0.7,Anticipatory Action,0.0,1.0,1.0,0.8,36242,5542,24901,1450,Lower Wage Rural
+Hela,Komo/Magarima,Upper Wage,OCNPNG0020210431,0.695,0.6,0.8,Anticipatory Action,0.037,0.963,1.0,0.8,50779,7719,44111,2031,Mt Sisa Rural; Upper Wage Rural
+Enga,Kompiam,Ambum Rural,OCNPNG0020080203,0.609,0.6,0.7,Anticipatory Action,0.0,1.0,1.0,0.7,36441,5409,25107,1458,Ambum Rural; Maramuni Rural; Wali-Tarua Rural; Wapi-Yangis Rural
+Enga,Wabag,Wabag Rural,OCNPNG0020080411,0.608,0.6,0.65,Anticipatory Action,0.0,1.0,1.0,0.7,85982,12762,59091,3439,Tsak Rural; Wabag Rural
+Enga,Lagaip/Pogera,Porgera Rural,OCNPNG0020080309,0.672,0.6,0.8,Anticipatory Action,0.0,1.0,1.0,0.7,62725,9301,39450,2509,Porgera Rural; Porgera Urban
+Enga,Wabag,Wabag Urban,OCNPNG0020080410,0.6,0.6,0.6,Anticipatory Action,0.0,1.0,1.0,0.7,8345,1237,5733,334,Wabag Urban
+Enga,Kompiam,Wapi-Yengis Rural,OCNPNG0020080205,0.678,0.6,0.8,Anticipatory Action,0.049,0.951,1.0,0.7,13548,2010,9308,542,Wapi-Yangis Rural
+Enga,Kompiam,Kompiam Rural,OCNPNG0020080204,0.667,0.6,0.8,Anticipatory Action,0.002,0.998,1.0,0.7,38846,5758,27169,1554,Kompiam Rural; Wali-Tarua Rural
+Enga,Wabag,Maramuni Rural,OCNPNG0020080412,0.664,0.6,0.8,Anticipatory Action,0.047,0.953,1.0,0.7,18467,2739,12690,739,Maramuni Rural
+Enga,Lagaip/Pogera,Maip Muritaka Rural,OCNPNG0020080307,0.626,0.6,0.8,Anticipatory Action,0.017,0.983,1.0,0.7,27902,4145,19170,1116,Maip Muritaka Rural
+Enga,Lagaip/Pogera,Paiela/Hewa Rural,OCNPNG0020080308,0.762,0.65,0.9,Anticipatory Action,0.129,0.871,1.0,0.7,36555,5423,25118,1462,Paiela/Hewa Rural
+Enga,Kandep,Wage Rural,OCNPNG0020080102,0.698,0.6,0.8,Anticipatory Action,0.0,1.0,1.0,0.7,51001,7559,35042,2040,Wage Rural
+Enga,Kandep,Kandep Rural,OCNPNG0020080101,0.713,0.6,0.9,Anticipatory Action,0.023,0.977,1.0,0.7,56886,8443,39088,2275,Kandep Rural
+Enga,Wapenamanda,Tsak Rural,OCNPNG0020080514,0.678,0.6,0.85,Anticipatory Action,0.088,0.912,1.0,0.7,32137,4767,22082,1285,Tsak Rural
+Enga,Wapenamanda,Wapenamanda Rural,OCNPNG0020080513,0.622,0.6,0.8,Anticipatory Action,0.0,1.0,1.0,0.7,74319,11028,51063,2973,Wapenamanda Rural
+Enga,Lagaip/Pogera,Lagaip Rural,OCNPNG0020080306,0.606,0.6,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,66188,9820,45476,2648,Lagaip Rural; Pilikambi Rural
+Enga,Lagaip/Pogera,Pilikambi Rural,OCNPNG0020080315,0.66,0.6,0.9,Anticipatory Action,0.009,0.991,1.0,0.7,44410,6586,30520,1776,Pilikambi Rural
+Jiwaka,Anglimp/South Waghi,Anglimp Rural,OCNPNG0020220101,0.738,0.7,0.85,Anticipatory Action,0.349,0.651,1.0,0.7,141802,23850,80340,5672,Anglimp Rural
+Western Highlands,Mul/Baiyer,Baiyer Rural,OCNPNG0020090509,0.756,0.6,0.8,Anticipatory Action,0.545,0.455,1.0,0.7,99882,17535,49841,3995,Baiyer Rural; Mala-Kinjibi Rural
+Western Highlands,Mul/Baiyer,Lumusa Rural,OCNPNG0020090510,0.727,0.6,0.8,Anticipatory Action,0.09,0.91,1.0,0.7,28400,4990,14083,1136,Lumusa Rural
+Western Highlands,Mul/Baiyer,Mul Rural,OCNPNG0020090508,0.745,0.6,0.8,Anticipatory Action,0.09,0.91,1.0,0.7,77329,13588,38342,3093,Mul Rural
+Western Highlands,Tambul/Nebilyer,Mt Giluwe Rural,OCNPNG0020090712,0.734,0.6,0.9,Anticipatory Action,0.24,0.76,1.0,0.7,80143,14089,46949,3206,Lower Kagul Rural; Mt Giluwe Rural
+Western Highlands,Tambul/Nebilyer,Nebilyer Rural,OCNPNG0020090713,0.724,0.7,0.85,Anticipatory Action,0.154,0.846,1.0,0.7,62937,11059,31214,2517,Nebilyer Rural
+Western Highlands,Mt Hagen,Mt Hagen Rural,OCNPNG0020090304,0.752,0.7,0.8,Anticipatory Action,0.451,0.549,1.0,0.7,168562,29621,83593,6742,Mt Hagen Rural; Mt Hagen Urban
+Western Highlands,Mt Hagen,Mt Hagen Urban,OCNPNG0020090305,0.789,0.75,0.8,Anticipatory Action,0.775,0.225,1.0,0.7,37063,6517,18373,1483,Mt Hagen Urban
+Western Highlands,Dei,Dei Rural,OCNPNG0020090203,0.745,0.7,0.8,Anticipatory Action,0.107,0.893,1.0,0.7,106253,18667,58539,4250,Kotna Rural; Mala-Kinjibi Rural; Muglamp Rural; Mul Rural
+Western Highlands,Dei,Kotna Rural,OCNPNG0020090214,0.788,0.7,0.9,Anticipatory Action,0.558,0.442,1.0,0.7,38199,6704,23806,1528,Kotna Rural; Mala-Kinjibi Rural
+Jiwaka,Anglimp/South Waghi,South Waghi Rural,OCNPNG0020220102,0.758,0.7,0.85,Anticipatory Action,0.361,0.639,1.0,0.7,141139,23711,76448,5646,Kudjip Rural; Minj Rural
+Jiwaka,Jimi,Kol Rural,OCNPNG0020220407,0.747,0.7,0.8,Anticipatory Action,0.39,0.61,1.0,0.7,46099,7747,26125,1844,Kol Rural
+Jiwaka,Jimi,Jimi Rural,OCNPNG0020220406,0.785,0.7,0.9,Anticipatory Action,0.729,0.271,1.0,0.7,69178,11629,50413,2767,Koinambe Rural; Tabibuga Rural
+Jiwaka,North Waghi,North Waghi Rural,OCNPNG0020220611,0.758,0.7,0.9,Anticipatory Action,0.404,0.596,1.0,0.7,76534,12854,43371,3061,North Waghi Rural
+Jiwaka,North Waghi,Nondugl Rural,OCNPNG0020220615,0.754,0.7,0.8,Anticipatory Action,0.176,0.824,1.0,0.7,55421,9306,31414,2217,Nondugl Rural
+Chimbu,Karimui/Nomane,Karimui Rural,OCNPNG0020100307,0.728,0.7,0.85,Anticipatory Action,0.068,0.932,1.0,0.7,52443,8666,28078,2098,Karimui Rural
+Chimbu,Chuave,Elimbari Rural,OCNPNG0020100102,0.757,0.7,0.8,Anticipatory Action,0.288,0.712,1.0,0.7,25406,4197,13600,1016,Elimbari Rural
+Chimbu,Kundiawa/Gembogl,Waiye,OCNPNG0020100516,0.738,0.7,0.8,Anticipatory Action,0.086,0.914,1.0,0.7,67438,11173,36089,2698,Waiye Rural
+Chimbu,Karimui/Nomane,Salt Rural,OCNPNG0020100309,0.737,0.7,0.8,Anticipatory Action,0.289,0.711,1.0,0.7,42678,7060,22846,1707,Salt Rural
+Chimbu,Sina Sina Yonggomugl,Suai Rural,OCNPNG0020100618,0.786,0.7,0.8,Anticipatory Action,0.752,0.248,1.0,0.7,47585,7870,25476,1903,Suai Rural
+Chimbu,Sina Sina Yonggomugl,Tabare Rural,OCNPNG0020100617,0.768,0.75,0.8,Anticipatory Action,0.362,0.638,1.0,0.7,35437,5861,18984,1417,Tabare Rural
+Chimbu,Gumine,Mt Digine Rural,OCNPNG0020100206,0.781,0.75,0.8,Anticipatory Action,0.615,0.385,1.0,0.7,40892,6766,21902,1636,Kumai/Bomai Rural; Mt Digine
+Chimbu,Kerowagi,Gena/Waugla Rural,OCNPNG0020100410,0.727,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,58825,9729,31513,2353,Gena/Waugla Rural; Yongomugl Rural
+Chimbu,Karimui/Nomane,Nomane Rural,OCNPNG0020100308,0.734,0.7,0.8,Anticipatory Action,0.117,0.883,1.0,0.7,20003,3306,10722,800,Nomane Rural
+Chimbu,Chuave,Siane Rural,OCNPNG0020100103,0.759,0.7,0.8,Anticipatory Action,0.239,0.761,1.0,0.7,32509,5364,17408,1300,Siane Rural
+Chimbu,Chuave,Chuave Rural,OCNPNG0020100101,0.772,0.75,0.8,Anticipatory Action,0.447,0.553,1.0,0.7,32891,5441,17607,1316,Chuave Rural
+Chimbu,Kundiawa/Gembogl,Mitnande Rural,OCNPNG0020100514,0.712,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,40312,6652,29378,1612,Mt Wilhelm Rural
+Chimbu,Gumine,Gumine Rural,OCNPNG0020100205,0.712,0.7,0.8,Anticipatory Action,0.005,0.995,1.0,0.7,43511,7181,23315,1740,Gumine Rural
+Chimbu,Gumine,Bomai/Gumai Rural,OCNPNG0020100204,0.736,0.7,0.85,Anticipatory Action,0.074,0.926,1.0,0.7,28088,4644,15038,1124,Kumai/Bomai Rural
+Chimbu,Kerowagi,Kup Rural,OCNPNG0020100412,0.748,0.7,0.85,Anticipatory Action,0.035,0.965,1.0,0.7,44673,7382,23922,1787,Kup Rural
+Chimbu,Sina Sina Yonggomugl,Yonggomugl Rural,OCNPNG0020100619,0.749,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,38116,6308,20409,1525,Yongomugl Rural
+Chimbu,Kundiawa/Gembogl,Kundiawa Urban,OCNPNG0020100513,0.75,0.75,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,21468,3534,11506,859,Kundiawa Urban
+Chimbu,Kundiawa/Gembogl,Niglkande Rural,OCNPNG0020100515,0.706,0.7,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,51211,8449,27438,2048,Niglkande Rural
+Eastern Highlands,Obura/Wonenara,Yelia Rural,OCNPNG0020110609,0.766,0.7,1.0,Anticipatory Action,0.39,0.61,1.0,0.8,42788,7891,23307,1712,Yelia Rural
+Eastern Highlands,Obura/Wonenara,Lamari Rural,OCNPNG0020110608,0.923,0.7,1.0,Response,0.959,0.041,1.0,0.8,30257,5580,16482,1210,Lamari Rural
+Eastern Highlands,Kainanatu,Kainantu Urban,OCNPNG0020110406,1.0,1.0,1.0,Response,1.0,0.0,1.0,0.8,10501,1942,5719,420,Kainantu Urban
+Eastern Highlands,Goroka,Goroka Urban,OCNPNG0020110203,0.861,0.8,1.0,Response,1.0,0.0,1.0,0.8,30078,5550,16397,1203,Goroka Urban
+Eastern Highlands,Daulo,Watabung Rural,OCNPNG0020110101,0.75,0.7,0.85,Anticipatory Action,0.004,0.996,1.0,0.8,16511,3040,9010,660,Watabung Rural
+Eastern Highlands,Daulo,Lower Asaro Rural,OCNPNG0020110112,0.802,0.7,0.9,Response,0.585,0.415,1.0,0.8,39231,7263,21398,1569,Lower Asaro Rural
+Eastern Highlands,Daulo,Upper Asaro Rural,OCNPNG0020110113,0.765,0.7,0.9,Anticipatory Action,0.492,0.508,1.0,0.8,24344,4495,13270,974,Upper Asaro Rural
+Eastern Highlands,Goroka,Mimanalo Rural,OCNPNG0020110214,0.895,0.8,1.0,Response,1.0,0.0,1.0,0.8,75197,13896,40973,3008,Gahuku Rural; Mimanalo Rural
+Eastern Highlands,Goroka,Gahuku Rural,OCNPNG0020110202,0.911,0.8,1.0,Response,1.0,0.0,1.0,0.8,36751,6803,20028,1470,Gahuku Rural
+Eastern Highlands,Unggai/Benna,Unggai  Rural,OCNPNG0020110824,0.788,0.7,0.9,Anticipatory Action,0.488,0.512,1.0,0.8,43093,7935,23493,1724,Unggai Rural
+Eastern Highlands,Unggai/Benna,Lower Benna,OCNPNG0020110811,0.854,0.8,0.95,Response,1.0,0.0,1.0,0.8,49040,9038,26722,1962,Lower Benna Rural; Upper Benna Rural
+Eastern Highlands,Unggai/Benna,Upper Bena Rural,OCNPNG0020110823,0.941,0.85,1.0,Response,1.0,0.0,1.0,0.8,34727,6404,18909,1389,Lower Benna Rural; Upper Benna Rural
+Eastern Highlands,Henganofi,Dunantina Rural,OCNPNG0020110315,0.935,0.8,1.0,Response,1.0,0.0,1.0,0.8,72047,13362,39253,2882,Dunantina Rural; Kafentina Rural
+Eastern Highlands,Henganofi,Kafentina Rural,OCNPNG0020110304,0.947,0.8,1.0,Response,1.0,0.0,1.0,0.8,37845,6988,20616,1514,Fayantina Rural; Kafentina Rural
+Eastern Highlands,Henganofi,Fayantina Rural,OCNPNG0020110316,0.878,0.8,1.0,Response,1.0,0.0,1.0,0.8,31634,5835,17227,1265,Fayantina Rural
+Eastern Highlands,Kainanatu,Kamano No. 2 Rural,OCNPNG0020110405,0.861,0.8,0.95,Response,1.0,0.0,1.0,0.8,13590,2508,7398,544,Kamano 2 Rural
+Eastern Highlands,Kainanatu,Kamano No. 1 Rural,OCNPNG0020110417,0.943,0.9,1.0,Response,1.0,0.0,1.0,0.8,25716,4744,14013,1029,Kamano 1 Rural; Upper Benna Rural
+Eastern Highlands,Kainanatu,Agarabi Rural,OCNPNG0020110418,0.917,0.9,1.0,Response,1.0,0.0,1.0,0.8,61756,11381,33634,2470,Agarabi Rural; Gadsup/Tairora Rural
+Eastern Highlands,Kainanatu,Gadsup/Tairora Rural,OCNPNG0020110419,0.933,0.8,1.0,Response,1.0,0.0,1.0,0.8,35151,6485,19143,1406,Gadsup/Tairora Rural; Kamano 2 Rural
+Eastern Highlands,Lufa,Unavi Rural,OCNPNG0020110507,0.734,0.7,0.8,Anticipatory Action,0.317,0.683,1.0,0.8,22412,4143,12210,896,Unavi Rural
+Eastern Highlands,Lufa,Mt. Michael Rural,OCNPNG0020110520,0.793,0.7,0.9,Anticipatory Action,0.802,0.198,1.0,0.8,40671,7507,22155,1627,Mt Michael Rural
+Eastern Highlands,Lufa,Yagaria Rural,OCNPNG0020110521,0.812,0.8,0.9,Response,1.0,0.0,1.0,0.8,43672,8053,23786,1747,Yagaria Rural
+Eastern Highlands,Okapa,West Okapa Rural,OCNPNG0020110722,0.768,0.7,0.85,Anticipatory Action,0.642,0.358,1.0,0.8,54312,10012,29599,2172,West Okapa Rural
+Eastern Highlands,Okapa,East Okapa Rural,OCNPNG0020110710,0.762,0.7,0.9,Anticipatory Action,0.484,0.516,1.0,0.8,100345,18509,54652,4014,East Okapa Rural; West Okapa Rural
+Morobe,Tawae/Siassi,Wasu Rural,OCNPNG0030120928,0.89,0.8,1.0,Response,1.0,0.0,1.0,0.8,39117,5576,17554,1565,Wasu Rural
+Morobe,Tawae/Siassi,Sialum Rural,OCNPNG0030120926,0.947,0.8,1.0,Response,1.0,0.0,1.0,0.8,62363,8863,27955,2495,Sialum Rural
+Morobe,Nawae,Labuta Rural,OCNPNG0030120823,0.761,0.7,1.0,Anticipatory Action,0.32,0.68,1.0,0.8,21989,3130,9860,880,Labuta Rural
+Morobe,Huon,Salamaua Rural,OCNPNG0030120310,0.766,0.6,1.0,Anticipatory Action,0.543,0.457,0.999,0.8,21061,3000,9448,842,Salamaua Rural
+Morobe,Huon,Morobe Rural,OCNPNG0030120309,0.78,0.7,1.0,Anticipatory Action,0.457,0.543,0.992,0.8,39593,5640,17760,1584,Morobe Rural
+Morobe,Menyamya,Kome Rural,OCNPNG0030120721,0.779,0.7,1.0,Anticipatory Action,0.603,0.397,1.0,0.8,54045,7692,24244,2162,Kome Rural
+Morobe,Menyamya,Wapi Rural,OCNPNG0030120722,0.733,0.7,0.8,Anticipatory Action,0.234,0.766,1.0,0.8,39168,5568,17568,1567,Wapi Rural
+Morobe,Bulolo,Wau Rural,OCNPNG0030120105,0.832,0.7,1.0,Response,0.771,0.229,1.0,0.8,57491,8161,25809,2300,Wau Rural
+Morobe,Bulolo,Waria Rural,OCNPNG0030120102,0.733,0.7,0.9,Anticipatory Action,0.227,0.773,1.0,0.8,31392,4458,14074,1256,Waria Rural
+Morobe,Nawae,Nabak Rural,OCNPNG0030120824,0.797,0.7,0.9,Anticipatory Action,0.821,0.179,1.0,0.8,25214,3586,11307,1009,Nabak Rural
+Morobe,Kabwum,Deyamos Rural,OCNPNG0030120412,0.821,0.8,0.95,Response,1.0,0.0,1.0,0.8,25249,3589,11323,1010,Deyamos Rural
+Morobe,Nawae,Wain-Erap Rural,OCNPNG0030120825,0.832,0.7,0.9,Response,0.95,0.05,1.0,0.8,41117,5846,18442,1645,Siassi Rural; Wain-Erap Rural
+Morobe,Kabwum,Yus Rural,OCNPNG0030120414,0.826,0.7,1.0,Response,0.986,0.014,1.0,0.8,25718,3659,11533,1029,Yus Rural
+Morobe,Markham,Wantoat/Leron Rural,OCNPNG0030120619,0.844,0.7,1.0,Response,0.988,0.012,1.0,0.8,32676,4650,14644,1307,Wantoat/Leron Rural
+Morobe,Markham,Umi/Atzera Rural,OCNPNG0030120618,0.904,0.7,1.0,Response,0.878,0.122,1.0,0.8,69010,9825,30945,2760,Umi/Atzera Rural
+Morobe,Markham,Onga/Waffa Rural,OCNPNG0030120617,0.821,0.7,1.0,Response,0.815,0.185,1.0,0.8,24976,3544,11209,999,Onga/Waffa Rural
+Morobe,Tawae/Siassi,Siassi Rural,OCNPNG0030120927,0.956,0.9,1.0,Response,1.0,0.0,0.91,0.8,46123,6573,20687,1845,Siassi Rural
+Morobe,Bulolo,Watut Rural,OCNPNG0030120103,0.837,0.8,1.0,Response,1.0,0.0,1.0,0.8,35092,4995,15746,1404,Watut Rural
+Morobe,Bulolo,Wau/Bulolo Urban,OCNPNG0030120104,0.845,0.8,0.95,Response,1.0,0.0,1.0,0.8,22465,3196,10079,899,Bulolo Urban; Wau Rural
+Morobe,Huon,Wampar Rural,OCNPNG0030120311,0.812,0.7,1.0,Response,0.717,0.283,1.0,0.8,126329,17998,56646,5053,Wampar Rural
+Morobe,Lae,Ahi Rural,OCNPNG0030120515,0.767,0.7,1.0,Anticipatory Action,0.312,0.688,1.0,0.8,106028,15102,47579,4241,Ahi Rural; Lae Urban
+Morobe,Lae,Lae Urban,OCNPNG0030120516,0.799,0.7,1.0,Anticipatory Action,0.844,0.156,1.0,0.8,169313,24103,75922,6773,Lae Urban
+Morobe,Bulolo,Mumeng Rural,OCNPNG0030120101,0.862,0.8,1.0,Response,1.0,0.0,1.0,0.8,36541,5195,16394,1462,Mumeng Rural
+Morobe,Bulolo,Buang Rural,OCNPNG0030120129,0.827,0.7,0.9,Response,0.946,0.054,1.0,0.8,17642,2513,7914,706,Buang Rural
+Morobe,Finschafen,Hube Rural,OCNPNG0030120206,0.759,0.7,0.95,Anticipatory Action,0.507,0.493,1.0,0.8,24542,3486,11010,982,Hube Rural
+Morobe,Finschafen,Burum Kwat,OCNPNG0030120232,0.804,0.7,0.85,Response,0.867,0.133,1.0,0.8,20146,2860,9040,806,Burum Kwat Rural
+Morobe,Finschafen,Yabim Mape Rural,OCNPNG0030120208,0.817,0.7,1.0,Response,0.481,0.519,0.999,0.8,27449,3905,12315,1098,Yabim Mape Rural
+Morobe,Finschafen,Finschafen Urban,OCNPNG0030120233,0.787,0.75,0.8,Anticipatory Action,0.738,0.263,1.0,0.8,5879,839,2633,235,Finschafen Urban
+Morobe,Menyamya,Nanima Kariba,OCNPNG0030120734,0.702,0.7,0.8,Anticipatory Action,0.019,0.981,1.0,0.8,33167,4709,14869,1327,Nanima Kariba Rural
+Morobe,Menyamya,Kapao Rural,OCNPNG0030120730,0.781,0.7,0.9,Anticipatory Action,0.739,0.261,1.0,0.8,42240,6017,18947,1690,Kapao Rural
+Morobe,Kabwum,Komba Rural,OCNPNG0030120431,0.883,0.8,1.0,Response,1.0,0.0,1.0,0.8,20534,2919,9209,821,Komba Rural
+Morobe,Kabwum,Selepet Rural,OCNPNG0030120435,0.893,0.8,1.0,Response,1.0,0.0,1.0,0.8,22583,3218,10126,903,Selepet Rural
+Madang,Bogia,Yawar Rural,OCNPNG0030130103,0.977,0.9,1.0,Response,1.0,0.0,1.0,0.9,71526,10788,46725,2861,Yawar Rural
+Madang,Bogia,Almami Rural,OCNPNG0030130101,0.986,0.9,1.0,Response,1.0,0.0,1.0,0.9,52614,7949,34392,2105,Almami Rural
+Madang,Sumkar,Sumgilbar Rural,OCNPNG0030130514,0.961,0.9,1.0,Response,1.0,0.0,1.0,0.9,58213,8782,38031,2329,Sumgilbar Rural
+Madang,Rai Coast,Astrolabe Bay Rural,OCNPNG0030130410,0.952,0.9,1.0,Response,1.0,0.0,1.0,0.9,34095,5150,22272,1364,Astrolabe Bay Rural
+Madang,Rai Coast,Naho Rawa Rural,OCNPNG0030130411,0.917,0.8,1.0,Response,1.0,0.0,1.0,0.9,22093,3334,14432,884,Naho Rawa Rural
+Madang,Usino Bundi,Bundi Rural,OCNPNG0030130615,0.777,0.7,0.95,Anticipatory Action,0.35,0.65,1.0,0.9,28124,4238,18377,1125,Bundi Rural
+Madang,Middle Ramu,Josephstaal Rural,OCNPNG0030130308,0.975,0.85,1.0,Response,1.0,0.0,1.0,0.9,32239,4869,21062,1290,Josephstaal Rural
+Madang,Madang,Transgogol Rural,OCNPNG0030130206,0.971,0.85,1.0,Response,1.0,0.0,1.0,0.9,36115,5452,23593,1445,Transgogol Rural
+Madang,Middle Ramu,Arabaka Rural,OCNPNG0030130307,0.879,0.7,1.0,Response,0.72,0.28,1.0,0.9,48573,7336,31733,1943,Arabaka Rural
+Madang,Sumkar,Karkar Rural,OCNPNG0030130513,0.965,0.9,1.0,Response,1.0,0.0,0.924,0.9,95151,14340,62158,3806,Karkar Rural
+Madang,Bogia,Iabu Rural,OCNPNG0030130102,0.98,0.9,1.0,Response,1.0,0.0,0.991,0.9,13281,2004,8675,531,Iabu Rural
+Madang,Madang,Ambenob Rural,OCNPNG0030130204,0.976,0.9,1.0,Response,1.0,0.0,1.0,0.9,97469,14695,63660,3899,Ambenob Rural; Madang Urban
+Madang,Madang,Madang Urban,OCNPNG0030130205,1.0,1.0,1.0,Response,1.0,0.0,1.0,0.9,44282,6679,28919,1771,Madang Urban
+Madang,Middle Ramu,Simbai Rural,OCNPNG0030130309,0.757,0.7,0.8,Anticipatory Action,0.326,0.674,1.0,0.9,36083,5449,23571,1443,Simbai Rural
+Madang,Middle Ramu,Kovon,OCNPNG0030130317,0.76,0.6,0.9,Anticipatory Action,0.428,0.572,1.0,0.9,22455,3387,14671,898,Kovon Rural
+Madang,Rai Coast,Rai Coast Rural,OCNPNG0030130412,0.915,0.7,1.0,Response,0.901,0.099,0.994,0.9,51857,7833,33875,2074,Nayudo Rural; Rai Coast Rural
+Madang,Rai Coast,Nayudo Rural,OCNPNG0030130418,0.812,0.7,0.9,Response,0.94,0.06,1.0,0.9,19679,2970,12852,787,Nayudo Rural
+Madang,Usino Bundi,Usino Rural,OCNPNG0030130616,0.91,0.7,1.0,Response,0.94,0.06,1.0,0.9,66571,10048,43482,2663,Usino Rural
+Madang,Usino Bundi,Gama  Rural,OCNPNG0030130619,0.863,0.7,1.0,Response,0.694,0.306,1.0,0.9,12265,1846,8015,491,Gama Rural
+East Sepik,Ambunti/Drekikier,Gawanga Rural,OCNPNG0030140103,0.892,0.8,0.9,Response,1.0,0.0,1.0,0.85,38361,6753,24387,1534,Gawanga Rural
+East Sepik,Ambunti/Drekikier,Ambunti Rural,OCNPNG0030140101,0.836,0.7,1.0,Response,0.951,0.049,1.0,0.85,37605,6614,23895,1504,Ambunti Rural
+East Sepik,Ambunti/Drekikier,Tunap/Hustein,OCNPNG0030140104,0.85,0.7,1.0,Response,0.918,0.082,1.0,0.85,23048,4061,14649,922,Burui/Kunai Rural; Tunap/Hustein Rural
+East Sepik,Wewak,Boikin/Dagua Rural,OCNPNG0030140414,0.854,0.75,1.0,Response,0.974,0.026,0.995,0.85,30707,5398,16202,1228,Boiken Rural; Dagua Rural
+East Sepik,Wewak,Turubu Rural,OCNPNG0030140415,0.968,0.8,1.0,Response,1.0,0.0,1.0,0.85,22204,3901,14109,888,Turubu Rural
+East Sepik,Angoram,Marienberg Rural,OCNPNG0030140208,0.967,0.85,1.0,Response,1.0,0.0,0.994,0.85,38168,6705,24252,1527,Marienberg Rural
+East Sepik,Yangoru Saussia,Sausso Rural,OCNPNG0030140625,0.919,0.8,1.0,Response,1.0,0.0,1.0,0.85,19466,3422,12373,779,Sausso Rural
+East Sepik,Wosera Gawi,South Wosera Rural,OCNPNG0030140522,0.929,0.8,1.0,Response,1.0,0.0,1.0,0.85,35105,6171,22310,1404,South Wosera Rural
+East Sepik,Maprik,Bumbita/Muhian Rural,OCNPNG0030140311,0.9,0.9,0.9,Response,1.0,0.0,1.0,0.85,38650,6797,24565,1546,Bumbita/Muhian Rural
+East Sepik,Yangoru Saussia,West Yangoru Rural,OCNPNG0030140626,0.883,0.8,0.9,Response,1.0,0.0,1.0,0.85,26970,4740,17137,1079,West Yangoru Rural
+East Sepik,Yangoru Saussia,East Yangoru Rural,OCNPNG0030140623,0.902,0.8,1.0,Response,1.0,0.0,1.0,0.85,26525,4661,16857,1061,East Yangoru Rural
+East Sepik,Yangoru Saussia,Numbor Rural,OCNPNG0030140624,0.907,0.9,1.0,Response,1.0,0.0,1.0,0.85,20556,3613,13064,822,Numbor Rural
+East Sepik,Wosera Gawi,Gawi Rural,OCNPNG0030140520,0.868,0.7,1.0,Response,0.946,0.054,1.0,0.85,19113,3355,12145,765,Gawi Rural
+East Sepik,Wosera Gawi,Burui/Kunai Rural,OCNPNG0030140519,0.912,0.8,1.0,Response,1.0,0.0,1.0,0.85,27461,4831,17448,1098,Burui/Kunai Rural
+East Sepik,Angoram,Angoram/Middle Sepik,OCNPNG0030140205,0.904,0.8,1.0,Response,1.0,0.0,1.0,0.85,46481,8169,29538,1859,Angoram/Middle Sepik Rural; Gawi Rural; Karawari Rural
+East Sepik,Ambunti/Drekikier,Dreikikier Rural,OCNPNG0030140102,0.899,0.8,0.9,Response,1.0,0.0,1.0,0.85,41127,7223,26137,1645,Dreikikier Rural
+East Sepik,Maprik,Albiges/Mablep Rural,OCNPNG0030140310,0.894,0.8,0.9,Response,1.0,0.0,1.0,0.85,27867,4895,17710,1115,Albiges/Mablep Rural
+East Sepik,Maprik,Yamil/Tamaui Rural,OCNPNG0030140313,0.93,0.8,1.0,Response,1.0,0.0,1.0,0.85,35556,6247,22601,1422,Yamil/Tamaui Rural
+East Sepik,Angoram,Yuat Rural,OCNPNG0030140209,0.922,0.7,1.0,Response,0.938,0.062,1.0,0.85,20144,3539,12802,806,Yuat Rural
+East Sepik,Angoram,Keram Rural,OCNPNG0030140207,0.967,0.7,1.0,Response,0.995,0.005,1.0,0.85,40301,7086,25613,1612,Keram Rural
+East Sepik,Wosera Gawi,North Wosera Rural,OCNPNG0030140521,0.898,0.8,1.0,Response,1.0,0.0,1.0,0.85,29747,5223,18901,1190,North Wosera Rural
+East Sepik,Angoram,Karawari Rural,OCNPNG0030140206,0.836,0.7,1.0,Response,0.822,0.178,1.0,0.85,22374,3932,14217,895,Karawari Rural
+East Sepik,Maprik,Maprik/Wora Rural,OCNPNG0030140312,0.9,0.9,0.9,Response,1.0,0.0,1.0,0.85,59257,10430,30762,2370,Maprik Urban; Maprik/Wora Rural
+East Sepik,Wewak,Wewak Islands Rural,OCNPNG0030140416,,,,No data,,,0.0,0.85,16792,2946,10673,672,Wewak Islands Rural
+East Sepik,Wewak,Wewak Urban,OCNPNG0030140418,0.9,0.9,0.9,Response,1.0,0.0,1.0,0.85,36373,6408,23093,1455,Wewak Urban
+East Sepik,Wewak,Wewak Rural,OCNPNG0030140417,0.94,0.8,1.0,Response,1.0,0.0,1.0,0.85,27758,4882,17633,1110,Wewak Rural
+Sandaun,Vanimo/Green River,Walsa Rural,OCNPNG0030150416,0.848,0.8,0.9,Response,1.0,0.0,1.0,0.8,17700,2563,12891,708,Vanimo Urban; Walsa Rural
+Sandaun,Vanimo/Green River,Amanab Rural,OCNPNG0030150412,0.905,0.8,1.0,Response,1.0,0.0,1.0,0.8,22343,3233,16279,894,Amanab Rural
+Sandaun,Vanimo/Green River,Green River Rural,OCNPNG0030150414,0.834,0.7,1.0,Response,0.925,0.075,1.0,0.8,30146,4384,21972,1206,Green River Rural
+Sandaun,Aitape/Lumi,West Wapei Rural,OCNPNG0030150104,0.871,0.8,0.9,Response,1.0,0.0,1.0,0.8,22646,3289,16505,906,West Wapei Rural
+Sandaun,Aitape/Lumi,East Wapei Rural,OCNPNG0030150102,0.888,0.8,0.9,Response,1.0,0.0,1.0,0.8,21812,3171,15901,872,East Wapei Rural
+Sandaun,Nuku,Yangkok Rural,OCNPNG0030150207,0.857,0.7,0.9,Response,0.902,0.098,1.0,0.8,50115,7273,36526,2005,Yangkok Rural
+Sandaun,Telefomin,Namea Rural,OCNPNG0030150308,0.829,0.7,0.9,Response,0.886,0.114,1.0,0.8,18571,2694,13539,743,Namea Rural
+Sandaun,Nuku,Palmai Rural,OCNPNG0030150206,0.851,0.7,0.9,Response,0.927,0.073,1.0,0.8,38653,5610,28170,1546,Maimai Wanwan Rural; Palai Rural
+Sandaun,Aitape/Lumi,West Aitape Rural,OCNPNG0030150103,0.854,0.8,1.0,Response,1.0,0.0,1.0,0.8,38409,5578,27981,1536,West Aitape Rural
+Sandaun,Aitape/Lumi,East Aitape Rural,OCNPNG0030150101,0.893,0.8,1.0,Response,1.0,0.0,0.999,0.8,76748,11157,59182,3070,Aitape/Lumi Urban; East Aitape Rural
+Sandaun,Telefomin,Telefomin Rural,OCNPNG0030150310,0.788,0.7,1.0,Anticipatory Action,0.646,0.354,1.0,0.8,22721,3291,16565,909,Telefomin Rural
+Sandaun,Telefomin,Oksapmin Rural,OCNPNG0030150309,0.874,0.7,1.0,Response,0.897,0.103,1.0,0.8,40748,5907,29691,1630,Oksapmin Rural
+Sandaun,Telefomin,Yapsie Rural,OCNPNG0030150311,0.819,0.7,1.0,Response,0.918,0.082,1.0,0.8,14932,2169,10886,597,Yapsie Rural
+Sandaun,Vanimo/Green River,Bewani/Wutung Onei Rural,OCNPNG0030150413,0.866,0.8,1.0,Response,1.0,0.0,1.0,0.8,47020,6815,34282,1881,Bewani-Wutung Onei Rural
+Sandaun,Vanimo/Green River,Vanimo Urban,OCNPNG0030150415,0.896,0.85,0.9,Response,1.0,0.0,1.0,0.8,31714,4594,23117,1269,Vanimo Urban
+Sandaun,Nuku,Maimai Wanwan,OCNPNG0030150217,0.876,0.75,1.0,Response,0.974,0.026,1.0,0.8,9126,1321,6654,365,Maimai Wanwan Rural
+Sandaun,Nuku,Mawase Rural,OCNPNG0030150205,0.924,0.8,1.0,Response,1.0,0.0,1.0,0.8,47488,6894,33410,1900,Nuku Central
+Manus,Manus,Pobuma,OCNPNG0040160110,0.954,0.9,1.0,Response,1.0,0.0,0.997,0.95,14447,2230,3722,578,Pobuma Rural
+Manus,Manus,Pomutu/Kurti/Andra,OCNPNG0040160104,0.957,0.9,1.0,Response,1.0,0.0,0.998,0.95,12144,1881,3125,486,Pomutu/Kurti/Andra Rural
+Manus,Manus,Tetidu,OCNPNG0040160109,0.975,0.9,1.0,Response,1.0,0.0,1.0,0.95,7176,1111,1846,287,Tetidu Rural
+Manus,Manus,Nali Sopat/Penabu,OCNPNG0040160108,0.972,0.9,1.0,Response,1.0,0.0,0.992,0.95,9225,1430,2373,369,Nali Sopat/Penabu Rural
+Manus,Manus,Rapatona,OCNPNG0040160112,0.997,0.8,1.0,Response,0.997,0.003,0.761,0.95,7142,1105,1836,286,Rapatona Rural
+Manus,Manus,Balopa,OCNPNG0040160111,,,,No data,,,0.0,0.95,5665,880,1458,227,Balopa Rural
+Manus,Manus,Los Negros,OCNPNG0040160107,0.992,0.9,1.0,Response,1.0,0.0,1.0,0.95,7098,1096,1827,284,Los Negros Rural
+Manus,Manus,Aua Wuvulu,OCNPNG0040160101,0.992,0.8,1.0,Response,0.958,0.042,0.706,0.95,2592,400,667,104,Aua Wuvulu Rural
+Manus,Manus,Nigoherm,OCNPNG0040160102,1.0,1.0,1.0,Response,1.0,0.0,0.079,0.95,3899,603,1004,156,Nigoherm Rural
+Manus,Manus,Bisikani/Soparibeu,OCNPNG0040160103,0.955,0.9,1.0,Response,1.0,0.0,0.985,0.95,13103,2026,3376,524,Bisikani/Soparibeu Rural
+Manus,Manus,Lelemadih/Bupichupeu,OCNPNG0040160105,0.961,0.9,1.0,Response,1.0,0.0,0.989,0.95,14207,2201,3652,568,Lelemadih/Bupichupeu Rural
+Manus,Manus,Lorengau Urban,OCNPNG0040160106,0.929,0.9,0.95,Response,1.0,0.0,1.0,0.95,15800,2442,4061,632,Lorengau Urban
+New Ireland,Namatanai,Namatanai Rural,OCNPNG0040170205,0.854,0.7,0.9,Response,0.801,0.199,1.0,0.8,71182,11261,31036,2847,Matalai Rural; Namatanai Rural
+New Ireland,Namatanai,Sentral Niu Ailan Rural,OCNPNG0040170206,0.836,0.7,0.9,Response,0.693,0.307,0.946,0.8,68929,10877,30057,2757,Sentral Niu Ailan Rural
+New Ireland,Kavieng,Lovongai Rural,OCNPNG0040170102,0.883,0.8,0.9,Response,0.861,0.139,0.971,0.8,51032,8072,22247,2041,Lovongai Rural
+New Ireland,Namatanai,Konoagil Rural,OCNPNG0040170207,0.728,0.5,0.9,Anticipatory Action,0.156,0.836,1.0,0.8,26316,4162,11466,1053,Konoagil Rural
+New Ireland,Kavieng,Murat Rural,OCNPNG0040170101,0.9,0.9,0.9,Response,1.0,0.0,0.88,0.8,9272,1469,4033,371,Murat Rural
+New Ireland,Namatanai,Nimamar Rural,OCNPNG0040170209,0.871,0.8,0.9,Response,0.831,0.169,0.937,0.8,53671,8486,23380,2147,Nimamar Rural
+New Ireland,Namatanai,Tanir Rural,OCNPNG0040170208,0.871,0.8,0.9,Response,0.828,0.172,0.694,0.8,26911,4261,11729,1076,Tanir Rural
+New Ireland,Kavieng,Kavieng Urban,OCNPNG0040170104,0.885,0.8,0.9,Response,0.857,0.143,0.966,0.8,24151,3827,10523,966,Kavieng Urban
+New Ireland,Kavieng,Tikana Rural,OCNPNG0040170103,0.877,0.8,0.9,Response,0.852,0.148,0.93,0.8,59368,9392,25885,2375,Tikana Rural
+East New Britain,Gazelle,Vunadidir/Toma Rural,OCNPNG0040180105,0.959,0.95,1.0,Response,1.0,0.0,1.0,0.8,47675,7374,18014,1907,Toma/Vunadidir Rural
+East New Britain,Pomio,Melkoi Rural,OCNPNG0040180312,0.769,0.7,1.0,Anticipatory Action,0.491,0.509,1.0,0.8,18948,2926,7161,758,Melkoi Rural
+East New Britain,Pomio,West Pomio/Mamusi Rural,OCNPNG0040180314,0.773,0.7,1.0,Anticipatory Action,0.52,0.48,1.0,0.8,27537,4256,10406,1101,West Pomio Mamusi Rural
+East New Britain,Pomio,Central/Inland Pomio,OCNPNG0040180310,0.825,0.6,1.0,Response,0.828,0.172,1.0,0.8,38989,6028,14738,1560,Central Inland Pomio Rural
+East New Britain,Pomio,East Pomio Rural,OCNPNG0040180311,0.816,0.7,1.0,Response,0.671,0.329,1.0,0.8,12040,1865,4552,482,East Pomio Rural
+East New Britain,Pomio,Sinivit Rural,OCNPNG0040180313,0.908,0.8,1.0,Response,1.0,0.0,1.0,0.8,43499,6717,16414,1740,Sinivit Rural
+East New Britain,Gazelle,Lassul Baining Rural,OCNPNG0040180103,0.938,0.9,1.0,Response,1.0,0.0,1.0,0.8,29121,4502,11003,1165,Lassul Baining Rural
+East New Britain,Gazelle,Inland Baining Rural,OCNPNG0040180102,0.922,0.9,1.0,Response,1.0,0.0,1.0,0.8,55263,8530,20889,2211,Inland Baining Rural
+East New Britain,Kokopo,Bitapaka Rural,OCNPNG0040180206,0.939,0.7,1.0,Response,0.998,0.002,1.0,0.8,52874,8179,19988,2115,Bitapaka Rural
+East New Britain,Kokopo,Kokopo/Vunamami Urban,OCNPNG0040180208,0.981,0.9,1.0,Response,1.0,0.0,1.0,0.8,56108,8677,21205,2244,Kokopo/Vunamami Urban; Raluana Rural
+East New Britain,Kokopo,Raluana Rural,OCNPNG0040180209,0.991,0.95,1.0,Response,1.0,0.0,1.0,0.8,27484,4245,10389,1099,Raluana Rural
+East New Britain,Gazelle,Central Gazelle Rural,OCNPNG0040180101,0.958,0.9,1.0,Response,1.0,0.0,1.0,0.8,30143,4651,11398,1206,Central Gazelle Rural
+East New Britain,Gazelle,Livuan/Reimber Rural,OCNPNG0040180104,0.953,0.9,1.0,Response,1.0,0.0,0.993,0.8,74326,11483,28091,2973,Balanataman Rural; Livuan/Reimber Rural
+East New Britain,Rabaul,Balanataman Rural,OCNPNG0040180415,0.942,0.9,1.0,Response,1.0,0.0,1.0,0.8,28995,4481,10959,1160,Balanataman Rural; Livuan/Reimber Rural
+East New Britain,Rabaul,Rabaul Urban,OCNPNG0040180417,0.909,0.9,1.0,Response,1.0,0.0,1.0,0.8,10886,1684,4120,435,Rabaul Urban
+East New Britain,Rabaul,Kombiu Rural,OCNPNG0040180416,0.941,0.9,1.0,Response,1.0,0.0,1.0,0.8,21179,3281,8001,847,Kombiu Rural
+East New Britain,Rabaul,Watom Island Rural,OCNPNG0040180418,,,,No data,,,0.0,0.8,4504,695,2472,180,Watom Rural
+East New Britain,Kokopo,Duke of York Rural,OCNPNG0040180207,,,,No data,,,0.0,0.8,42333,6547,16007,1693,Duke Of York Rural
+West New Britain,Kandrian/Gloucester,Kandrian Inland Rural,OCNPNG0040190104,0.908,0.8,1.0,Response,1.0,0.0,1.0,0.9,22685,3706,11496,907,Kandrian Inland Rural
+West New Britain,Kandrian/Gloucester,Gloucester Rural,OCNPNG0040190102,0.935,0.9,1.0,Response,1.0,0.0,1.0,0.9,20046,3273,10154,802,Gloucester Rural
+West New Britain,Kandrian/Gloucester,Kandrian Coastal Rural,OCNPNG0040190103,0.947,0.8,1.0,Response,1.0,0.0,0.994,0.9,26991,4408,13677,1080,Kandrian Coastal Rural
+West New Britain,Kandrian/Gloucester,Kove/Kaliai Rural,OCNPNG0040190105,0.97,0.9,1.0,Response,1.0,0.0,1.0,0.9,31635,5168,16030,1265,Kove/Kaliai Rural
+West New Britain,Talasea,Talasea Rural,OCNPNG0040190211,0.937,0.8,1.0,Response,1.0,0.0,0.998,0.9,42467,6945,21520,1699,Kimbe Urban; Talasea Rural
+West New Britain,Talasea,Kimbe Urban,OCNPNG0040190209,0.97,0.9,1.0,Response,1.0,0.0,1.0,0.9,43652,7137,22122,1746,Kimbe Urban
+West New Britain,Kandrian/Gloucester,Gasmata Rural,OCNPNG0040190101,0.766,0.7,1.0,Anticipatory Action,0.525,0.475,0.998,0.9,19030,3111,9643,761,Gasmata Rural
+West New Britain,Talasea,Mosa Rural,OCNPNG0040190210,0.873,0.7,1.0,Response,0.935,0.065,1.0,0.9,54252,8867,27488,2170,Mosa Rural
+West New Britain,Talasea,Hoskins Rural,OCNPNG0040190208,0.965,0.9,1.0,Response,1.0,0.0,1.0,0.9,42572,6951,21571,1703,Hoskins Rural
+West New Britain,Talasea,Bialla Rural,OCNPNG0040190206,0.896,0.8,1.0,Response,1.0,0.0,0.975,0.9,81542,13322,59420,3262,Central Nakanai Rural; East Nakanai Rural
+West New Britain,Talasea,Bali/Witu Rural,OCNPNG0040190207,1.0,1.0,1.0,Response,1.0,0.0,0.923,0.9,29980,4895,15187,1199,Bali/Witu Rural
+Bougainville,South Bougainville,Bana,OCNPNG0040200311,0.798,0.7,0.9,Anticipatory Action,0.933,0.067,1.0,0.7,31849,5085,14470,1274,Bana; Panguna
+Bougainville,North Bougainville,Tinputz,OCNPNG0040200101,0.783,0.7,1.0,Anticipatory Action,0.541,0.459,1.0,0.7,27689,4416,12668,1108,Kunua; Tinputz; Torokina
+Bougainville,Central Bougainville,Wakunai,OCNPNG0040200207,0.819,0.8,1.0,Response,1.0,0.0,1.0,0.7,18864,3006,8636,755,Wakunai
+Bougainville,South Bougainville,Buin,OCNPNG0040200309,0.788,0.7,1.0,Anticipatory Action,0.617,0.383,0.999,0.7,53507,8531,24479,2140,Buin
+Bougainville,South Bougainville,Siwai,OCNPNG0040200310,0.785,0.7,1.0,Anticipatory Action,0.613,0.387,1.0,0.7,27935,4448,12783,1117,Siwai
+Bougainville,South Bougainville,Torokina,OCNPNG0040200312,0.779,0.7,1.0,Anticipatory Action,0.635,0.365,1.0,0.7,11762,1877,5379,470,Bana; Torokina
+Bougainville,North Bougainville,Kunua,OCNPNG0040200102,0.816,0.7,1.0,Response,0.958,0.042,0.98,0.7,21517,3428,9841,861,Kunua
+Bougainville,North Bougainville,Nissan,OCNPNG0040200105,1.0,1.0,1.0,Response,1.0,0.0,0.185,0.7,16397,2615,7503,656,Bana; Nissan; Wakunai
+Bougainville,North Bougainville,Attols,OCNPNG0040200106,1.0,1.0,1.0,Response,1.0,0.0,0.509,0.7,4482,716,2050,179,Atolls
+Bougainville,Central Bougainville,Arawa,OCNPNG0040200208,0.835,0.7,1.0,Response,0.957,0.043,1.0,0.7,127028,20259,52636,5081,Arawa; Bana; Buin; Buka; Kieta; Nissan; Panguna; Selau/Suir; Siwai; Tinputz; Torokina; Wakunai
+Bougainville,North Bougainville,Selau/Suir,OCNPNG0040200103,0.778,0.7,1.0,Anticipatory Action,0.521,0.479,1.0,0.7,26651,4248,12192,1066,Selau/Suir; Siwai
+Bougainville,North Bougainville,Buka,OCNPNG0040200104,0.875,0.8,1.0,Response,1.0,0.0,0.995,0.7,90127,14378,41232,3605,Atolls; Buka; Selau/Suir; Torokina; Wakunai
+Southern Highlands,Nipa/Kutubu,Mt Bosavi Rural,OCNPNG0020070723,0.865,0.7,1.0,Response,0.907,0.093,1.0,0.8,14631,2464,12091,585,Mt Bosavi Rural
+Morobe,Finschafen,Kotte Rural,OCNPNG0030120207,0.854,0.8,0.9,Response,1.0,0.0,1.0,0.8,24573,3498,11026,983,Kotte Rural
+Chimbu,Kerowagi,Upper/Lower Koronigl,OCNPNG0020100411,0.73,0.7,0.8,Anticipatory Action,0.131,0.869,1.0,0.7,51198,8472,27406,2048,Kerowagi Urban; Upper/Lower Koronigl Rural
+Chimbu,Kerowagi,Kerowagi Urban,OCNPNG0020100420,0.75,0.75,0.75,Anticipatory Action,0.0,1.0,1.0,0.7,15292,2518,8195,612,Kerowagi Urban
