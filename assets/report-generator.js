@@ -1,498 +1,186 @@
-/* ADAPt -- on-demand report generator (Report tab)
- * Fetches the dashboard's own published data files at click time and
- * compiles a self-contained briefing (charts, tables, direct links) from
- * whatever is currently live. Runs entirely client-side; nothing is
- * uploaded or stored anywhere. Kept self-contained (own fetches, own
- * formatting/classification helpers) rather than reaching into the main
- * inline script's globals, matching the pattern already used by the
- * other assets/*.js files in this repo.
+/* ADAPt -- on-demand CDI report generator (Report tab)
+ * Fetches the dashboard's published CDI files at click time and compiles a
+ * self-contained briefing: national summary, provinces, districts, LLGs,
+ * people by phase, climate drivers, trend, response guidance and links.
+ * Runs entirely in the browser; nothing is uploaded or stored.
  */
 (function () {
   'use strict';
 
-  var FILES = {
-    asis: 'data/asis_vhi_latest.json',
-    integrated: 'data/integrated_priority_latest.json',
-    cdiExample: 'data/cdi_example_latest.json',
-    cdiArchive: 'data/cdi_archive.json',
-    cdiPop: 'data/cdi_population_exposure.json',
-    liveProc: 'data/live_processing_status.json'
-  };
-
-  // Absolute base URL of the page this script is running on (e.g.
-  // "https://rudoq007.github.io/gisnexus/"), resolved at runtime rather than
-  // hardcoded so it keeps working under a custom domain, a fork, or local
-  // testing. The report's "direct links" must be absolute -- a relative
-  // "data/..." href only resolves correctly while viewed on the live page;
-  // once the browser turns the page into a PDF (Print / Save as PDF) or this
-  // script serialises a standalone HTML snapshot (Download report), the link
-  // needs to carry the full URL to still work outside that page context.
   var BASE_URL = new URL('.', window.location.href).href;
-
+  var FILES = {
+    example: 'data/cdi_example_latest.json',
+    archive: 'data/cdi_archive.json',
+    admin: 'data/cdi_admin_latest.json',
+    integrated: 'data/integrated_priority_latest.json'
+  };
   var LINKS = {
-    cdiExample: BASE_URL + 'data/cdi_example_latest.json',
-    cdiArchive: BASE_URL + 'data/cdi_archive.json',
-    cdiPop: BASE_URL + 'data/cdi_population_exposure.json',
-    asis: BASE_URL + 'data/asis_vhi_latest.json',
-    integratedJson: BASE_URL + 'data/integrated_priority_latest.json',
-    integratedCsv: BASE_URL + 'data/integrated_priority_latest.csv',
-    compositeTif: BASE_URL + 'data/composite_biophysical_stress.tif',
-    cdiPixelTif: BASE_URL + 'data/cdi_pixel_latest.tif',
-    liveWorkspace: 'https://png-climate-workspace-v1.streamlit.app/',
+    example: BASE_URL + 'data/cdi_example_latest.json',
+    archive: BASE_URL + 'data/cdi_archive.json',
+    admin: BASE_URL + 'data/cdi_admin_latest.json',
+    districtCsv: BASE_URL + 'data/cdi_district_latest.csv',
+    llgCsv: BASE_URL + 'data/cdi_llg_latest.csv',
+    pixelTif: BASE_URL + 'data/cdi_pixel_latest.tif',
     pngnws3mo: 'https://www.pngmet.gov.pg/nwp/three-months-forecasts/',
     pngnws31d: 'https://www.pngmet.gov.pg/nwp/thirty-one-days-forecasts/',
     earthmap: 'https://png.earthmap.org'
   };
-
+  var PALETTE = { Response: '#a50026', AA: '#fdae61', Readiness: '#abd9e9', Monitoring: '#cbd5e1', NoData: '#e2e8f0' };
+  var MONTHS = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var chartInstances = {};
+  var HR = '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">';
 
-  // ---------- small self-contained helpers (deliberately not shared with the main script) ----------
-
-  function esc(s) {
-    return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-
-  function fmtInt(n) {
-    if (n === null || n === undefined || Number.isNaN(n)) return 'No data';
-    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
-  }
-
-  function fmt2(n) {
-    if (n === null || n === undefined || Number.isNaN(n)) return 'No data';
-    return Number(n).toFixed(2);
-  }
-
-  function fmt1(n) {
-    if (n === null || n === undefined || Number.isNaN(n)) return 'No data';
-    return Number(n).toFixed(1);
-  }
-
-  function pct(part, total, digits) {
-    if (!total) return 'No data';
-    return (part / total * 100).toFixed(digits === undefined ? 1 : digits) + '%';
-  }
-
-  function monthLabel(pair) {
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    if (!Array.isArray(pair) || pair.length < 2) return '';
-    return months[pair[1] - 1] + ' ' + pair[0];
-  }
-
-  function cdiPhase(v) {
-    if (v === null || v === undefined || Number.isNaN(v)) return { label: 'No data', cls: 'NoData' };
-    if (v >= 0.80) return { label: 'Response threshold', cls: 'Response' };
-    if (v >= 0.60) return { label: 'Anticipatory Action', cls: 'AA' };
-    if (v >= 0.40) return { label: 'Readiness', cls: 'Readiness' };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function f2(n) { return n == null || isNaN(n) ? '--' : Number(n).toFixed(2); }
+  function fi(n) { return n == null || isNaN(n) ? '--' : Math.round(n).toLocaleString('en-US'); }
+  function pc(a, b) { return b ? (100 * a / b).toFixed(1) + '%' : '--'; }
+  function phase(v) {
+    if (v == null || isNaN(v)) return { label: 'No data', cls: 'NoData' };
+    if (v >= 0.8) return { label: 'Response', cls: 'Response' };
+    if (v >= 0.6) return { label: 'Anticipatory Action', cls: 'AA' };
+    if (v >= 0.4) return { label: 'Readiness', cls: 'Readiness' };
     return { label: 'Monitoring', cls: 'Monitoring' };
   }
+  function pill(v) { var p = phase(v); return '<span class="pill ' + p.cls + '">' + p.label + '</span>'; }
+  function pillLabel(l) { var cls = l === 'Response' ? 'Response' : l === 'Anticipatory Action' ? 'AA' : l === 'Readiness' ? 'Readiness' : l === 'Monitoring' ? 'Monitoring' : 'NoData'; return '<span class="pill ' + cls + '">' + esc(l) + '</span>'; }
+  function mlabel(m) { return m ? MONTHS[m[1]] + ' ' + m[0] : ''; }
+  function flagLabel(f) { return f >= 1 ? 'Declared' : f >= 0.5 ? 'Alert' : 'OK'; }
 
-  function asisClass(v) {
-    if (v === null || v === undefined || Number.isNaN(v)) return { label: 'No data', cls: 'NoData' };
-    if (v < 0.35) return { label: 'High vegetation stress', cls: 'High' };
-    if (v < 0.50) return { label: 'Moderate vegetation stress', cls: 'Moderate' };
-    if (v < 0.65) return { label: 'Watch / below-normal', cls: 'Watch' };
-    return { label: 'Lower current stress', cls: 'Lower' };
+  function fetchJson(url, optional) {
+    return fetch(url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now()).then(function (r) {
+      if (!r.ok) throw new Error(url + ' (' + r.status + ')');
+      return r.json();
+    }).catch(function (e) { if (optional) return null; throw e; });
   }
-
-  function compositeClassOf(v) {
-    if (v === null || v === undefined || Number.isNaN(v)) return { label: 'No data', cls: 'NoData' };
-    if (v >= 80) return { label: 'Severe', cls: 'Severe' };
-    if (v >= 60) return { label: 'High', cls: 'High' };
-    if (v >= 40) return { label: 'Moderate', cls: 'Moderate' };
-    if (v >= 20) return { label: 'Watch', cls: 'Watch' };
-    return { label: 'Low', cls: 'Low' };
-  }
-
-  var PALETTE = {
-    Severe: '#7f0000', High: '#d73027', Moderate: '#fc8d59', Watch: '#fee08b', Low: '#91cf60', Lower: '#dcfce7',
-    Response: '#a50026', AA: '#fdae61', Readiness: '#abd9e9', Monitoring: '#e2e8f0', NoData: '#cbd5e1'
-  };
-
-  function fetchJson(url) {
-    return fetch(url + (url.indexOf('?') === -1 ? '?v=' : '&v=') + Date.now())
-      .then(function (r) { if (!r.ok) throw new Error(url + ' ' + r.status); return r.json(); });
-  }
-
   function fetchAll() {
-    var keys = Object.keys(FILES);
-    return Promise.all(keys.map(function (key) {
-      return fetchJson(FILES[key]).then(function (d) { return { key: key, ok: true, data: d }; })
-        .catch(function (e) { return { key: key, ok: false, error: e.message }; });
-    })).then(function (results) {
-      var out = { _missing: [] };
-      results.forEach(function (r) {
-        out[r.key] = r.ok ? r.data : null;
-        if (!r.ok) out._missing.push(r.key);
-      });
-      return out;
+    return Promise.all([fetchJson(FILES.example), fetchJson(FILES.archive), fetchJson(FILES.admin, true), fetchJson(FILES.integrated, true)])
+      .then(function (r) { return { example: r[0], archive: r[1], admin: r[2], integrated: r[3] }; });
+  }
+
+  function provinces(data) {
+    var ex = data.example.provinces || {}, hist = data.archive.cdi_history || {}, adm = {};
+    ((data.admin && data.admin.provinces) || []).forEach(function (p) { adm[p.name] = p; });
+    return Object.keys(ex).map(function (n) {
+      var h = hist[n] || [], a = adm[n] || {};
+      return { name: n, cdi: ex[n].cdi, prev: h.length > 1 ? h[h.length - 2] : null, ind: ex[n], adm: a };
+    }).sort(function (a, b) { return b.cdi - a.cdi; });
+  }
+  function national(data) {
+    var tl = data.archive.timeline, hist = data.archive.cdi_history, names = Object.keys(hist);
+    return tl.map(function (m, i) {
+      var v = names.map(function (n) { return hist[n][i]; }).filter(function (x) { return x != null; });
+      return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null;
     });
   }
-
-  // ---------- report sections ----------
 
   function buildHeader(data) {
-    var now = new Date();
-    var missingNote = '';
-    if (data._missing.length) {
-      missingNote = '<p class="small" style="color:#b45309">Not currently published, skipped in this report: ' +
-        esc(data._missing.join(', ')) + '.</p>';
+    var ex = data.example;
+    return '<span class="eyebrow">ADAPt CDI briefing</span><h2>Combined Drought Index: ' + esc(ex.reporting_month_label || '') + ' report</h2>' +
+      '<p class="small">Observations: ' + esc(ex.observation_month_label || '--') + ' · Forecast window: ' + esc(ex.forecast_window_label || '--') +
+      ' · Generated ' + esc(new Date().toISOString().slice(0, 16).replace('T', ' ')) + ' UTC from ' + esc(BASE_URL) + '</p>';
+  }
+  function buildSummary(data, rows) {
+    var nat = rows.reduce(function (a, r) { return a + r.cdi; }, 0) / rows.length;
+    var ns = national(data), prev = ns.length > 1 ? ns[ns.length - 2] : null;
+    var c = function (l) { return rows.filter(function (r) { return phase(r.cdi).label === l; }).length; };
+    var adm = data.admin, s = '';
+    s += '<h3>Summary</h3><ul>';
+    s += '<li>National average CDI <b>' + f2(nat) + '</b> ' + pill(nat) + (prev != null ? ' (last month ' + f2(prev) + ')' : '') + '.</li>';
+    s += '<li><b>' + c('Response') + '</b> of ' + rows.length + ' provinces at the Response threshold, <b>' + c('Anticipatory Action') + '</b> in Anticipatory Action, <b>' + c('Readiness') + '</b> in Readiness.</li>';
+    if (adm) {
+      var sd = adm.summary.districts, sl = adm.summary.llgs;
+      s += '<li><b>' + sd.Response.units + '</b> of ' + adm.districts.length + ' districts and <b>' + sl.Response.units + '</b> of ' + adm.llgs.length + ' LLGs have an average CDI at Response level.</li>';
+      s += '<li>About <b>' + fi(sl.Response.population_2024) + '</b> people (NSO 2024) live in Response-level LLGs and <b>' + fi(sl['Anticipatory Action'].population_2024) + '</b> in Anticipatory Action LLGs.</li>';
     }
-    return '' +
-      '<span class="eyebrow">FAO ADAPt · generated report</span>' +
-      '<h2 style="margin-top:6px">ADAPt drought &amp; food-security briefing</h2>' +
-      '<p class="small" style="color:#64748b">Generated ' + esc(now.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' })) +
-      ' from ADAPt’s live published data (rudoq007.github.io/gisnexus). For use in El Niño drought preparedness and response planning &mdash; does not replace official declarations by mandated national authorities or field assessment by DAL, NARI, NDC, provincial or district teams.</p>' +
-      missingNote;
+    var top = rows.slice(0, 5).map(function (r) { return esc(r.name) + ' (' + f2(r.cdi) + ')'; }).join(', ');
+    s += '<li>Highest provinces: ' + top + '.</li></ul>';
+    return s;
   }
-
-  function buildExecutiveSummary(data) {
-    var cdiProvinces = (data.cdiExample && data.cdiExample.provinces) || {};
-    var names = Object.keys(cdiProvinces);
-    var counts = { Response: 0, AA: 0, Readiness: 0, Monitoring: 0, NoData: 0 };
-    var sumCdi = 0, nCdi = 0;
-    names.forEach(function (name) {
-      var v = cdiProvinces[name] && cdiProvinces[name].cdi;
-      var ph = cdiPhase(v);
-      counts[ph.cls] = (counts[ph.cls] || 0) + 1;
-      if (v !== null && v !== undefined && !Number.isNaN(v)) { sumCdi += v; nCdi++; }
-    });
-    var avgCdi = nCdi ? sumCdi / nCdi : null;
-
-    var pop = data.cdiPop && data.cdiPop.national;
-    var popResponse = pop && pop.population_by_phase ? pop.population_by_phase['Response threshold'] : null;
-    var popAA = pop && pop.population_by_phase ? pop.population_by_phase['Anticipatory Action'] : null;
-
-    var enso = data.integrated && data.integrated.enso_iod_context;
-
-    var kpis = [
-      { label: 'National average CDI', value: avgCdi === null ? 'No data' : fmt2(avgCdi), sub: nCdi + ' of ' + names.length + ' provinces reporting' },
-      { label: 'Provinces at Response threshold', value: fmtInt(counts.Response), sub: 'CDI ≥ 0.80' },
-      { label: 'Provinces at Anticipatory Action', value: fmtInt(counts.AA), sub: 'CDI 0.60–0.79' },
-      { label: 'People at Response threshold', value: popResponse === null || popResponse === undefined ? 'No data' : fmtInt(popResponse), sub: 'CDI-linked population exposure' },
-      { label: 'People at Anticipatory Action', value: popAA === null || popAA === undefined ? 'No data' : fmtInt(popAA), sub: 'CDI-linked population exposure' },
-      { label: 'ENSO state (ONI)', value: enso ? esc(enso.enso_phase) + ' (' + fmt1(enso.oni_value) + ')' : 'No data', sub: enso ? esc(enso.oni_period) : '' }
-    ];
-
-    var kpiHtml = kpis.map(function (k) {
-      return '<div style="flex:1;min-width:180px;padding:12px 14px;border-radius:12px;border:1px solid #e2e8f0;background:#f8fafc">' +
-        '<div class="small" style="color:#64748b">' + esc(k.label) + '</div>' +
-        '<div style="font-weight:800;font-size:22px;color:#1e293b;margin-top:4px">' + k.value + '</div>' +
-        '<div class="small" style="color:#94a3b8">' + esc(k.sub) + '</div></div>';
-    }).join('');
-
-    return '<h3>Executive summary</h3>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 16px">' + kpiHtml + '</div>';
-  }
-
-  function buildCdiSection(data) {
-    var ex = data.cdiExample;
-    var cdiProvinces = (ex && ex.provinces) || {};
-    var rows = Object.keys(cdiProvinces).map(function (name) {
-      var v = cdiProvinces[name].cdi;
-      return { name: name, cdi: v, phase: cdiPhase(v) };
-    }).sort(function (a, b) { return (b.cdi || -1) - (a.cdi || -1); });
-
-    var tableRows = rows.map(function (r) {
-      return '<tr><td>' + esc(r.name) + '</td><td>' + (r.cdi === null || r.cdi === undefined ? 'No data' : fmt2(r.cdi)) +
-        '</td><td><span class="pill ' + r.phase.cls + '">' + esc(r.phase.label) + '</span></td></tr>';
-    }).join('');
-
-    var labelsLine = ex ? ('Reporting month: ' + esc(ex.reporting_month_label || '—') +
-      ' &middot; Observation month: ' + esc(ex.observation_month_label || '—') +
-      ' &middot; Forecast window: ' + esc(ex.forecast_window_label || '—')) : '';
-
-    return '<h3>Combined Drought Index (CDI) by province</h3>' +
-      '<p class="small" style="color:#64748b">' + labelsLine + '</p>' +
-      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportCdiChart"></canvas></div>' +
-      '<div class="tablewrap"><table><thead><tr><th>Province</th><th>CDI</th><th>Phase</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>' +
-      buildCdiTrend(data);
-  }
-
-  function buildCdiTrend(data) {
-    var archive = data.cdiArchive;
-    if (!archive || !archive.timeline || !archive.cdi_history) return '';
-    var timeline = archive.timeline;
-    var provinces = Object.keys(archive.cdi_history);
-    if (!provinces.length) return '';
-    var lastYear = timeline[timeline.length - 1][0];
-    var idxThisYear = [];
-    timeline.forEach(function (pair, i) { if (pair[0] === lastYear) idxThisYear.push(i); });
-    var labels = idxThisYear.map(function (i) { return monthLabel(timeline[i]); });
-    var avgs = idxThisYear.map(function (i) {
-      var sum = 0, n = 0;
-      provinces.forEach(function (p) {
-        var v = archive.cdi_history[p][i];
-        if (v !== null && v !== undefined && !Number.isNaN(v)) { sum += v; n++; }
-      });
-      return n ? sum / n : null;
-    });
-    return '<h4 style="margin-top:18px">National average CDI trend, ' + lastYear + '</h4>' +
-      '<div style="height:260px;position:relative"><canvas id="reportCdiTrendChart" data-labels=\'' + esc(JSON.stringify(labels)) + '\' data-values=\'' + esc(JSON.stringify(avgs)) + '\'></canvas></div>';
-  }
-
-  function buildAsisSection(data) {
-    var asis = data.asis;
-    if (!asis) return '<h3>FAO ASIS/GIEWS vegetation screening</h3><p class="note">Not currently published.</p>';
-    var rows = (asis.provinces || []).slice().sort(function (a, b) { return (a.mean === null || a.mean === undefined ? 999 : a.mean) - (b.mean === null || b.mean === undefined ? 999 : b.mean); });
-    var counts = { High: 0, Moderate: 0, Watch: 0, Lower: 0, NoData: 0 };
-    var sum = 0, n = 0;
+  function buildProvinces(data, rows) {
+    var s = '<h3>Provinces</h3><div style="height:520px"><canvas id="reportCdiChart"></canvas></div>';
+    s += '<table><thead><tr><th>Province</th><th>CDI</th><th>Phase</th><th>Last month</th><th>Districts at Response</th><th>LLGs at Response</th><th>Population 2024</th><th>People in Response LLGs</th></tr></thead><tbody>';
     rows.forEach(function (r) {
-      var c = asisClass(r.mean);
-      counts[c.cls]++;
-      if (r.mean !== null && r.mean !== undefined) { sum += r.mean; n++; }
+      var a = r.adm;
+      s += '<tr><td><b>' + esc(r.name) + '</b></td><td>' + f2(r.cdi) + '</td><td>' + pill(r.cdi) + '</td><td>' + f2(r.prev) + '</td><td>' +
+        (a.district_count != null ? a.districts_in_response + ' of ' + a.district_count : '--') + '</td><td>' +
+        (a.llg_count != null ? a.llgs_in_response + ' of ' + a.llg_count : '--') + '</td><td>' + fi(a.population_2024) + '</td><td>' +
+        fi(a.population_by_llg_phase && a.population_by_llg_phase.Response) + '</td></tr>';
     });
-    var mean = n ? sum / n : null;
-    var tableRows = rows.map(function (r, i) {
-      var c = asisClass(r.mean);
-      return '<tr><td>' + (i + 1) + '</td><td>' + esc(r.province) + '</td><td>' + (r.mean === null || r.mean === undefined ? 'No data' : fmt2(r.mean)) +
-        '</td><td><span class="pill ' + c.cls + '">' + esc(c.label) + '</span></td></tr>';
-    }).join('');
-
-    return '<h3>FAO ASIS/GIEWS vegetation screening</h3>' +
-      '<p class="small" style="color:#64748b">Dekad ' + esc(asis.dekad_label || '—') + ' &middot; generated ' + esc(asis.generated_utc || '—') +
-      ' &middot; national mean vegetation index ' + (mean === null ? 'No data' : fmt2(mean)) +
-      ' &middot; High ' + counts.High + ', Moderate ' + counts.Moderate + ', Watch ' + counts.Watch + ', Lower ' + counts.Lower + '</p>' +
-      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportAsisChart" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, mean: r.mean }; }))) + '\'></canvas></div>' +
-      '<div class="tablewrap"><table><thead><tr><th>Rank</th><th>Province</th><th>VHI</th><th>Class</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
+    return s + '</tbody></table>';
   }
-
-  function buildEnsoIodSection(data) {
-    var e = data.integrated && data.integrated.enso_iod_context;
-    if (!e) return '';
-    return '<h3>Climate driver context (ENSO / IOD)</h3>' +
-      '<div class="metric">' +
-      '<div><span class="muted">ENSO state (ONI)</span><b>' + esc(e.enso_phase || '—') + ' (' + fmt1(e.oni_value) + ', ' + esc(e.oni_period || '') + ')</b></div>' +
-      '<div><span class="muted">IOD state (DMI)</span><b>' + esc(e.iod_phase || '—') + ' (' + fmt1(e.dmi_value) + ', ' + esc(e.dmi_period || '') + ')</b></div>' +
-      '<div><span class="muted">Composite weighting</span><b>' + (data.integrated && data.integrated.composite_weights ? Object.keys(data.integrated.composite_weights).map(function (k) { return k + ' ' + data.integrated.composite_weights[k]; }).join(', ') : '—') + '</b></div>' +
-      '</div>' +
-      '<p class="small" style="color:#64748b">' + esc(e.source_note || '') + '</p>';
+  function topTable(list, level, n, asc) {
+    var l = list.filter(function (r) { return r.cdi_mean != null; }).sort(function (a, b) { return asc ? a.cdi_mean - b.cdi_mean : b.cdi_mean - a.cdi_mean; }).slice(0, n);
+    return '<table><thead><tr><th>' + (level === 'llg' ? 'LLG' : 'District') + '</th>' + (level === 'llg' ? '<th>District</th>' : '') + '<th>Province</th><th>Mean CDI</th><th>Phase</th><th>Population 2024</th></tr></thead><tbody>' +
+      l.map(function (r) { return '<tr><td><b>' + esc(r.name) + '</b></td>' + (level === 'llg' ? '<td>' + esc(r.district) + '</td>' : '') + '<td>' + esc(r.province) + '</td><td>' + f2(r.cdi_mean) + '</td><td>' + pillLabel(r.phase) + '</td><td>' + fi(r.population_2024) + '</td></tr>'; }).join('') + '</tbody></table>';
   }
-
-  function buildCompositeSection(data) {
-    var integ = data.integrated;
-    if (!integ) return '<h3>Composite biophysical stress &amp; population exposure</h3><p class="note">Not currently published.</p>';
-    var rows = (integ.provinces || []).slice().sort(function (a, b) { return (b.composite_biophysical_stress_mean || -1) - (a.composite_biophysical_stress_mean || -1); });
-    var nat = integ.national_summary || {};
-    var tableRows = rows.map(function (r) {
-      var c = compositeClassOf(r.composite_biophysical_stress_mean);
-      return '<tr><td>' + esc(r.province) + '</td><td>' + fmt1(r.composite_biophysical_stress_mean) + '</td><td><span class="pill ' + c.cls + '">' + esc(c.label) +
-        '</span></td><td>' + fmtInt(r.population_high_priority) + '</td><td>' + fmtInt(r.population_exposed_total) + '</td></tr>';
-    }).join('');
-
-    return '<h3>Composite biophysical stress &amp; population exposure</h3>' +
-      '<p class="note">A different, complementary framework from the CDI phase above (own weighting, no ENSO/IOD; drought window ' + esc(integ.drought_window || '—') + ', frost window ' + esc(integ.frost_window || '—') + ', ASIS date ' + esc(integ.asis_date || '—') + '). Population figures here should not be summed with the CDI-phase population table below.</p>' +
-      '<div class="metric">' +
-      '<div><span class="muted">Population exposed</span><b>' + fmtInt(nat.total_population_exposed) + '</b></div>' +
-      '<div><span class="muted">High-priority population</span><b>' + fmtInt(nat.total_population_high_priority) + '</b></div>' +
-      '<div><span class="muted">Cropland stressed (ha)</span><b>' + fmtInt(nat.total_cropland_stressed_ha) + '</b></div>' +
-      '</div>' +
-      '<div style="height:' + Math.max(260, rows.length * 24 + 40) + 'px;position:relative"><canvas id="reportCompositeChart" data-rows=\'' + esc(JSON.stringify(rows.map(function (r) { return { province: r.province, v: r.composite_biophysical_stress_mean }; }))) + '\'></canvas></div>' +
-      '<div class="tablewrap"><table><thead><tr><th>Province</th><th>Composite stress</th><th>Class</th><th>Pop., high priority</th><th>Pop., exposed</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
+  function buildSubnational(data) {
+    var adm = data.admin;
+    if (!adm) return '<h3>Districts and LLGs</h3><p class="small">District and LLG figures are not published yet.</p>';
+    var s = '<h3>Districts</h3><p class="small">Average of the ~5 km CDI pixels inside each NSO district. Half of the CDI (El Niño, Indian Ocean, rainfall forecast) is the same across a province, so district differences come from rainfall, soil moisture and vegetation.</p>';
+    s += '<h4>15 highest districts</h4>' + topTable(adm.districts, 'district', 15, false);
+    s += '<h4>10 lowest districts</h4>' + topTable(adm.districts, 'district', 10, true);
+    s += '<h3>LLGs</h3><h4>20 highest LLGs</h4>' + topTable(adm.llgs, 'llg', 20, false);
+    s += '<p class="small">Full tables: <a href="' + LINKS.districtCsv + '">districts (CSV)</a> · <a href="' + LINKS.llgCsv + '">LLGs (CSV)</a>, or the District and LLG tabs of the live dashboard.</p>';
+    return s;
   }
-
-  function buildPopulationSection(data) {
-    var cdiPop = data.cdiPop;
-    if (!cdiPop) return '<h3>CDI-linked population exposure by province</h3><p class="note">Not currently published (depends on the pixel-level CDI raster having been generated at least once).</p>';
-    var nat = cdiPop.national || {};
-    var phaseOrder = [['Response threshold', 'Response'], ['Anticipatory Action', 'AA'], ['Readiness', 'Readiness'], ['Monitoring', 'Monitoring'], ['No data', 'NoData']];
-    var byPhase = nat.population_by_phase || {};
-
-    var provinces = Object.keys(cdiPop.provinces || {}).sort(function (a, b) {
-      var pa = cdiPop.provinces[a].population_by_phase || {};
-      var pb = cdiPop.provinces[b].population_by_phase || {};
-      return (pb['Response threshold'] || 0) - (pa['Response threshold'] || 0);
-    });
-    var tableRows = provinces.map(function (name) {
-      var p = cdiPop.provinces[name];
-      var ph = p.population_by_phase || {};
-      return '<tr><td>' + esc(name) + '</td><td>' + fmtInt(p.total_population) + '</td><td>' + fmtInt(ph['Response threshold']) +
-        '</td><td>' + fmtInt(ph['Anticipatory Action']) + '</td><td>' + fmtInt(ph['Readiness']) + '</td><td>' + fmtInt(ph['No data']) + '</td></tr>';
-    }).join('');
-
-    return '<h3>CDI-linked population exposure by province</h3>' +
-      '<p class="small" style="color:#64748b">Generated ' + esc(cdiPop.generated_utc || '—') + ' &middot; ' + fmtInt(nat.total_population) + ' people, ' +
-      fmtInt(nat.total_households) + ' households, ' + fmtInt(nat.census_units) + ' census units (' + pct(nat.census_units_no_coverage, nat.census_units) + ' with no CDI-raster coverage).</p>' +
-      '<div style="height:220px;position:relative"><canvas id="reportPopPhaseChart" data-values=\'' + esc(JSON.stringify(phaseOrder.map(function (p) { return byPhase[p[0]] || 0; }))) + '\'></canvas></div>' +
-      '<div class="tablewrap"><table><thead><tr><th>Province</th><th>Total population</th><th>Response threshold</th><th>Anticipatory Action</th><th>Readiness</th><th>No coverage</th></tr></thead><tbody>' + tableRows + '</tbody></table></div>';
+  function buildPeople(data) {
+    var adm = data.admin; if (!adm) return '';
+    var sl = adm.summary.llgs, ph = ['Response', 'Anticipatory Action', 'Readiness', 'Monitoring', 'No data'];
+    var tot = ph.reduce(function (a, p) { return a + ((sl[p] && sl[p].population_2024) || 0); }, 0);
+    var s = '<h3>People by CDI phase</h3><p class="small">NSO 2024 census population, grouped by the phase of the LLG each person lives in.</p><div style="height:220px"><canvas id="reportPopPhaseChart" data-values="' + esc(JSON.stringify(ph.map(function (p) { return (sl[p] && sl[p].population_2024) || 0; }))) + '"></canvas></div>';
+    s += '<table><thead><tr><th>Phase</th><th>LLGs</th><th>People</th><th>Share</th></tr></thead><tbody>' + ph.filter(function (p) { return sl[p] && sl[p].units; }).map(function (p) {
+      return '<tr><td>' + pillLabel(p) + '</td><td>' + sl[p].units + '</td><td>' + fi(sl[p].population_2024) + '</td><td>' + pc(sl[p].population_2024, tot) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+    return s;
   }
-
-  function buildResponseGuidance() {
-    return '<h3>CDI-based response guidance</h3>' +
-      '<div class="tablewrap"><table><thead><tr><th>CDI phase</th><th>Range</th><th>Recommended action</th></tr></thead><tbody>' +
-      '<tr><td><span class="pill Readiness">Readiness</span></td><td>0.40–0.59</td><td>Maintain preparedness while supporting higher-phase operations elsewhere.</td></tr>' +
-      '<tr><td><span class="pill AA">Anticipatory Action</span></td><td>0.60–0.79</td><td>Activate/scale anticipatory action now; complete field verification and prioritize hotspots.</td></tr>' +
-      '<tr><td><span class="pill Response">Response threshold</span></td><td>0.80–1.00</td><td>Urgently verify severity and impacts; transition to response only where the CDI signal and field evidence converge.</td></tr>' +
-      '</tbody></table></div>' +
-      '<p class="small" style="color:#64748b">Per the FAO PNG Food Security &amp; Agriculture Sectoral Plan (Table 1). The CDI phase is ADAPt’s primary, government-endorsed trigger; ASIS/GIEWS screening is a complementary, higher-frequency layer.</p>';
+  function buildDrivers(data, rows) {
+    var ctx = data.integrated && data.integrated.enso_iod_context, i = rows[0] ? rows[0].ind : {};
+    var s = '<h3>Climate drivers</h3><div class="metric">';
+    s += '<div><span class="small">El Niño (ENSO)</span><br><b>' + esc(ctx ? ctx.enso_phase : '--') + '</b><br><span class="small">' + (ctx ? 'ONI ' + f2(ctx.oni_value) + ' (' + esc(ctx.oni_period) + ')' : '') + ' · CDI flag ' + flagLabel(i.enso) + '</span></div>';
+    s += '<div><span class="small">Indian Ocean Dipole</span><br><b>' + esc(ctx ? ctx.iod_phase : '--') + '</b><br><span class="small">' + (ctx ? 'DMI ' + f2(ctx.dmi_value) + ' (' + esc(ctx.dmi_period) + ')' : '') + ' · CDI flag ' + flagLabel(i.iod) + '</span></div>';
+    s += '<div><span class="small">Added to every province</span><br><b>' + f2(0.2 * (i.enso || 0) + 0.1 * (i.iod || 0)) + '</b><br><span class="small">of a maximum 0.30</span></div></div>';
+    return s;
   }
-
-  function buildLinksSection(data) {
-    function dataLink(url, label) { return '<a class="btn" href="' + url + '" target="_blank" rel="noopener">' + esc(label) + '</a>'; }
-    function tabLink(panel, label) { return '<button class="btn no-print" data-goto-tab="' + panel + '">' + esc(label) + '</button>'; }
-    function extLink(url, label) { return '<a class="btn" href="' + url + '" target="_blank" rel="noopener">' + esc(label) + '</a>'; }
-
-    var stale = '';
-    if (data.liveProc && data.liveProc.generated_utc) {
-      var parsed = Date.parse(data.liveProc.generated_utc.replace(' UTC', 'Z').replace(' ', 'T'));
-      if (!Number.isNaN(parsed)) {
-        var days = Math.round((Date.now() - parsed) / 86400000);
-        if (days > 14) {
-          stale = '<p class="small" style="color:#b45309">Live processing workspace status last recorded ' + esc(data.liveProc.generated_utc) +
-            ' — roughly ' + days + ' days old. Treat as background context only until refreshed.</p>';
-        }
-      }
-    }
-
-    return '<h3>Direct links to data and maps</h3>' +
-      '<p class="small" style="color:#64748b">Downloads pull directly from this dashboard’s published <code>data/</code> folder; they reflect whatever is live right now.</p>' +
-      '<div class="embed-actions" style="margin-bottom:10px">' +
-      dataLink(LINKS.integratedCsv, 'Per-province summary (CSV)') +
-      dataLink(LINKS.integratedJson, 'Composite priority data (JSON)') +
-      dataLink(LINKS.cdiExample, 'CDI by province (JSON)') +
-      dataLink(LINKS.cdiArchive, 'CDI historical archive (JSON)') +
-      dataLink(LINKS.cdiPop, 'CDI population exposure (JSON)') +
-      dataLink(LINKS.asis, 'ASIS/GIEWS screening (JSON)') +
-      dataLink(LINKS.compositeTif, 'Composite stress raster (GeoTIFF)') +
-      dataLink(LINKS.cdiPixelTif, 'Pixel-level CDI raster (GeoTIFF, if published)') +
-      '</div>' +
-      '<div class="embed-actions" style="margin-bottom:10px">' +
-      tabLink('mapPanel', 'Open Interactive Map tab') +
-      tabLink('provincial', 'Open Provincial Data tab') +
-      tabLink('about', 'Open About ADAPt (CDI methodology)') +
-      '</div>' +
-      '<div class="embed-actions">' +
-      extLink(LINKS.liveWorkspace, 'Live processing workspace') +
-      extLink(LINKS.pngnws3mo, 'PNGNWS 3-month forecast') +
-      extLink(LINKS.pngnws31d, 'PNGNWS 31-day forecast') +
-      extLink(LINKS.earthmap, 'FAO EarthMap') +
-      '</div>' + stale;
+  function buildTrend(data) {
+    var ns = national(data), tl = data.archive.timeline, n = Math.min(60, ns.length);
+    return '<h3>National average CDI, last 5 years</h3><div style="height:260px"><canvas id="reportCdiTrendChart" data-labels="' + esc(JSON.stringify(tl.slice(-n).map(mlabel))) + '" data-values="' + esc(JSON.stringify(ns.slice(-n).map(function (v) { return v == null ? null : +v.toFixed(3); }))) + '"></canvas></div>';
   }
-
-  function buildCaveats(data) {
-    var integ = data.integrated;
-    var cdiPop = data.cdiPop;
-    var compositeGap = '';
-    if (integ && integ.provinces) {
-      var totalCu = 0, totalNc = 0;
-      integ.provinces.forEach(function (p) { totalCu += p.census_units || 0; totalNc += p.census_units_no_coverage || 0; });
-      compositeGap = pct(totalNc, totalCu);
-    }
-    var cdiGap = cdiPop && cdiPop.national ? pct(cdiPop.national.census_units_no_coverage, cdiPop.national.census_units) : 'No data';
-    return '<h3>Data caveats</h3>' +
-      '<p class="note">The CDI framework (About ADAPt / Interactive Map) and the composite-stress framework (Provincial Data) use the same PNG NSO 2024 census-unit population source but classify people against different rasters over different windows &mdash; their population figures should not be added together. Roughly ' + esc(compositeGap) +
-      ' of census units fall outside composite-stress raster coverage and roughly ' + esc(cdiGap) +
-      ' of the population falls outside CDI-pixel coverage; these gaps are <b>unknown</b>, not confirmed low-risk, and are a priority for field verification. The composite-stress raster is ~5 km/pixel — a national screening resolution, not survey-grade. All figures above are pulled live from this dashboard’s own published data files at the moment this report was generated.</p>';
+  function buildGuidance() {
+    return '<h3>What each phase means</h3><table><thead><tr><th>Phase</th><th>Recommended action</th></tr></thead><tbody>' +
+      '<tr><td>' + pillLabel('Readiness') + ' 0.40–0.59</td><td>Maintain preparedness while supporting higher-phase operations elsewhere.</td></tr>' +
+      '<tr><td>' + pillLabel('Anticipatory Action') + ' 0.60–0.79</td><td>Activate/scale anticipatory action now; complete field verification and prioritise hotspots.</td></tr>' +
+      '<tr><td>' + pillLabel('Response') + ' 0.80–1.00</td><td>Urgently verify severity and impacts; transition to response only where the CDI signal and field evidence converge.</td></tr></tbody></table>' +
+      '<p class="small">Source: FAO PNG Food Security &amp; Agriculture Sectoral Plan (Aug 2026), Table 1.</p>';
   }
-
+  function buildLinks() {
+    return '<h3>Data and links</h3><div class="embed-actions">' +
+      '<a class="btn" href="' + LINKS.example + '">Province CDI (JSON)</a><a class="btn" href="' + LINKS.archive + '">CDI history since 1996 (JSON)</a>' +
+      '<a class="btn" href="' + LINKS.districtCsv + '">Districts (CSV)</a><a class="btn" href="' + LINKS.llgCsv + '">LLGs (CSV)</a>' +
+      '<a class="btn" href="' + LINKS.pixelTif + '">CDI pixels (GeoTIFF)</a><a class="btn" href="' + LINKS.pngnws3mo + '">PNGNWS 3-month outlook</a>' +
+      '<a class="btn" href="' + LINKS.pngnws31d + '">PNGNWS 31-day forecast</a><a class="btn" href="' + LINKS.earthmap + '">EarthMap</a></div>';
+  }
+  function buildCaveats() {
+    return '<h3>Notes</h3><ul class="small">' +
+      '<li>The CDI flags where climate signals are converging strongly enough to warrant action. It does not by itself confirm crop failure or food insecurity; field verification decides the response.</li>' +
+      '<li>District and LLG values are averages of ~5 km pixels and can differ from the official province CDI, which is calculated from province-average inputs.</li>' +
+      '<li>Boundaries: PNG NSO 2011 census. Population: NSO 2024 census-unit estimates placed in 2011 LLGs.</li></ul>';
+  }
   function buildReportHtml(data) {
-    return '<div id="reportBody">' +
-      buildHeader(data) +
-      buildExecutiveSummary(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildCdiSection(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildAsisSection(data) +
-      buildEnsoIodSection(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildCompositeSection(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildPopulationSection(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildResponseGuidance() +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildLinksSection(data) +
-      '<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0">' +
-      buildCaveats(data) +
-      '</div>';
+    var rows = provinces(data);
+    return '<div id="reportBody">' + buildHeader(data) + buildSummary(data, rows) + HR + buildProvinces(data, rows) + HR + buildSubnational(data) + HR +
+      buildPeople(data) + HR + buildDrivers(data, rows) + buildTrend(data) + HR + buildGuidance() + HR + buildLinks() + HR + buildCaveats() + '</div>';
   }
 
-  // ---------- chart initialization (after the HTML above is in the DOM) ----------
-
-  function destroyChart(id) {
-    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
-  }
-
+  function destroyChart(id) { if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; } }
   function initCharts(data) {
-    ['reportCdiChart', 'reportCdiTrendChart', 'reportAsisChart', 'reportCompositeChart', 'reportPopPhaseChart'].forEach(destroyChart);
-
-    // CDI by province (horizontal bar)
-    var cdiCanvas = document.getElementById('reportCdiChart');
-    if (cdiCanvas && data.cdiExample && data.cdiExample.provinces) {
-      var rows = Object.keys(data.cdiExample.provinces).map(function (name) {
-        return { name: name, cdi: data.cdiExample.provinces[name].cdi };
-      }).sort(function (a, b) { return (b.cdi || -1) - (a.cdi || -1); });
-      chartInstances.reportCdiChart = new Chart(cdiCanvas, {
-        type: 'bar',
-        data: {
-          labels: rows.map(function (r) { return r.name; }),
-          datasets: [{ label: 'CDI', data: rows.map(function (r) { return r.cdi; }), backgroundColor: rows.map(function (r) { return PALETTE[cdiPhase(r.cdi).cls]; }) }]
-        },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 1 } } }
-      });
-    }
-
-    // National CDI trend (line)
-    var trendCanvas = document.getElementById('reportCdiTrendChart');
-    if (trendCanvas) {
-      var labels = JSON.parse(trendCanvas.getAttribute('data-labels') || '[]');
-      var values = JSON.parse(trendCanvas.getAttribute('data-values') || '[]');
-      if (labels.length) {
-        chartInstances.reportCdiTrendChart = new Chart(trendCanvas, {
-          type: 'line',
-          data: { labels: labels, datasets: [{ label: 'National average CDI', data: values, borderColor: '#2F6FA3', backgroundColor: 'rgba(47,111,163,.15)', fill: true, tension: .25 }] },
-          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 1 } } }
-        });
-      }
-    }
-
-    // ASIS ranking (horizontal bar)
-    var asisCanvas = document.getElementById('reportAsisChart');
-    if (asisCanvas) {
-      var asisRows = JSON.parse(asisCanvas.getAttribute('data-rows') || '[]');
-      if (asisRows.length) {
-        chartInstances.reportAsisChart = new Chart(asisCanvas, {
-          type: 'bar',
-          data: {
-            labels: asisRows.map(function (r) { return r.province; }),
-            datasets: [{ label: 'VHI', data: asisRows.map(function (r) { return r.mean; }), backgroundColor: asisRows.map(function (r) { return PALETTE[asisClass(r.mean).cls]; }) }]
-          },
-          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 1 } } }
-        });
-      }
-    }
-
-    // Composite stress ranking (horizontal bar)
-    var compositeCanvas = document.getElementById('reportCompositeChart');
-    if (compositeCanvas) {
-      var compRows = JSON.parse(compositeCanvas.getAttribute('data-rows') || '[]');
-      if (compRows.length) {
-        chartInstances.reportCompositeChart = new Chart(compositeCanvas, {
-          type: 'bar',
-          data: {
-            labels: compRows.map(function (r) { return r.province; }),
-            datasets: [{ label: 'Composite stress', data: compRows.map(function (r) { return r.v; }), backgroundColor: compRows.map(function (r) { return PALETTE[compositeClassOf(r.v).cls]; }) }]
-          },
-          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 100 } } }
-        });
-      }
-    }
-
-    // Population by CDI phase (bar)
-    var popCanvas = document.getElementById('reportPopPhaseChart');
-    if (popCanvas) {
-      var vals = JSON.parse(popCanvas.getAttribute('data-values') || '[]');
-      var phaseLabels = ['Response threshold', 'Anticipatory Action', 'Readiness', 'Monitoring', 'No coverage'];
-      var phaseColors = [PALETTE.Response, PALETTE.AA, PALETTE.Readiness, PALETTE.Monitoring, PALETTE.NoData];
-      if (vals.length) {
-        chartInstances.reportPopPhaseChart = new Chart(popCanvas, {
-          type: 'bar',
-          data: { labels: phaseLabels, datasets: [{ label: 'People', data: vals, backgroundColor: phaseColors }] },
-          options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-      }
-    }
+    ['reportCdiChart', 'reportCdiTrendChart', 'reportPopPhaseChart'].forEach(destroyChart);
+    var rows = provinces(data);
+    var c1 = document.getElementById('reportCdiChart');
+    if (c1) chartInstances.reportCdiChart = new Chart(c1, { type: 'bar', data: { labels: rows.map(function (r) { return r.name; }), datasets: [{ label: 'CDI', data: rows.map(function (r) { return r.cdi; }), backgroundColor: rows.map(function (r) { return PALETTE[phase(r.cdi).cls]; }) }] }, options: { indexAxis: 'y', maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { x: { min: 0, max: 1 }, y: { ticks: { autoSkip: false } } } } });
+    var c2 = document.getElementById('reportCdiTrendChart');
+    if (c2) chartInstances.reportCdiTrendChart = new Chart(c2, { type: 'line', data: { labels: JSON.parse(c2.getAttribute('data-labels')), datasets: [{ label: 'National average CDI', data: JSON.parse(c2.getAttribute('data-values')), borderColor: '#b30000', backgroundColor: 'rgba(179,0,0,.08)', fill: true, pointRadius: 0, tension: .2 }] }, options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 1 }, x: { ticks: { maxTicksLimit: 10 } } } } });
+    var c3 = document.getElementById('reportPopPhaseChart');
+    if (c3) chartInstances.reportPopPhaseChart = new Chart(c3, { type: 'bar', data: { labels: ['Response', 'Anticipatory Action', 'Readiness', 'Monitoring', 'No data'], datasets: [{ data: JSON.parse(c3.getAttribute('data-values')), backgroundColor: [PALETTE.Response, PALETTE.AA, PALETTE.Readiness, PALETTE.Monitoring, PALETTE.NoData] }] }, options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } } });
   }
 
   // ---------- print / download ----------
@@ -527,8 +215,7 @@
       'table{border-collapse:collapse;width:100%;margin:10px 0}' +
       'th,td{border:1px solid #e2e8f0;padding:6px 8px;text-align:left;font-size:13px}th{background:#f8fafc}' +
       '.pill{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}' +
-      '.Severe{background:#7f0000;color:#fff}.High{background:#d73027;color:#fff}.Moderate{background:#fc8d59;color:#fff}.Watch{background:#fee08b;color:#854d0e}' +
-      '.Low{background:#91cf60;color:#166534}.Lower{background:#dcfce7;color:#166534}.NoData{background:#e2e8f0;color:#334155}' +
+      '.NoData{background:#e2e8f0;color:#334155}' +
       '.Response{background:#a50026;color:#fff}.AA{background:#fdae61;color:#7c2d12}.Readiness{background:#abd9e9;color:#0c4a6e}.Monitoring{background:#e2e8f0;color:#334155}' +
       '.eyebrow{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#4F82B3}' +
       '.note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13px}' +
