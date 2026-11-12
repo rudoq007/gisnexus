@@ -219,6 +219,7 @@ function select(level,id,zoom){const T=TABS[level];const r=T.byId[id];if(!r)retu
   $(level+'Detail').innerHTML=`<div class="anim">${detailHtml(level,r)}</div>`;
   const bv=$(level+'Detail').querySelector('.bigval [data-v]');if(bv)countUp(bv,+bv.dataset.v,{dp:2,dur:900});
   if(level==='province')provinceSpark(r);
+  if(window.ADAPT_FIRE)ADAPT_FIRE.fill($(level+'Detail'));
   $(level+'Detail').querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const [lvl,jid]=a.dataset.jump.split('|');openTab(lvl);setTimeout(()=>select(lvl,jid,true),300)}));
 }
 function stat(label,val,sub){return `<div class="dstat"><span class="muted">${label}</span><b>${val}</b>${sub?`<span class="small">${sub}</span>`:''}</div>`}
@@ -230,6 +231,7 @@ function detailHtml(level,r,sparkId){
     return `<span class="eyebrow">Province</span><h2>${esc(r.name)}</h2>${big(r.cdi)}${pill(r.phase)} <span class="small">${r.prev==null?'':'last month '+fmt(r.prev)+(r.change?(r.change>0?' · up ':' · down ')+fmt(Math.abs(r.change)):' · no change')}</span>
       <h3>What drives this month's score</h3>${indicatorTable(r.ind)}
       <h3>Last 24 months</h3><div style="height:160px"><canvas id="${sparkId||'provSpark'}"></canvas></div>
+      <div class="fire-slot" data-kind="province" data-prov="${esc(r.name)}"></div>
       ${r.population_2024!=null?`<h3>People</h3>${popBlock(r)}<p class="small" style="margin-top:10px"><b>${int(r.pop_response)}</b> live in LLGs at Response level and <b>${int(r.pop_aa)}</b> in LLGs at Anticipatory Action.</p>`:''}
       ${kids.length?`<h3>Districts</h3><table class="mini"><thead><tr><th>District</th><th>Mean CDI</th><th>Phase</th></tr></thead><tbody>${kids.map(d=>`<tr><td><a href="#" data-jump="district|${esc(d.geocode)}">${esc(d.name)}</a></td><td>${cdiCell(d.cdi_mean)}</td><td>${pill(d.phase)}</td></tr>`).join('')}</tbody></table>`:''}
       ${prof?`<h3>Livelihoods and likely impacts</h3><p class="small"><b>Livelihoods:</b> ${esc(prof.livelihoods)}</p><p class="small"><b>Impact of dry conditions:</b> ${esc(prof.impact)}</p>`:''}`}
@@ -238,6 +240,7 @@ function detailHtml(level,r,sparkId){
     ${big(r.cdi_mean)}${pill(r.phase)}
     <div class="dgrid">${stat('Pixel range',r.cdi_min==null?'--':fmt(r.cdi_min)+'–'+fmt(r.cdi_max))}${stat('Area at Response',pct(r.pct_area_response))}${stat('Area at Anticipatory Action',pct(r.pct_area_aa))}${stat('Province CDI (official)',fmt(r.province_cdi),diff==null?'':'this area is '+fmt(Math.abs(diff))+(diff>=0?' higher':' lower'))}</div>
     ${r.pixel_coverage!=null&&r.pixel_coverage<0.9?`<p class="small warnline" style="margin-top:10px">Only ${pct(r.pixel_coverage)} of this area has CDI pixels (small islands or coast).</p>`:''}
+    ${level==='district'?`<div class="fire-slot" data-kind="district" data-prov="${esc(r.province)}" data-name="${esc(r.name)}"></div>`:`<div class="fire-slot" data-kind="district" data-prov="${esc(r.province)}" data-name="${esc(r.district)}"></div>`}
     <h3>People</h3>${popBlock(r)}`;
   if(level==='district'){const kids=(S.admin?.llgs||[]).filter(l=>l.district_geocode===r.geocode).sort((a,b)=>(b.cdi_mean||0)-(a.cdi_mean||0));
     return head+`<h3>LLGs in this district</h3><table class="mini"><thead><tr><th>LLG</th><th>Mean CDI</th><th>Phase</th><th>People</th></tr></thead><tbody>${kids.map(l=>`<tr><td><a href="#" data-jump="llg|${esc(l.geocode)}">${esc(l.name)}</a></td><td>${cdiCell(l.cdi_mean)}</td><td>${pill(l.phase)}</td><td>${int(l.population_2024)}</td></tr>`).join('')}</tbody></table>`}
@@ -275,6 +278,7 @@ function aboutSelect(id,zoom){const r=ABOUT.T&&ABOUT.T.byId[id];if(!r)return;ABO
   const d=$('aboutDetail');d.innerHTML=`<div class="anim">${detailHtml('province',r,'aboutSpark')}<div class="embed-actions" style="margin-top:16px"><a class="btn primary" href="#province" data-open-prov="${esc(r.name)}">Open in Province tab</a></div></div>`;
   const bv=d.querySelector('.bigval [data-v]');if(bv)countUp(bv,+bv.dataset.v,{dp:2,dur:900});
   provinceSpark(r,'aboutSpark');
+  if(window.ADAPT_FIRE)ADAPT_FIRE.fill(d);
   window.ADAPT_ABOUT_SELECTED=id;if(window.ADAPT_RENDER_ABOUT_CHARTS){ADAPT_RENDER_ABOUT_CHARTS(id);setTimeout(restyleForeignCharts,0)}
   d.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const [lvl,jid]=a.dataset.jump.split('|');openTab(lvl);setTimeout(()=>select(lvl,jid,true),300)}));
   const ob=d.querySelector('[data-open-prov]');if(ob)ob.addEventListener('click',e=>{e.preventDefault();openTab('province');setTimeout(()=>select('province',r.name,true),300)});
@@ -286,6 +290,7 @@ function moveIndicator(){const ind=document.querySelector('.tab-ind'),a=document
 function openTab(panel){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.panel===panel));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===panel));
   moveIndicator();const at=document.querySelector('.tab.active');if(at&&at.scrollIntoView)at.scrollIntoView({block:'nearest',inline:'center',behavior:reduceMotion?'auto':'smooth'});
   if(TABS[panel]){initMap(panel);setTimeout(()=>TABS[panel].map&&TABS[panel].map.invalidateSize(),120)}
+  if(panel==='fire'&&window.ADAPT_FIRE)ADAPT_FIRE.onOpen();
   if(panel==='about'){if(!ABOUT.map)setTimeout(initAboutMap,30);else setTimeout(()=>ABOUT.map.invalidateSize(),80)}
   setTimeout(()=>Object.values(S.charts).forEach(c=>c&&c.resize&&c.resize()),60);
   try{history.replaceState(null,'','#'+panel)}catch(e){}}
@@ -300,6 +305,7 @@ function setMeta(){const ex=S.example;const t=`${ex.reporting_month_label||''} r
 function onTheme(){chartTheme();if(!S.example)return;renderRank();renderTrend();
   Object.values(TABS).forEach(T=>{if(T.layer){T.layer.setStyle(T.style);highlight(T.level)}if(T.outline)T.outline.setStyle({color:css('--ink')});if(T.level==='province'&&T.selected)provinceSpark(T.byId[T.selected])});
   if(ABOUT.layer){ABOUT.layer.setStyle(ABOUT.T.style);aboutHighlight();if(ABOUT.selected)provinceSpark(ABOUT.T.byId[ABOUT.selected],'aboutSpark')}
+  if(window.ADAPT_FIRE)ADAPT_FIRE.onTheme();
   restyleForeignCharts()}
 
 function init(){chartTheme();stagger();initTabs();$('ovTrendSpan')?.addEventListener('change',renderTrend);
@@ -308,11 +314,11 @@ function init(){chartTheme();stagger();initTabs();$('ovTrendSpan')?.addEventList
   Promise.all([getJson('data/cdi_example_latest.json'),getJson('data/cdi_archive.json'),getJson('data/cdi_admin_latest.json',true),getJson('data/integrated_priority_latest.json',true),
     getJson('adm1_nso_province.geojson',true),getJson('adm2_nso_district.geojson',true),getJson('adm3_nso_llg.geojson',true)])
   .then(([ex,ar,adm,integ,pg,dg,lg])=>{Object.assign(S,{example:ex,archive:ar,admin:adm,integrated:integ,provGeo:pg,distGeo:dg,llgGeo:lg});
-    setMeta();renderHero();renderOverview();initAboutMap();
+    setMeta();renderHero();renderOverview();initAboutMap();document.dispatchEvent(new CustomEvent('adapt-data-ready'));
     ['province','district','llg'].forEach(l=>{if(LEVELS[l].geo()&&LEVELS[l].rows().length)buildTab(l);else{const d=$(l+'Detail');if(d)d.innerHTML='<p>Data for this level is not available yet.</p>'}});
     const fromHash=()=>{const h=(location.hash||'').slice(1);if(h&&$(h)&&$(h).classList.contains('panel'))openTab(h)};fromHash();window.addEventListener('hashchange',fromHash);
     setTimeout(restyleForeignCharts,1500);
   }).catch(e=>{console.error(e);const s=$('ovSummary');if(s)s.innerHTML='<p>CDI data could not be loaded right now. Please try again later.</p>'})}
-window.ADAPT_CDI={state:S,openTab,select,phaseOf,colorOf,aboutSelect:(id,z)=>aboutSelect(id,z)};
+window.ADAPT_CDI={state:S,openTab,select,phaseOf,colorOf,countUp,aboutSelect:(id,z)=>aboutSelect(id,z)};
 document.addEventListener('DOMContentLoaded',init);
 })();
