@@ -75,7 +75,7 @@ function buildTab(){if(built||!F.stats)return;built=true;const n=F.stats.nationa
   k('fkNow',now);k('fkRatio',v0(n.ratio),{format:v=>v.toFixed(1)+'×'});$('fkRank').textContent=v0(n.rank)===1?'1st':ordinal(v0(n.rank));
   k('fkForest',100*v0(fl.tcd30)/base,{format:v=>Math.round(v)+'%'});
   $('fkForestSub').textContent=pct(v0(fl.primary),base)+' in primary forest · '+pct(v0(fl.kba),base)+' in Key Biodiversity Areas';
-  renderYears();renderScatter();renderTable();
+  renderYears();renderScatter();renderTable();renderDownloads();
   $('fireLevel').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
   if($('fireShade'))$('fireShade').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setShade(b.dataset.shade)));
   $('fireSearch').addEventListener('input',renderTable);$('fireSort').addEventListener('change',renderTable);
@@ -140,11 +140,33 @@ function renderDetail(u,national){const d=$('fireDetail');const r=v0(u.ratio),no
     <div class="dgrid">${st('2012–2025 average',int(v0(u.mean)))}${st('2015 El Niño season',int(y15))}${st('In tree cover',pct(v0(fl.tcd30),base))}${st('In primary forest',pct(v0(fl.primary),base))}</div>
     <h3>This season, month by month</h3><div style="height:150px"><canvas id="fireMonthly"></canvas></div>
     ${c?`<h3>Drought in the same ${kind}</h3><div class="fire-cdi"><div><b style="color:${ADAPT_CDI.colorOf(c.v)}">${c.v==null?'--':(+c.v).toFixed(2)}</b><span>CDI</span></div>${pill(phase(c.v))}<a href="#${kind}" class="fire-link" data-cdi-open="${esc(kind)}|${esc(c.id)}">Open in the ${kind==='province'?'Province':'District'} tab →</a></div>`:''}
-    ${national?`<p class="small" style="margin-top:14px">Click a ${kind} on the map or in the table to see its fires next to its drought score.</p>`:''}</div>`;
+    ${national?`<h3>Downloads</h3><div class="dl-mini"><a href="${FW}reports/fire_situation_summary.pdf" target="_blank" rel="noopener">${ICON.pdf}National fire summary <span>PDF</span></a><a href="${FW}maps/overview/national.png" target="_blank" rel="noopener">${ICON.map}National fire map <span>PNG</span></a></div><p class="small" style="margin-top:14px">Click a ${kind} on the map or in the table to see its fires next to its drought score.</p>`:''}
+    ${!national&&kind==='province'?`<h3>Downloads</h3><div class="dl-mini"><a href="${FW}reports/provinces/${esc(u.id)}.pdf" target="_blank" rel="noopener">${ICON.pdf}${esc(u._name)} fire report <span>PDF</span></a><a href="${FW}maps/provinces/${esc(u.id)}.jpg" target="_blank" rel="noopener">${ICON.map}${esc(u._name)} fire map <span>JPG</span></a></div>`:''}</div>`;
   const ob=d.querySelector('[data-cdi-open]');if(ob)ob.addEventListener('click',e=>{e.preventDefault();const [lv,id]=ob.dataset.cdiOpen.split('|');ADAPT_CDI.openTab(lv);setTimeout(()=>ADAPT_CDI.select(lv,id,true),300)});
   const mo=F.stats.season.months,MN=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   chart('fireMonthly',{type:'bar',data:{labels:mo.map(m=>MN[+m.slice(5)]),datasets:[{data:mo.map(m=>v0((u.monthly||{})[m])||0),backgroundColor:mo.map((m,i)=>i===mo.length-1?'#FFB703':'#EA580C'),borderRadius:6,borderSkipped:false}]},
     options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>int(c.raw)+' alerts'+(c.dataIndex===mo.length-1?' (so far)':'')}}},scales:{y:{grid:{color:css('--line')},border:{display:false},ticks:{maxTicksLimit:4}},x:{grid:{display:false},border:{display:false}}}}})}
+const ICON={pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',
+  csv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16"/></svg>',
+  json:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4c-2 0-2 2-2 4s-2 4-2 4 2 2 2 4 0 4 2 4M16 4c2 0 2 2 2 4s2 4 2 4-2 2-2 4 0 4-2 4"/></svg>',
+  dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>'};
+// Combined drought + fire tables, built in the browser from both sources.
+function combinedCsv(level){const S=ADAPT_CDI.state,ex=S.example.provinces,lab=F.stats.season.label;const q=v=>v==null?'':(typeof v==='string'?'"'+v.replace(/"/g,'""')+'"':v);
+  let head,rows;
+  if(level==='province'){head=['province','cdi','cdi_phase','fire_alerts','fire_vs_2012_2025_average','fire_rank_since_2012','fire_alerts_2015','population_2024'];
+    const ap={};(S.admin?.provinces||[]).forEach(p=>ap[p.name]=p);
+    rows=F.stats.provinces.map(p=>{const c=ex[p._name]||{};return [p._name,c.cdi,phase(c.cdi),v0(p.now),v0(p.ratio),v0(p.rank),v0(p.y2015),ap[p._name]?.population_2024]})}
+  else{head=['province','district','mean_cdi','cdi_phase','fire_alerts','fire_vs_2012_2025_average','fire_rank_since_2012','fire_alerts_2015','fire_alerts_per_100km2','population_2024'];
+    rows=F.stats.districts.map(d=>{const a=(S.admin?.districts||[]).find(x=>x.province===d._prov&&norm(x.name)===norm(d.name))||{};return [d._prov,d._name,a.cdi_mean,a.cdi_mean==null?'':phase(a.cdi_mean),v0(d.now),v0(d.ratio),v0(d.rank),v0(d.y2015),v0(d.density),a.population_2024]})}
+  const csv=[head.join(',')].concat(rows.map(r=>r.map(q).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ADAPt_drought_fire_by_'+level+'_'+F.stats.season.end+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function renderDownloads(){const el=$('fireDownloads');if(!el)return;const s=F.stats.season;
+  const card=(href,icon,t,sub,fmt,size,ext)=>`<a class="dl" ${href?`href="${href}" target="_blank" rel="noopener"`:'href="#"'} ${ext||''}><span class="dl-ic">${icon}</span><span class="dl-tx"><b>${t}</b><span>${sub}</span></span><span class="dl-meta"><em>${fmt}</em>${size?`<i>${size}</i>`:''}${ICON.dl}</span></a>`;
+  el.innerHTML=`<div class="dl-group"><h3>Reports and maps</h3>${card(FW+'reports/fire_situation_summary.pdf',ICON.pdf,'National fire situation summary','All of PNG, '+esc(s.label),'PDF','240 KB')}${card(FW+'maps/overview/national.png',ICON.map,'National fire map','Every alert this season','PNG','560 KB')}<p class="small">Province reports and maps: pick a province on the map above.</p></div>
+    <div class="dl-group"><h3>Drought and fire together</h3>${card('',ICON.csv,'By province','CDI, phase, fire alerts, × average, rank, population','CSV','','data-combined="province"')}${card('',ICON.csv,'By district','Mean CDI, fire alerts, × average, alerts per 100 km², population','CSV','','data-combined="district"')}<p class="small">Built from ADAPt and PNG Fire Watch at the moment you click.</p></div>
+    <div class="dl-group"><h3>Fire data</h3>${card(FW+'downloads/area_summary.csv',ICON.csv,'Area summary','Provinces, districts, protected areas and KBAs','CSV','43 KB')}${card(FW+'downloads/alerts_by_year_same_period.csv',ICON.csv,'Every season since 2012','Alerts for the same weeks of each year','CSV','19 KB')}${card(FW+'downloads/viirs_alerts_season.csv',ICON.csv,'All alerts this season','One row per alert, with location and date','CSV','15 MB')}${card(FW+'data/stats.json',ICON.json,'Fire statistics','Everything behind this tab','JSON','230 KB')}</div>`;
+  el.querySelectorAll('[data-combined]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();combinedCsv(a.dataset.combined)}))}
 function st(l,v){return `<div class="dstat"><span class="muted">${l}</span><b>${v}</b></div>`}
 function chart(id,cfg){if(F.charts[id])F.charts[id].destroy();const el=$(id);if(!el||!window.Chart)return;F.charts[id]=new Chart(el,cfg)}
 function renderYears(){const ys=F.stats.national.years,ks=Object.keys(ys);
