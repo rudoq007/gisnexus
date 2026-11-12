@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="assets/adapt.css?v=20261112a">
-<script src="assets/theme.js?v=20261112a"></script>
+<link rel="stylesheet" href="assets/adapt.css?v=20261112b">
+<script src="assets/theme.js?v=20261112b"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -68,8 +68,8 @@
 <section class="card kpi"><span class="muted">Compared with average</span><b id="fkRatio">--</b><span>times the 2012–2025 average for the same weeks</span></section>
 <section class="card kpi"><span class="muted">Rank since 2012</span><b id="fkRank">--</b><span>out of 15 seasons, including 2015 El Niño</span></section>
 <section class="card kpi"><span class="muted">In tree cover</span><b id="fkForest">--</b><span id="fkForestSub"></span></section>
-<section class="card full"><div class="lvl-controls" style="margin-bottom:16px"><div class="seg" id="fireLevel"><button class="on" data-level="province" type="button">Provinces</button><button data-level="district" type="button">Districts</button></div><div class="field" style="max-width:420px"><label class="muted">Go to</label><select id="fireSelect"></select></div></div>
-<div class="lvl-grid"><div><div id="fireMap" class="map-frame lvl-map"></div><p class="source"><span id="fireMapStatus">Loading fire points…</span> Glowing yellow points are alerts from the last 7 days. Areas are shaded by how this season compares with the 2012–2025 average.</p></div><div class="lvl-detail" id="fireDetail"></div></div></section>
+<section class="card full"><div class="lvl-controls" style="margin-bottom:16px"><div class="seg" id="fireLevel"><button class="on" data-level="province" type="button">Provinces</button><button data-level="district" type="button">Districts</button></div><div><label class="muted">Shade areas by</label><div class="seg" id="fireShade"><button class="on" data-shade="ratio" type="button">Fire vs average</button><button data-shade="cdi" type="button">Drought (CDI)</button><button data-shade="none" type="button">Outlines only</button></div></div><div class="field" style="max-width:420px"><label class="muted">Go to</label><select id="fireSelect"></select></div></div>
+<div class="lvl-grid"><div><div id="fireMap" class="map-frame lvl-map"></div><p class="source"><span id="fireMapStatus">Loading fire points…</span> Glowing yellow points are alerts from the last 7 days; orange points are earlier this season. Shade the areas by fire compared with the 2012–2025 average, by drought (CDI), or switch shading off.</p></div><div class="lvl-detail" id="fireDetail"></div></div></section>
 <section class="card half"><h2>This season against every season since 2012</h2><div style="height:320px"><canvas id="fireYears"></canvas></div><p class="small">Alerts for the same weeks of each year. 2015 (El Niño) is shown in brown.</p></section>
 <section class="card half"><h2>Drought and fire, province by province</h2><div style="height:320px"><canvas id="fireScatter"></canvas></div><p class="small">Each bubble is a province, coloured by its CDI and sized by its number of alerts. Click one to see it on the map.</p></section>
 <section class="card full"><h2>All areas</h2><div class="table-controls"><div class="field"><label class="muted">Find</label><input id="fireSearch" type="text" placeholder="Type a name"></div><div class="field"><label class="muted">Sort by</label><select id="fireSort"><option value="ratio">Highest vs average first</option><option value="now">Most alerts first</option><option value="name">Name A-Z</option></select></div></div><div class="tablewrap"><table><thead id="fireHead"></thead><tbody id="fireBody"></tbody></table></div></section>
@@ -321,8 +321,8 @@ function loadCdiData(){
 document.addEventListener('DOMContentLoaded',loadCdiData);
 
 </script>
-<script src="assets/cdi-app.js?v=20261112a"></script>
-<script src="assets/fire.js?v=20261112a"></script>
-<script src="assets/report-generator.js?v=20261112a"></script>
+<script src="assets/cdi-app.js?v=20261112b"></script>
+<script src="assets/fire.js?v=20261112b"></script>
+<script src="assets/report-generator.js?v=20261112b"></script>
 </body>
 </html>
