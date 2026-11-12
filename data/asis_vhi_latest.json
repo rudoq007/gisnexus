@@ -1,6 +1,6 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-11-10 23:05 UTC",
+  "generated_utc": "2026-11-12 00:26 UTC",
   "dekad_label": "2026-10-D30",
   "metadata": {
     "DEKAD_dekadAlt": 30,
@@ -9,7 +9,7 @@
     "system:time_end": 1793404800000,
     "system:time_start": 1792540800000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/82780e7443022ca76e9c22e51bf8add9-0d942baee76da7df1fd5dd0d098d0beb/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/82780e7443022ca76e9c22e51bf8add9-184e02060626a54b64fce5bdbbe2d37f/tiles/{z}/{x}/{y}",
   "provinces": [
     {
       "province": "East Sepik",
