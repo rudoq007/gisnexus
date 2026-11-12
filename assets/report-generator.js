@@ -12,7 +12,8 @@
     example: 'data/cdi_example_latest.json',
     archive: 'data/cdi_archive.json',
     admin: 'data/cdi_admin_latest.json',
-    integrated: 'data/integrated_priority_latest.json'
+    integrated: 'data/integrated_priority_latest.json',
+    fire: 'https://rudoq007.github.io/PNGFireWatch/data/stats.json'
   };
   var LINKS = {
     example: BASE_URL + 'data/cdi_example_latest.json',
@@ -53,8 +54,8 @@
     }).catch(function (e) { if (optional) return null; throw e; });
   }
   function fetchAll() {
-    return Promise.all([fetchJson(FILES.example), fetchJson(FILES.archive), fetchJson(FILES.admin, true), fetchJson(FILES.integrated, true)])
-      .then(function (r) { return { example: r[0], archive: r[1], admin: r[2], integrated: r[3] }; });
+    return Promise.all([fetchJson(FILES.example), fetchJson(FILES.archive), fetchJson(FILES.admin, true), fetchJson(FILES.integrated, true), fetchJson(FILES.fire, true)])
+      .then(function (r) { return { example: r[0], archive: r[1], admin: r[2], integrated: r[3], fire: r[4] }; });
   }
 
   function provinces(data) {
@@ -145,6 +146,17 @@
     var ns = national(data), tl = data.archive.timeline, n = Math.min(60, ns.length);
     return '<h3>National average CDI, last 5 years</h3><div style="height:260px"><canvas id="reportCdiTrendChart" data-labels="' + esc(JSON.stringify(tl.slice(-n).map(mlabel))) + '" data-values="' + esc(JSON.stringify(ns.slice(-n).map(function (v) { return v == null ? null : +v.toFixed(3); }))) + '"></canvas></div>';
   }
+  function buildFire(data) {
+    var f = data.fire; if (!f) return '';
+    var v = function (a) { return Array.isArray(a) ? a[0] : a; };
+    var n = f.national, ex = data.example.provinces || {};
+    var alias = { 'Chimbu (Simbu)': 'Chimbu', 'Northern (Oro)': 'Oro', 'West Sepik (Sandaun)': 'Sandaun', 'Autonomous Region of Bougainville': 'Bougainville' };
+    var nm = function (x) { x = String(x).replace(/ Province$/, ''); return alias[x] || x; };
+    var top = f.provinces.slice().sort(function (a, b) { return v(b.now) - v(a.now); }).slice(0, 8);
+    var s = '<h3>Fire this season (PNG Fire Watch)</h3><p>' + fi(v(n.now)) + ' satellite fire alerts from ' + esc(f.season.label) + ': <b>' + Number(v(n.ratio)).toFixed(1) + '×</b> the 2012–2025 average for the same weeks, ' + (v(n.rank) === 1 ? 'the highest' : 'ranked ' + v(n.rank)) + ' since 2012 (2015 El Niño season: ' + fi(v(n.years['2015'])) + ').</p>';
+    s += '<table><thead><tr><th>Province</th><th>Fire alerts</th><th>vs average</th><th>CDI</th><th>Phase</th></tr></thead><tbody>' + top.map(function (p) { var c = ex[nm(p.name)]; return '<tr><td><b>' + esc(nm(p.name)) + '</b></td><td>' + fi(v(p.now)) + '</td><td>' + (v(p.ratio) == null ? 'new' : Number(v(p.ratio)).toFixed(1) + '×') + '</td><td>' + f2(c && c.cdi) + '</td><td>' + (c ? pill(c.cdi) : '--') + '</td></tr>'; }).join('') + '</tbody></table>';
+    return s + '<p class="small">Fire alerts are satellite heat detections (NASA VIIRS), not confirmed fires or burnt area. Source: PNG Fire Watch, updated ' + esc(f.season.updated) + '.</p>';
+  }
   function buildGuidance() {
     return '<h3>What each phase means</h3><table><thead><tr><th>Phase</th><th>Recommended action</th></tr></thead><tbody>' +
       '<tr><td>' + pillLabel('Readiness') + ' 0.40–0.59</td><td>Maintain preparedness while supporting higher-phase operations elsewhere.</td></tr>' +
@@ -168,7 +180,7 @@
   function buildReportHtml(data) {
     var rows = provinces(data);
     return '<div id="reportBody">' + buildHeader(data) + buildSummary(data, rows) + HR + buildProvinces(data, rows) + HR + buildSubnational(data) + HR +
-      buildPeople(data) + HR + buildDrivers(data, rows) + buildTrend(data) + HR + buildGuidance() + HR + buildLinks() + HR + buildCaveats() + '</div>';
+      buildPeople(data) + HR + (data.fire ? buildFire(data) + HR : '') + buildDrivers(data, rows) + buildTrend(data) + HR + buildGuidance() + HR + buildLinks() + HR + buildCaveats() + '</div>';
   }
 
   function destroyChart(id) { if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; } }
