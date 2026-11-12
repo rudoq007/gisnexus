@@ -9,8 +9,10 @@ const FW='https://rudoq007.github.io/PNGFireWatch/';
 const PROV_ALIAS={'Chimbu (Simbu)':'Chimbu','Northern (Oro)':'Oro','West Sepik (Sandaun)':'Sandaun','Autonomous Region of Bougainville':'Bougainville','Simbu':'Chimbu','Northern':'Oro','West Sepik':'Sandaun','Gulf Province':'Gulf','Milne Bay Province':'Milne Bay'};
 const PNG_BOUNDS=[[-11.6,141.0],[-1.0,156.0]];
 // "Times the 2012-2025 average" steps for areas. Ember tones, kept apart from the CDI colours.
-const RBANDS=[[8,'#5B1A0A','8× or more'],[4,'#9A3412','4–8×'],[2,'#EA580C','2–4×'],[1.25,'#FB923C','1.25–2×'],[0.8,'#FDE1B8','about average'],[-1,'#E8E3D6','below average']];
-const F={stats:null,fires:null,prov:{},dist:{},map:null,level:'province',layer:null,points:null,selected:null,charts:{},ready:null};
+// "Times the 2012-2025 average" steps for areas. Cool slate tones so the orange fire points stand out on top.
+const RBANDS=[[8,'#1F3557','8× or more'],[4,'#3D5A80','4–8×'],[2,'#6C87A8','2–4×'],[1.25,'#9FB3CA','1.25–2×'],[0.8,'#CBD6E2','about average'],[-1,'#E6EBF1','below average']];
+const EMBER='#E8590C';
+const F={shade:'ratio',stats:null,fires:null,prov:{},dist:{},map:null,level:'province',layer:null,points:null,selected:null,charts:{},ready:null};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const int=v=>v==null||isNaN(v)?'--':Math.round(v).toLocaleString('en-US');
@@ -21,7 +23,7 @@ const provName=n=>{n=String(n||'').replace(/ Province$/,'');return PROV_ALIAS[n]
 const css=n=>(window.ADAPT_THEME&&ADAPT_THEME.cssVar(n))||'';
 const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const v0=a=>Array.isArray(a)?a[0]:a;
-function ratioColor(r,now){if(r==null)return now?RBANDS[0][1]:'#E8E3D6';for(const [t,c] of RBANDS)if(r>=t)return c;return RBANDS[RBANDS.length-1][1]}
+function ratioColor(r,now){if(r==null)return now?RBANDS[0][1]:'#E6EBF1';for(const [t,c] of RBANDS)if(r>=t)return c;return RBANDS[RBANDS.length-1][1]}
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 function rankText(u){const r=v0(u.rank);if(!r)return'--';const yrs=Object.keys(F.stats.national.years).length;return r===1?'Highest of '+yrs+' seasons':ordinal(r)+' highest of '+yrs}
 function cdiOf(kind,u){const S=window.ADAPT_CDI&&ADAPT_CDI.state;if(!S||!S.example)return null;
@@ -45,7 +47,7 @@ function fireForDistrict(prov,name){return F.dist[prov+'|'+norm(name)]||null}
 // ---------- small "fire this season" block used inside CDI panels ----------
 function blockHtml(u,kind,link){if(!u)return'';const r=v0(u.ratio),now=v0(u.now);
   return `<div class="fire-mini"><div class="fire-mini-h"><span class="ember-dot"></span>Fires this season <span class="small">(${esc(F.stats.season.label)})</span></div>
-    <div class="fire-mini-row"><div><b>${int(now)}</b><span>alerts</span></div><div><b style="color:${ratioColor(r,now)}">${x1(r)}</b><span>the 2012–2025 average</span></div><div><b>${v0(u.rank)?ordinal(v0(u.rank)):'--'}</b><span>rank since 2012 (1st = most)</span></div></div>
+    <div class="fire-mini-row"><div><b>${int(now)}</b><span>alerts</span></div><div><b style="color:var(--ember)">${x1(r)}</b><span>the 2012–2025 average</span></div><div><b>${v0(u.rank)?ordinal(v0(u.rank)):'--'}</b><span>rank since 2012 (1st = most)</span></div></div>
     ${link?`<a href="#fire" class="fire-link" data-fire-open="${esc(kind)}|${esc(kind==='province'?u._name:u.id)}">See fires on the map →</a>`:''}</div>`}
 function fillSlots(root){if(!F.stats)return;(root||document).querySelectorAll('.fire-slot').forEach(el=>{const k=el.dataset.kind,u=k==='province'?fireForProvince(el.dataset.prov):fireForDistrict(el.dataset.prov,el.dataset.name);
   el.innerHTML=blockHtml(u,k,true);el.querySelectorAll('[data-fire-open]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const [kind,id]=a.dataset.fireOpen.split('|');openFireAt(kind,id)}))})}
@@ -75,6 +77,7 @@ function buildTab(){if(built||!F.stats)return;built=true;const n=F.stats.nationa
   $('fkForestSub').textContent=pct(v0(fl.primary),base)+' in primary forest · '+pct(v0(fl.kba),base)+' in Key Biodiversity Areas';
   renderYears();renderScatter();renderTable();
   $('fireLevel').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setLevel(b.dataset.level)));
+  if($('fireShade'))$('fireShade').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setShade(b.dataset.shade)));
   $('fireSearch').addEventListener('input',renderTable);$('fireSort').addEventListener('change',renderTable);
   $('fireSelect').addEventListener('change',e=>{if(e.target.value)selectArea(e.target.value,true)});
   showNational();
@@ -89,13 +92,21 @@ function initMap(){if(F.map||!$('fireMap'))return;const m=L.map('fireMap',{scrol
   const bm=window.ADAPT_THEME&&ADAPT_THEME.themedBasemap?ADAPT_THEME.themedBasemap(m):{base:L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(m)};
   m.createPane('units');m.getPane('units').style.zIndex=380;m.createPane('fires');m.getPane('fires').style.zIndex=430;m.getPane('fires').style.pointerEvents='none';
   F.base=bm;drawAreas();
-  const lg=L.control({position:'bottomleft'});lg.onAdd=()=>{const d=L.DomUtil.create('div','map-legend');d.innerHTML=`<span class="lg-title">Fire activity vs average</span><div class="lg-bar">${[...RBANDS].reverse().map(b=>`<i style="background:${b[1]}"></i>`).join('')}</div><div class="lg-ticks"><span>below</span><span>1×</span><span>2×</span><span>4×</span><span>8×+</span></div><div class="lg-phases"><span><i style="background:#FFD166;box-shadow:0 0 6px #FFB703"></i>Last 7 days</span><span><i style="background:#F97316"></i>Earlier this season</span></div>`;return d};lg.addTo(m);
+  const lg=L.control({position:'bottomleft'});lg.onAdd=()=>{const d=L.DomUtil.create('div','map-legend');d.innerHTML=legendInner();F.legendEl=d;return d};lg.addTo(m);
   m.fitBounds(PNG_BOUNDS);
   m.on('zoomstart movestart',()=>F.layer&&F.layer.eachLayer(l=>l.closeTooltip()));
   loadFires().then(()=>{addPoints();const st=$('fireMapStatus');if(st)st.textContent=''}).catch(e=>{const st=$('fireMapStatus');if(st)st.textContent='Fire points could not be loaded right now; area totals are still shown.'})}
 function areaGeo(){const S=ADAPT_CDI.state;return F.level==='province'?S.provGeo:S.distGeo}
 function featUnit(f){if(F.level==='province')return F.prov[provName(f.properties.PROVNAME)];const S=ADAPT_CDI.state;const d=(S.admin?.districts||[]).find(x=>x.geocode===f.properties.geocode);return d?fireForDistrict(d.province,d.name):null}
-function areaStyle(f){const u=featUnit(f);return{color:css('--map-stroke')||'#fff',weight:F.level==='province'?1.2:.8,fillColor:u?ratioColor(v0(u.ratio),v0(u.now)):'#E8E3D6',fillOpacity:.55}}
+function areaStyle(f){const u=featUnit(f);const base={color:css('--map-stroke')||'#fff',weight:F.level==='province'?1.2:.8};
+  if(F.shade==='none')return{...base,color:css('--ink')||'#14181E',opacity:.45,weight:F.level==='province'?1.1:.7,fillOpacity:0};
+  if(F.shade==='cdi'){const c=u?cdiOf(F.level,u):null;return{...base,fillColor:c&&c.v!=null?ADAPT_CDI.colorOf(c.v):'#C9C6BE',fillOpacity:.38}}
+  return{...base,fillColor:u?ratioColor(v0(u.ratio),v0(u.now)):'#E6EBF1',fillOpacity:.62}}
+function legendInner(){const pts=`<div class="lg-phases"><span><i style="background:#FFE066;box-shadow:0 0 0 1px rgba(0,0,0,.45),0 0 6px #FFB703"></i>Last 7 days</span><span><i style="background:#FF5A1F;box-shadow:0 0 0 1px rgba(0,0,0,.45)"></i>Earlier this season</span></div>`;
+  if(F.shade==='none')return `<span class="lg-title">Fire alerts</span>`+pts;
+  if(F.shade==='cdi')return `<span class="lg-title">Drought (CDI) behind the fires</span><div class="lg-bar" style="opacity:.75">${['#7DA4BF','#B7D1E1','#F4C26B','#EB8C4C','#D6514A','#B5263B','#8C1630','#5A0B1F'].map(c=>`<i style="background:${c}"></i>`).join('')}</div><div class="lg-ticks"><span>0</span><span>0.40</span><span>0.60</span><span>0.80</span><span>1.0</span></div>`+pts;
+  return `<span class="lg-title">Fire activity vs average</span><div class="lg-bar">${[...RBANDS].reverse().map(b=>`<i style="background:${b[1]}"></i>`).join('')}</div><div class="lg-ticks"><span>below</span><span>1×</span><span>2×</span><span>4×</span><span>8×+</span></div>`+pts}
+function setShade(m){F.shade=m;const seg=$('fireShade');if(seg)seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.shade===m));if(F.layer){F.layer.setStyle(areaStyle);hl()}if(F.legendEl)F.legendEl.innerHTML=legendInner()}
 function drawAreas(){if(!F.map)return;if(F.layer)F.map.removeLayer(F.layer);if(F.ctl)F.map.removeControl(F.ctl);
   F.layer=L.geoJSON(areaGeo(),{pane:'units',style:areaStyle,onEachFeature:(f,l)=>{const u=featUnit(f);
     l.bindTooltip(u?`<b>${esc(F.level==='province'?u._name:u._name)}</b>${F.level==='district'?'<br><span style="opacity:.7">'+esc(u._prov)+'</span>':''}<span class="tv">${int(v0(u.now))}</span><span style="opacity:.8">alerts · ${x1(v0(u.ratio))} average</span>`:'No data',{sticky:true,className:'adapt-tip',direction:'top',offset:[0,-12],opacity:1});
@@ -108,11 +119,12 @@ function addPoints(){const f=F.fires;if(!f||F.points)return;const rows=f.rows,ma
   const B={};rows.forEach(r=>{const k=Math.floor(r[0])+'|'+Math.floor(r[1]);(B[k]||(B[k]=[])).push(r)});
   const Grid=L.GridLayer.extend({createTile(c){const t=L.DomUtil.create('canvas','fire-tile');const sz=this.getTileSize();t.width=sz.x;t.height=sz.y;const ctx=t.getContext('2d');
     const nw=this._map.unproject([c.x*sz.x,c.y*sz.y],c.z),se=this._map.unproject([(c.x+1)*sz.x,(c.y+1)*sz.y],c.z);const pad=.05;
-    const z=c.z,rad=z<=6?1.1:z<=8?1.8:z<=10?2.6:3.4;const old=[],recent=[];
+    const z=c.z,rad=z<=6?1.2:z<=8?1.9:z<=10?2.7:3.5;const old=[],recent=[];
     for(let gx=Math.floor(nw.lng-pad);gx<=Math.floor(se.lng+pad);gx++)for(let gy=Math.floor(se.lat-pad);gy<=Math.floor(nw.lat+pad);gy++){const b=B[gx+'|'+gy];if(!b)continue;
       for(const r of b){if(r[0]<nw.lng-pad||r[0]>se.lng+pad||r[1]>nw.lat+pad||r[1]<se.lat-pad)continue;const p=this._map.project([r[1],r[0]],z);const x=p.x-c.x*sz.x,y=p.y-c.y*sz.y;(maxDay-r[2]<7?recent:old).push(x,y)}}
-    ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(234,88,12,.55)';for(let i=0;i<old.length;i+=2){ctx.beginPath();ctx.arc(old[i],old[i+1],rad,0,6.283);ctx.fill()}
-    ctx.shadowColor='rgba(255,183,3,.9)';ctx.shadowBlur=z<=7?4:7;ctx.fillStyle='rgba(255,214,102,.95)';for(let i=0;i<recent.length;i+=2){ctx.beginPath();ctx.arc(recent[i],recent[i+1],rad+.4,0,6.283);ctx.fill()}
+    const halo=(arr,r,fill,glow)=>{ctx.shadowBlur=0;ctx.fillStyle='rgba(20,8,0,.55)';for(let i=0;i<arr.length;i+=2){ctx.beginPath();ctx.arc(arr[i],arr[i+1],r+.9,0,6.283);ctx.fill()}
+      if(glow){ctx.shadowColor=glow;ctx.shadowBlur=z<=7?5:8}ctx.fillStyle=fill;for(let i=0;i<arr.length;i+=2){ctx.beginPath();ctx.arc(arr[i],arr[i+1],r,0,6.283);ctx.fill()}ctx.shadowBlur=0};
+    halo(old,rad,'#FF5A1F',null);halo(recent,rad+.5,'#FFE066','rgba(255,183,3,.95)');
     return t}});
   F.points=new Grid({pane:'fires',updateWhenZooming:false,keepBuffer:2,attribution:'Fire alerts: NASA FIRMS VIIRS via PNG Fire Watch'}).addTo(F.map);drawAreas()}
 function selectArea(id,zoom){const u=unitById(id);if(!u)return;F.selected=id;if(F.layer){F.layer.eachLayer(l=>F.layer.resetStyle(l));hl();
@@ -123,8 +135,8 @@ function showNational(){const n=F.stats.national;n._name='Papua New Guinea';rend
 function renderDetail(u,national){const d=$('fireDetail');const r=v0(u.ratio),now=v0(u.now),fl=u.flags||{},base=v0(fl._base)||now,y15=v0(u.y2015);
   const c=national?null:cdiOf(F.level,u);const kind=F.level;
   d.innerHTML=`<div class="anim"><span class="eyebrow">${national?'National':kind==='province'?'Province':'District'}</span><h2>${esc(national?'Papua New Guinea':u._name)}</h2>${!national&&kind==='district'?`<p class="small">${esc(u._prov)}</p>`:''}
-    <div class="bigval" style="--c:${ratioColor(r,now)}"><span>${int(now)}</span><small>alerts</small></div>
-    <span class="pill" style="background:${ratioColor(r,now)};color:${r>=1.25?'#fff':'#3B1D02'}">${r==null?'New activity':x1(r)+' the average'}</span> <span class="small">${rankText(u)}</span>
+    <div class="bigval" style="--c:var(--ember)"><span>${int(now)}</span><small>alerts</small></div>
+    <span class="pill" style="background:${r!=null&&r<1?'var(--mon)':'var(--ember)'};color:${r!=null&&r<1?'var(--mon-ink)':'#fff'}">${r==null?'New activity':x1(r)+' the average'}</span> <span class="small">${rankText(u)}</span>
     <div class="dgrid">${st('2012–2025 average',int(v0(u.mean)))}${st('2015 El Niño season',int(y15))}${st('In tree cover',pct(v0(fl.tcd30),base))}${st('In primary forest',pct(v0(fl.primary),base))}</div>
     <h3>This season, month by month</h3><div style="height:150px"><canvas id="fireMonthly"></canvas></div>
     ${c?`<h3>Drought in the same ${kind}</h3><div class="fire-cdi"><div><b style="color:${ADAPT_CDI.colorOf(c.v)}">${c.v==null?'--':(+c.v).toFixed(2)}</b><span>CDI</span></div>${pill(phase(c.v))}<a href="#${kind}" class="fire-link" data-cdi-open="${esc(kind)}|${esc(c.id)}">Open in the ${kind==='province'?'Province':'District'} tab →</a></div>`:''}
