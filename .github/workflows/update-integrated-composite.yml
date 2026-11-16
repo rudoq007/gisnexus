@@ -117,7 +117,7 @@ jobs:
           # `git add` on a missing path fails with exit 128 and used to take
           # this whole (otherwise unrelated) step down with it, defeating the
           # point of continue-on-error on those steps.
-          for f in data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_population_exposure.json data/cdi_admin_latest.json data/cdi_district_latest.csv data/cdi_llg_latest.csv scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py scripts/build_cdi_admin.py .github/workflows/update-integrated-composite.yml; do
+          for f in data/integrated_priority_latest.json data/integrated_priority_latest.csv data/composite_biophysical_stress.tif data/cdi_pixel_latest.tif data/cdi_pixel_status.json data/cdi_population_exposure.json data/cdi_admin_latest.json data/cdi_district_latest.csv data/cdi_llg_latest.csv scripts/build_integrated_composite.py scripts/build_cdi_pixel.py scripts/build_cdi_population_exposure.py scripts/build_cdi_admin.py .github/workflows/update-integrated-composite.yml; do
             if [ -f "$f" ]; then
               git add "$f"
             else
