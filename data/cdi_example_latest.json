@@ -1,205 +1,205 @@
 {
-  "reporting_month_label": "October 2026",
-  "observation_month_label": "September 2026",
-  "forecast_window_label": "October-December 2026",
+  "reporting_month_label": "November 2026",
+  "observation_month_label": "October 2026",
+  "forecast_window_label": "November 2026-January 2027",
   "provinces": {
     "Bougainville": {
       "cdi": 0.7,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -1.067,
-      "sm": -3.99,
-      "vi": 0.534,
-      "fcast3": -2.091
+      "rain": -2.388,
+      "sm": -18.49,
+      "vi": 0.484,
+      "fcast3": 1.102
     },
     "Central": {
-      "cdi": 0.9,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.06,
-      "sm": -16.55,
-      "vi": 0.528,
-      "fcast3": -2.265
-    },
-    "Chimbu": {
-      "cdi": 0.7,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.519,
-      "sm": -0.95,
-      "vi": 0.476,
-      "fcast3": -1.89
-    },
-    "East New Britain": {
       "cdi": 0.8,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.912,
-      "sm": -13.65,
-      "vi": 0.518,
-      "fcast3": -1.153
+      "rain": -2.133,
+      "sm": -26.38,
+      "vi": 0.406,
+      "fcast3": -0.938
+    },
+    "Chimbu": {
+      "cdi": 0.65,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -3.259,
+      "sm": -8.22,
+      "vi": 0.396,
+      "fcast3": 0.697
+    },
+    "East New Britain": {
+      "cdi": 0.7,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -3.239,
+      "sm": -27.45,
+      "vi": 0.457,
+      "fcast3": 0.833
     },
     "East Sepik": {
+      "cdi": 0.8,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -4.153,
+      "sm": -17.32,
+      "vi": 0.193,
+      "fcast3": 0.978
+    },
+    "Eastern Highlands": {
+      "cdi": 0.7,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -3.071,
+      "sm": -21.56,
+      "vi": 0.41,
+      "fcast3": 0.361
+    },
+    "Enga": {
+      "cdi": 0.6,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -4.209,
+      "sm": -6.8,
+      "vi": 0.438,
+      "fcast3": 1.729
+    },
+    "Gulf": {
+      "cdi": 0.9,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -2.799,
+      "sm": -16.43,
+      "vi": 0.255,
+      "fcast3": -0.415
+    },
+    "Hela": {
+      "cdi": 0.6,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -3.427,
+      "sm": -12.98,
+      "vi": 0.429,
+      "fcast3": 2.09
+    },
+    "Jiwaka": {
+      "cdi": 0.65,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -4.018,
+      "sm": -9.18,
+      "vi": 0.373,
+      "fcast3": 1.172
+    },
+    "Madang": {
+      "cdi": 0.75,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -3.757,
+      "sm": -30.54,
+      "vi": 0.315,
+      "fcast3": 1.03
+    },
+    "Manus": {
       "cdi": 0.85,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -3.038,
-      "sm": -11.92,
-      "vi": 0.396,
-      "fcast3": -1.858
-    },
-    "Eastern Highlands": {
-      "cdi": 0.8,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.111,
-      "sm": -14.55,
-      "vi": 0.418,
-      "fcast3": -2.105
-    },
-    "Enga": {
-      "cdi": 0.7,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.485,
-      "sm": -5.41,
-      "vi": 0.494,
-      "fcast3": -0.144
-    },
-    "Gulf": {
-      "cdi": 0.8,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.392,
-      "sm": -6.57,
-      "vi": 0.434,
-      "fcast3": -2.128
-    },
-    "Hela": {
-      "cdi": 0.8,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.983,
-      "sm": -9.78,
-      "vi": 0.502,
-      "fcast3": -1.197
-    },
-    "Jiwaka": {
-      "cdi": 0.7,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.431,
-      "sm": -3.11,
-      "vi": 0.451,
-      "fcast3": -1.534
-    },
-    "Madang": {
-      "cdi": 0.9,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.335,
-      "sm": -20.68,
-      "vi": 0.474,
-      "fcast3": -2.312
-    },
-    "Manus": {
-      "cdi": 0.95,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -2.868,
-      "sm": -29.59,
-      "vi": 0.364,
-      "fcast3": -1.23
+      "rain": -3.352,
+      "sm": -38.31,
+      "vi": 0.311,
+      "fcast3": -0.231
     },
     "Milne Bay": {
-      "cdi": 0.9,
+      "cdi": 0.8,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -1.295,
-      "sm": -19.49,
-      "vi": 0.501,
-      "fcast3": -2.408
+      "rain": -1.904,
+      "sm": -30.21,
+      "vi": 0.445,
+      "fcast3": -0.984
     },
     "Morobe": {
-      "cdi": 0.8,
+      "cdi": 0.85,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.598,
-      "sm": -10.02,
-      "vi": 0.443,
-      "fcast3": -2.181
+      "rain": -2.696,
+      "sm": -16.8,
+      "vi": 0.399,
+      "fcast3": -0.521
     },
     "National Capital District": {
-      "cdi": 0.9,
+      "cdi": 1.0,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.409,
-      "sm": -19.25,
-      "vi": 0.45,
-      "fcast3": -2.356
+      "rain": -2.358,
+      "sm": -28.24,
+      "vi": 0.178,
+      "fcast3": -1.012
     },
     "New Ireland": {
-      "cdi": 0.8,
+      "cdi": 0.75,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -1.789,
-      "sm": -23.96,
-      "vi": 0.487,
-      "fcast3": -0.562
+      "rain": -2.821,
+      "sm": -33.79,
+      "vi": 0.387,
+      "fcast3": 0.749
     },
     "Oro": {
       "cdi": 0.8,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -1.857,
-      "sm": -14.12,
-      "vi": 0.489,
-      "fcast3": -2.054
+      "rain": -1.981,
+      "sm": -19.69,
+      "vi": 0.421,
+      "fcast3": -0.601
     },
     "Sandaun": {
-      "cdi": 0.8,
+      "cdi": 0.7,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.559,
-      "sm": -7.74,
-      "vi": 0.406,
-      "fcast3": -1.741
+      "rain": -3.76,
+      "sm": -12.27,
+      "vi": 0.284,
+      "fcast3": 1.232
     },
     "Southern Highlands": {
       "cdi": 0.8,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.643,
-      "sm": -6.68,
-      "vi": 0.502,
-      "fcast3": -1.994
+      "rain": -3.034,
+      "sm": -15.94,
+      "vi": 0.429,
+      "fcast3": -0.348
     },
     "West New Britain": {
-      "cdi": 0.9,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -4.03,
-      "sm": -23.47,
-      "vi": 0.47,
-      "fcast3": -2.222
-    },
-    "Western": {
-      "cdi": 0.9,
-      "enso": 1.0,
-      "iod": 1.0,
-      "rain": -3.028,
-      "sm": -17.1,
-      "vi": 0.423,
-      "fcast3": -1.948
-    },
-    "Western Highlands": {
       "cdi": 0.7,
       "enso": 1.0,
       "iod": 1.0,
-      "rain": -2.686,
-      "sm": -2.08,
-      "vi": 0.451,
-      "fcast3": -1.048
+      "rain": -2.891,
+      "sm": -33.69,
+      "vi": 0.411,
+      "fcast3": 0.31
+    },
+    "Western": {
+      "cdi": 0.85,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -2.252,
+      "sm": -23.57,
+      "vi": 0.306,
+      "fcast3": -0.472
+    },
+    "Western Highlands": {
+      "cdi": 0.65,
+      "enso": 1.0,
+      "iod": 1.0,
+      "rain": -4.04,
+      "sm": -5.07,
+      "vi": 0.373,
+      "fcast3": 1.153
     }
   }
 }
