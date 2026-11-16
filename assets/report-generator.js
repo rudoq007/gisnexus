@@ -53,9 +53,24 @@
       return r.json();
     }).catch(function (e) { if (optional) return null; throw e; });
   }
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  // Pixel-level CDI (district/LLG means, people by phase) can lag the monthly report until the month's
+  // satellite rainfall is published. Returns a short warning when it is older, else ''.
+  function pixelNote(data) {
+    var ex = data.example || {}, m = /([A-Za-z]+)\s+(\d{4})/.exec(ex.observation_month_label || '');
+    if (!m) return '';
+    var i = MONTHS.map(function (n) { return n.toLowerCase(); }).indexOf(m[1].toLowerCase());
+    if (i < 0) return '';
+    var want = m[2] + '-' + ('0' + (i + 1)).slice(-2);
+    var have = (data.pixelStatus && data.pixelStatus.cdi_pixel_observation_month) || (data.integrated && data.integrated.cdi_pixel_observation_month) || null;
+    if (have && have >= want) return '';
+    var hm = /^(\d{4})-(\d{2})$/.exec(have || '');
+    var haveLabel = hm ? MONTHS[+hm[2] - 1] + ' ' + hm[1] : 'an earlier month';
+    return '<b>Awaiting new data:</b> district, LLG and people-by-phase figures use the ' + esc(haveLabel) + ' pixel-level CDI; the ' + esc(ex.observation_month_label) + ' version is awaiting satellite rainfall data. Province CDI figures are current. For the current month, use the province CDI.';
+  }
   function fetchAll() {
-    return Promise.all([fetchJson(FILES.example), fetchJson(FILES.archive), fetchJson(FILES.admin, true), fetchJson(FILES.integrated, true), fetchJson(FILES.fire, true)])
-      .then(function (r) { return { example: r[0], archive: r[1], admin: r[2], integrated: r[3], fire: r[4] }; });
+    return Promise.all([fetchJson(FILES.example), fetchJson(FILES.archive), fetchJson(FILES.admin, true), fetchJson(FILES.integrated, true), fetchJson(FILES.fire, true), fetchJson('data/cdi_pixel_status.json', true)])
+      .then(function (r) { return { example: r[0], archive: r[1], admin: r[2], integrated: r[3], fire: r[4], pixelStatus: r[5] }; });
   }
 
   function provinces(data) {
@@ -96,6 +111,7 @@
     s += '<li><b>' + c('Response') + '</b> of ' + rows.length + ' provinces at the Response threshold, <b>' + c('Anticipatory Action') + '</b> in Anticipatory Action, <b>' + c('Readiness') + '</b> in Readiness.</li>';
     if (adm) {
       var sd = adm.summary.districts, sl = adm.summary.llgs;
+      var pn = pixelNote(data); if (pn) s += '<li class="small">' + pn + '</li>';
       s += '<li><b>' + sd.Response.units + '</b> of ' + adm.districts.length + ' districts and <b>' + sl.Response.units + '</b> of ' + adm.llgs.length + ' LLGs have an average CDI at Response level.</li>';
       s += '<li>About <b>' + fi(sl.Response.population_2024) + '</b> people (NSO 2024) live in Response-level LLGs and <b>' + fi(sl['Anticipatory Action'].population_2024) + '</b> in Anticipatory Action LLGs.</li>';
     }
@@ -146,7 +162,8 @@
     var adm = data.admin; if (!adm) return '';
     var sl = adm.summary.llgs, ph = ['Response', 'Anticipatory Action', 'Readiness', 'Monitoring', 'No data'];
     var tot = ph.reduce(function (a, p) { return a + ((sl[p] && sl[p].population_2024) || 0); }, 0);
-    var s = '<h3>People by CDI phase</h3><p class="small">NSO 2024 census population, grouped by the phase of the LLG each person lives in.</p><div style="height:220px"><canvas id="reportPopPhaseChart" data-values="' + esc(JSON.stringify(ph.map(function (p) { return (sl[p] && sl[p].population_2024) || 0; }))) + '"></canvas></div>';
+    var pn = pixelNote(data);
+    var s = '<h3>People by CDI phase</h3>' + (pn ? '<p class="small">' + pn + '</p>' : '') + '<p class="small">NSO 2024 census population, grouped by the phase of the LLG each person lives in.</p><div style="height:220px"><canvas id="reportPopPhaseChart" data-values="' + esc(JSON.stringify(ph.map(function (p) { return (sl[p] && sl[p].population_2024) || 0; }))) + '"></canvas></div>';
     s += '<table><thead><tr><th>Phase</th><th>LLGs</th><th>People</th><th>Share</th></tr></thead><tbody>' + ph.filter(function (p) { return sl[p] && sl[p].units; }).map(function (p) {
       return '<tr><td>' + pillLabel(p) + '</td><td>' + sl[p].units + '</td><td>' + fi(sl[p].population_2024) + '</td><td>' + pc(sl[p].population_2024, tot) + '</td></tr>';
     }).join('') + '</tbody></table>';
