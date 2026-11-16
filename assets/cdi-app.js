@@ -108,7 +108,7 @@ function renderOverview(){
   const sorted=ns.map((v,i)=>[v,i]).filter(x=>x[0]!=null).sort((a,b)=>b[0]-a[0]);const rank=sorted.findIndex(x=>x[1]===ns.length-1)+1;
   const peak=sorted[0];
   $('ovSummary').innerHTML=`<p class="lede">The ${esc(ex.reporting_month_label||'latest')} CDI puts Papua New Guinea's national average at <b>${fmt(nat)}</b>${rank?`, the <b>${rank===1?'highest':ordinal(rank)+' highest'}</b> monthly reading in the record rebuilt back to ${S.archive.timeline[0][0]}`:''}${rank!==1&&peak?` (the record is ${fmt(peak[0])}, set in ${monthLabel(S.archive.timeline[peak[1]])})`:''}. <b>${count('Response')}</b> provinces are at the Response threshold and <b>${count('Anticipatory Action')}</b> are in Anticipatory Action.</p>`+
-    (adm?`<p>Inside those provinces, <b>${adm.summary.llgs.Response.units}</b> of ${adm.llgs.length} LLGs average at Response level. About <b>${int(adm.summary.llgs.Response.population_2024)}</b> people live in them (NSO 2024), and another <b>${int(adm.summary.llgs['Anticipatory Action'].population_2024)}</b> live in LLGs at Anticipatory Action.</p>`:'')+
+    (adm?`<p>Inside those provinces, <b>${adm.summary.llgs.Response.units}</b> of ${adm.llgs.length} LLGs average at Response level. About <b>${int(adm.summary.llgs.Response.population_2024)}</b> people live in them (NSO 2024), and another <b>${int(adm.summary.llgs['Anticipatory Action'].population_2024)}</b> live in LLGs at Anticipatory Action.</p>${staleInline('These LLG and people figures use older pixel data. The province figures above are for the current report.')}`:'')+
     `<p class="small">The CDI shows where climate signals are converging. Field verification decides the response.</p>`;
   const ctx=S.integrated?.enso_iod_context;const anyP=rows[0]?.ind||{};
   $('ovEnso').innerHTML=ctx?`${esc(ctx.enso_phase||'--')}<span class="small">ONI ${fmt(ctx.oni_value)} (${esc(ctx.oni_period||'')}) · CDI flag ${flagLabel(anyP.enso)}</span>`:`CDI flag ${flagLabel(anyP.enso)}`;
@@ -232,18 +232,19 @@ function detailHtml(level,r,sparkId){
       <h3>What drives this month's score</h3>${indicatorTable(r.ind)}
       <h3>Last 24 months</h3><div style="height:160px"><canvas id="${sparkId||'provSpark'}"></canvas></div>
       <div class="fire-slot" data-kind="province" data-prov="${esc(r.name)}"></div>
-      ${r.population_2024!=null?`<h3>People</h3>${popBlock(r)}<p class="small" style="margin-top:10px"><b>${int(r.pop_response)}</b> live in LLGs at Response level and <b>${int(r.pop_aa)}</b> in LLGs at Anticipatory Action.</p>`:''}
-      ${kids.length?`<h3>Districts</h3><table class="mini"><thead><tr><th>District</th><th>Mean CDI</th><th>Phase</th></tr></thead><tbody>${kids.map(d=>`<tr><td><a href="#" data-jump="district|${esc(d.geocode)}">${esc(d.name)}</a></td><td>${cdiCell(d.cdi_mean)}</td><td>${pill(d.phase)}</td></tr>`).join('')}</tbody></table>`:''}
+      ${r.population_2024!=null?`<h3>People</h3>${staleInline('The counts of people in Response and Anticipatory Action LLGs use LLG phases from older pixel data. The province CDI above is for the current report.')}${popBlock(r)}<p class="small" style="margin-top:10px"><b>${int(r.pop_response)}</b> live in LLGs at Response level and <b>${int(r.pop_aa)}</b> in LLGs at Anticipatory Action.</p>`:''}
+      ${kids.length?`<h3>Districts</h3>${staleInline('Each district mean CDI and phase uses older pixel data, so it can differ from the province CDI above.')}<table class="mini"><thead><tr><th>District</th><th>Mean CDI</th><th>Phase</th></tr></thead><tbody>${kids.map(d=>`<tr><td><a href="#" data-jump="district|${esc(d.geocode)}">${esc(d.name)}</a></td><td>${cdiCell(d.cdi_mean)}</td><td>${pill(d.phase)}</td></tr>`).join('')}</tbody></table>`:''}
       ${prof?`<h3>Livelihoods and likely impacts</h3><p class="small"><b>Livelihoods:</b> ${esc(prof.livelihoods)}</p><p class="small"><b>Impact of dry conditions:</b> ${esc(prof.impact)}</p>`:''}`}
   const diff=r.cdi_mean==null||r.province_cdi==null?null:r.cdi_mean-r.province_cdi;
   const head=`<span class="eyebrow">${level==='llg'?'Local-Level Government':'District'}</span><h2>${esc(r.name)}</h2><p class="small">${level==='llg'?`<a href="#" data-jump="district|${esc(r.district_geocode)}">${esc(r.district)} District</a> · `:''}<a href="#" data-jump="province|${esc(r.province)}">${esc(r.province)}</a></p>
     ${big(r.cdi_mean)}${pill(r.phase)}
+    ${staleInline('The mean CDI, pixel range and area shares for this area use older pixel data. Only the province CDI (official) is for the current report.')}
     <div class="dgrid">${stat('Pixel range',r.cdi_min==null?'--':fmt(r.cdi_min)+'–'+fmt(r.cdi_max))}${stat('Area at Response',pct(r.pct_area_response))}${stat('Area at Anticipatory Action',pct(r.pct_area_aa))}${stat('Province CDI (official)',fmt(r.province_cdi),diff==null?'':'this area is '+fmt(Math.abs(diff))+(diff>=0?' higher':' lower'))}</div>
     ${r.pixel_coverage!=null&&r.pixel_coverage<0.9?`<p class="small warnline" style="margin-top:10px">Only ${pct(r.pixel_coverage)} of this area has CDI pixels (small islands or coast).</p>`:''}
     ${level==='district'?`<div class="fire-slot" data-kind="district" data-prov="${esc(r.province)}" data-name="${esc(r.name)}"></div>`:`<div class="fire-slot" data-kind="district" data-prov="${esc(r.province)}" data-name="${esc(r.district)}"></div>`}
     <h3>People</h3>${popBlock(r)}`;
   if(level==='district'){const kids=(S.admin?.llgs||[]).filter(l=>l.district_geocode===r.geocode).sort((a,b)=>(b.cdi_mean||0)-(a.cdi_mean||0));
-    return head+`<h3>LLGs in this district</h3><table class="mini"><thead><tr><th>LLG</th><th>Mean CDI</th><th>Phase</th><th>People</th></tr></thead><tbody>${kids.map(l=>`<tr><td><a href="#" data-jump="llg|${esc(l.geocode)}">${esc(l.name)}</a></td><td>${cdiCell(l.cdi_mean)}</td><td>${pill(l.phase)}</td><td>${int(l.population_2024)}</td></tr>`).join('')}</tbody></table>`}
+    return head+`<h3>LLGs in this district</h3>${staleInline('Each LLG mean CDI and phase uses older pixel data.')}<table class="mini"><thead><tr><th>LLG</th><th>Mean CDI</th><th>Phase</th><th>People</th></tr></thead><tbody>${kids.map(l=>`<tr><td><a href="#" data-jump="llg|${esc(l.geocode)}">${esc(l.name)}</a></td><td>${cdiCell(l.cdi_mean)}</td><td>${pill(l.phase)}</td><td>${int(l.population_2024)}</td></tr>`).join('')}</tbody></table>`}
   return head+(r.census_2024_llgs?`<p class="small" style="margin-top:12px">2024 census LLGs counted here: ${esc(r.census_2024_llgs)}</p>`:'')
 }
 function provinceSpark(r,cid){const n=24;const h=r.history.slice(-n),tl=r.timeline.slice(-n);const red=css('--resp')||'#9C1C33';
@@ -308,6 +309,7 @@ function labelFromYm(ym){const m=/^(\d{4})-(\d{2})$/.exec(ym||'');return m?MONTH
 function freshness(){const ex=S.example||{};const want=ymFromLabel(ex.observation_month_label);
   const have=S.pixelStatus?.cdi_pixel_observation_month||S.integrated?.cdi_pixel_observation_month||null;
   return{stale:!!want&&(!have||have<want),wantLabel:ex.observation_month_label||'the latest month',haveLabel:labelFromYm(have)||'an earlier month',reportLabel:ex.reporting_month_label||'latest'}}
+function staleInline(what){const f=freshness();if(!f.stale)return'';return `<p class="small stale-inline" style="border-left:4px solid var(--aa);padding-left:10px;color:var(--ink)"><b>${esc(f.haveLabel)} data, awaiting ${esc(f.wantLabel)}.</b> ${what}</p>`}
 function freshNote(html,id,extra){const d=document.createElement('div');d.className='fresh-note'+(extra?' '+extra:'');d.id=id;d.setAttribute('role','status');d.innerHTML=html;return d}
 function renderFreshness(){document.querySelectorAll('.fresh-note').forEach(n=>n.remove());const f=freshness();if(!f.stale)return;
   const awaiting=`awaiting ${esc(f.wantLabel)} satellite rainfall data`;
