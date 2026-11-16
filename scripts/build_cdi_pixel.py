@@ -70,6 +70,7 @@ import os
 import re
 import time
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 import ee
@@ -329,6 +330,42 @@ def build_soil_moisture_flag(obs_year: int, obs_month: int, boundary) -> ee.Imag
     return flag_below(sm_pct, -5, -15)
 
 
+def check_inputs_available(obs_year: int, obs_month: int) -> None:
+    """Fail early, with a plain message, when Earth Engine does not yet hold the
+    observation month's inputs.
+
+    Without this, an empty CHIRPS month surfaces much later as the cryptic
+    "Image.subtract: If one image has no bands ... Got 0 and 1" error, and a month
+    that is only partly published would NOT error at all but would give
+    too-dry rainfall (the SPI-1 sums fewer days than the climatology). CHIRPS
+    daily has one image per day, so a complete month has exactly that many.
+    """
+    start, end = month_bounds(obs_year, obs_month)
+    expected_days = calendar.monthrange(obs_year, obs_month)[1]
+    chirps_days = ee.ImageCollection(CHIRPS_COLLECTION).filterDate(start, end).size().getInfo()
+    era5_images = ee.ImageCollection(ERA5_LAND_COLLECTION).filterDate(start, end).size().getInfo()
+    print(
+        f"Input check for {obs_year}-{obs_month:02d}: CHIRPS daily images {chirps_days}/{expected_days}, "
+        f"ERA5-Land monthly images {era5_images}/1"
+    )
+    problems = []
+    if chirps_days == 0:
+        problems.append(f"{CHIRPS_COLLECTION} has no images for {obs_year}-{obs_month:02d} yet")
+    elif chirps_days < expected_days:
+        problems.append(
+            f"{CHIRPS_COLLECTION} has only {chirps_days} of {expected_days} daily images for "
+            f"{obs_year}-{obs_month:02d} (month only partly published)"
+        )
+    if era5_images == 0:
+        problems.append(f"{ERA5_LAND_COLLECTION} has no image for {obs_year}-{obs_month:02d} yet")
+    if problems:
+        raise RuntimeError(
+            "Pixel-level CDI not built: " + "; ".join(problems) + ". Earth Engine has not ingested this "
+            "month's data yet, so the previous raster and data/cdi_pixel_status.json are left unchanged. "
+            "This is expected for a while after month end; the nightly run will retry."
+        )
+
+
 def get_tile_url(image: ee.Image, min_val: float, max_val: float, palette: list) -> str:
     return image.getMapId({"min": min_val, "max": max_val, "palette": palette})["tile_fetcher"].url_format
 
@@ -430,6 +467,7 @@ def main():
     )
 
     initialise_earth_engine()
+    check_inputs_available(obs_year, obs_month)
     boundary = png_geometry()
 
     forecast_flag_image = build_forecast_flag_image(example_provinces, boundary, args.forecast_flag)
@@ -450,6 +488,18 @@ def main():
         tif_path = Path(args.tif_output)
         export_geotiff(cdi, boundary, tif_path)
         print(f"Wrote {tif_path}")
+        # Record which month this raster describes. Only reached after a successful
+        # export, so a failed run leaves the previous month in place and the
+        # dashboard can tell users the pixel layers are awaiting new data.
+        status_path = tif_path.parent / "cdi_pixel_status.json"
+        status_path.write_text(
+            json.dumps({
+                "cdi_pixel_observation_month": f"{obs_year:04d}-{obs_month:02d}",
+                "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+            }, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"Wrote {status_path}")
 
 
 if __name__ == "__main__":
