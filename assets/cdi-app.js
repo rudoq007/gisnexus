@@ -297,6 +297,29 @@ function openTab(panel){document.querySelectorAll('.tab').forEach(x=>x.classList
 function initTabs(){document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{openTab(b.dataset.panel);const t=document.querySelector('.tabs');if(t&&window.scrollY>t.offsetTop)window.scrollTo({top:document.querySelector('main').offsetTop-70,behavior:reduceMotion?'auto':'smooth'})}));
   moveIndicator();window.addEventListener('resize',moveIndicator);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveIndicator)}
 
+// ---------- data freshness ----------
+// The province CDI comes from the monthly report. District/LLG means, the pixel map layer and the
+// "people by phase" counts come from a pixel-level CDI that needs the month's satellite rainfall,
+// which can arrive days or weeks after the report. When that raster is older than the report,
+// say so plainly instead of showing older numbers under the newer report label.
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function ymFromLabel(l){const m=/([A-Za-z]+)\s+(\d{4})/.exec(l||'');if(!m)return null;const i=MONTH_NAMES.findIndex(n=>n.toLowerCase()===m[1].toLowerCase());return i<0?null:m[2]+'-'+String(i+1).padStart(2,'0')}
+function labelFromYm(ym){const m=/^(\d{4})-(\d{2})$/.exec(ym||'');return m?MONTH_NAMES[+m[2]-1]+' '+m[1]:null}
+function freshness(){const ex=S.example||{};const want=ymFromLabel(ex.observation_month_label);
+  const have=S.pixelStatus?.cdi_pixel_observation_month||S.integrated?.cdi_pixel_observation_month||null;
+  return{stale:!!want&&(!have||have<want),wantLabel:ex.observation_month_label||'the latest month',haveLabel:labelFromYm(have)||'an earlier month',reportLabel:ex.reporting_month_label||'latest'}}
+function freshNote(html,id,extra){const d=document.createElement('div');d.className='fresh-note'+(extra?' '+extra:'');d.id=id;d.setAttribute('role','status');d.innerHTML=html;return d}
+function renderFreshness(){document.querySelectorAll('.fresh-note').forEach(n=>n.remove());const f=freshness();if(!f.stale)return;
+  const awaiting=`awaiting ${esc(f.wantLabel)} satellite rainfall data`;
+  const head=document.querySelector('header.hero');
+  if(head)head.insertAdjacentElement('afterend',freshNote(`<b>Some figures are older than the ${esc(f.reportLabel)} report.</b> The province CDI is up to date. The district and LLG maps, and the counts of LLGs and people by phase, still use ${esc(f.haveLabel)} pixel-level data and are ${awaiting}. They will update automatically when it is published.`,'freshGlobal','fresh-global'));
+  const detail=`<b>Awaiting new data.</b> District and LLG figures on this page, and the people-by-phase counts, are based on the <b>${esc(f.haveLabel)}</b> pixel-level CDI. The ${esc(f.wantLabel)} version is ${awaiting}. Until then a district or LLG can show a different phase from its province's ${esc(f.reportLabel)} CDI. For the current month, use the province CDI.`;
+  ['district','llg'].forEach(id=>{const g=document.querySelector('#'+id+' .grid');if(g){const n=freshNote(detail,'fresh-'+id,'card full');g.prepend(n)}
+    const eb=document.querySelector('#'+id+' .cdiPeriod');if(eb)eb.textContent=`${f.haveLabel} pixel-level CDI · awaiting ${f.wantLabel} data`});
+  const pop=$('ovPopPhase');if(pop)pop.insertAdjacentElement('beforebegin',freshNote(`<b>Awaiting new data.</b> These counts use the ${esc(f.haveLabel)} pixel-level CDI (${awaiting}).`,'fresh-pop'));
+  ['heroLlg','heroPop'].forEach(id=>{const lab=$(id)?.nextElementSibling;if(lab&&!lab.dataset.fresh){lab.dataset.fresh='1';lab.textContent+=` (${f.haveLabel} data)`}});
+  const fm=$('footerMeta');if(fm)fm.innerHTML+=`<br>Pixel-level CDI (district, LLG, people by phase): ${esc(f.haveLabel)} observations, ${awaiting}`}
+
 function setMeta(){const ex=S.example;const t=`${ex.reporting_month_label||''} report · ${ex.observation_month_label||''} observations`;
   document.querySelectorAll('.cdiPeriod').forEach(e=>e.textContent=t);
   if($('liveLabel'))$('liveLabel').textContent=(ex.reporting_month_label||'Latest')+' CDI';
@@ -312,13 +335,13 @@ function init(){chartTheme();stagger();initTabs();$('ovTrendSpan')?.addEventList
   const tb=$('themeBtn');if(tb)tb.addEventListener('click',()=>window.ADAPT_THEME&&ADAPT_THEME.toggle());
   if(THEME.onChange)THEME.onChange(()=>requestAnimationFrame(onTheme));
   Promise.all([getJson('data/cdi_example_latest.json'),getJson('data/cdi_archive.json'),getJson('data/cdi_admin_latest.json',true),getJson('data/integrated_priority_latest.json',true),
-    getJson('adm1_nso_province.geojson',true),getJson('adm2_nso_district.geojson',true),getJson('adm3_nso_llg.geojson',true)])
-  .then(([ex,ar,adm,integ,pg,dg,lg])=>{Object.assign(S,{example:ex,archive:ar,admin:adm,integrated:integ,provGeo:pg,distGeo:dg,llgGeo:lg});
-    setMeta();renderHero();renderOverview();initAboutMap();document.dispatchEvent(new CustomEvent('adapt-data-ready'));
+    getJson('adm1_nso_province.geojson',true),getJson('adm2_nso_district.geojson',true),getJson('adm3_nso_llg.geojson',true),getJson('data/cdi_pixel_status.json',true)])
+  .then(([ex,ar,adm,integ,pg,dg,lg,px])=>{Object.assign(S,{example:ex,archive:ar,admin:adm,integrated:integ,provGeo:pg,distGeo:dg,llgGeo:lg,pixelStatus:px});
+    setMeta();renderHero();renderOverview();renderFreshness();initAboutMap();document.dispatchEvent(new CustomEvent('adapt-data-ready'));
     ['province','district','llg'].forEach(l=>{if(LEVELS[l].geo()&&LEVELS[l].rows().length)buildTab(l);else{const d=$(l+'Detail');if(d)d.innerHTML='<p>Data for this level is not available yet.</p>'}});
     const fromHash=()=>{const h=(location.hash||'').slice(1);if(h&&$(h)&&$(h).classList.contains('panel'))openTab(h)};fromHash();window.addEventListener('hashchange',fromHash);
     setTimeout(restyleForeignCharts,1500);
   }).catch(e=>{console.error(e);const s=$('ovSummary');if(s)s.innerHTML='<p>CDI data could not be loaded right now. Please try again later.</p>'})}
-window.ADAPT_CDI={state:S,openTab,select,phaseOf,colorOf,countUp,aboutSelect:(id,z)=>aboutSelect(id,z)};
+window.ADAPT_CDI={freshness,state:S,openTab,select,phaseOf,colorOf,countUp,aboutSelect:(id,z)=>aboutSelect(id,z)};
 document.addEventListener('DOMContentLoaded',init);
 })();
