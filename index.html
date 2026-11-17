@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="assets/adapt.css?v=20261117a">
-<script src="assets/theme.js?v=20261117a"></script>
+<link rel="stylesheet" href="assets/adapt.css?v=20261117b">
+<script src="assets/theme.js?v=20261117b"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -51,12 +51,14 @@
 </div></section>
 <section id="district" class="panel"><div class="grid">
 <section class="card full"><span class="eyebrow cdiPeriod">Latest CDI report</span><h2>CDI by district</h2><p class="note">Each district shows the average of the ~5 km CDI pixels inside its boundary. Half of the CDI (El Niño, Indian Ocean and the rainfall forecast) is the same across a whole province, so differences between districts come from rainfall, soil moisture and vegetation. Use this to decide where to look first, not as an exact local value. Boundaries: PNG NSO 2011 census (87 districts). Population: NSO 2024 census.</p>
+<p class="note"><b>Why a district can be in a different phase from its province.</b> The province CDI is the official figure and is built from province-average inputs. A district value is the average of the map pixels inside it, so a district can sit above or below its province. That is expected and is not an error. Most districts are in the same phase as their province; a district in a lower phase usually means its rainfall, soil moisture or vegetation are doing better than the province average. Read each district together with its province CDI and verify on the ground.</p>
 <div class="lvl-controls"><div class="field"><label class="muted">Province</label><select id="districtProvince"></select></div><div class="field"><label class="muted">Go to district</label><select id="districtSelect"></select></div></div></section>
 <section class="card full"><div class="lvl-grid"><div><div id="districtMap" class="lvl-map map-frame"></div><p class="source">Click an area on the map, or pick one above, to see its details. Use the layer button (top right) to switch the base map, show province boundaries or show the ~5 km CDI pixels.</p></div><div class="lvl-detail" id="districtDetail"><div class="empty-state"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5.5v15.5l6-2.5 6 2.5 6-2.5V3l-6 2.5z"/><path d="M9 3v15.5M15 5.5V21"/></svg><h2>Select a district</h2><p class="small">Click an area on the map, pick one above, or choose a row in the table.</p></div></div></div></div></section>
 <section class="card full"><h2>All districts</h2><div class="table-controls"><div class="field"><label class="muted">Find</label><input id="districtSearch" type="text" placeholder="Type a name"></div><div class="field"><label class="muted">Sort by</label><select id="districtSort"></select></div><button class="btn" id="districtCsv">Download CSV</button><span class="small" id="districtCount"></span></div><div class="tablewrap"><table><thead id="districtHead"></thead><tbody id="districtBody"></tbody></table></div></section>
 </div></section>
 <section id="llg" class="panel"><div class="grid">
 <section class="card full"><span class="eyebrow cdiPeriod">Latest CDI report</span><h2>CDI by LLG</h2><p class="note">Each Local-Level Government (LLG) shows the average of the ~5 km CDI pixels inside its boundary. Very small or island LLGs cover only a few pixels, so treat their values with care. Boundaries: PNG NSO 2011 census (326 LLGs). Population: NSO 2024 census.</p>
+<p class="note"><b>Why an LLG can be in a different phase from its district or province.</b> The province CDI is the official figure and is built from province-average inputs. An LLG value is the average of the map pixels inside it, so LLGs vary more than provinces do. That is expected and is not an error. Most LLGs are in the same phase as their province; an LLG in a lower phase usually means its rainfall, soil moisture or vegetation are doing better than the province average. Small LLGs cover few pixels, so use their values with care and verify on the ground.</p>
 <div class="lvl-controls"><div class="field"><label class="muted">Province</label><select id="llgProvince"></select></div><div class="field"><label class="muted">Go to LLG</label><select id="llgSelect"></select></div></div></section>
 <section class="card full"><div class="lvl-grid"><div><div id="llgMap" class="lvl-map map-frame"></div><p class="source">Click an area on the map, or pick one above, to see its details. Use the layer button (top right) to switch the base map, show province boundaries or show the ~5 km CDI pixels.</p></div><div class="lvl-detail" id="llgDetail"><div class="empty-state"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5.5v15.5l6-2.5 6 2.5 6-2.5V3l-6 2.5z"/><path d="M9 3v15.5M15 5.5V21"/></svg><h2>Select an LLG</h2><p class="small">Click an area on the map, pick one above, or choose a row in the table.</p></div></div></div></div></section>
 <section class="card full"><h2>All LLGs</h2><div class="table-controls"><div class="field"><label class="muted">Find</label><input id="llgSearch" type="text" placeholder="Type a name"></div><div class="field"><label class="muted">Sort by</label><select id="llgSort"></select></div><button class="btn" id="llgCsv">Download CSV</button><span class="small" id="llgCount"></span></div><div class="tablewrap"><table><thead id="llgHead"></thead><tbody id="llgBody"></tbody></table></div></section>
@@ -322,8 +324,8 @@ function loadCdiData(){
 document.addEventListener('DOMContentLoaded',loadCdiData);
 
 </script>
-<script src="assets/cdi-app.js?v=20261117a"></script>
-<script src="assets/fire.js?v=20261117a"></script>
-<script src="assets/report-generator.js?v=20261117a"></script>
+<script src="assets/cdi-app.js?v=20261117b"></script>
+<script src="assets/fire.js?v=20261117b"></script>
+<script src="assets/report-generator.js?v=20261117b"></script>
 </body>
 </html>
