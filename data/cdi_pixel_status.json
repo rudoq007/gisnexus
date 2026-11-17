@@ -1,4 +1,4 @@
 {
-  "cdi_pixel_observation_month": "2026-09",
-  "note": "Observation month of data/cdi_pixel_latest.tif. Written by scripts/build_cdi_pixel.py only after a successful raster export, so it stays at the last good month when a run fails. The dashboard compares it with the CDI report's observation month and shows an 'awaiting new data' notice when it is older."
+  "cdi_pixel_observation_month": "2026-10",
+  "generated_utc": "2026-11-17 12:16 UTC"
 }

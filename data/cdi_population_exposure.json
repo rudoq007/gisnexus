@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-11-17 12:09 UTC",
-  "cdi_pixel_observation_month": null,
+  "generated_utc": "2026-11-17 12:17 UTC",
+  "cdi_pixel_observation_month": "2026-10",
   "source": {
     "census_units": "PNG NSO 2024 Census Unit population estimates (pipeline/CU_reference_imputed.gpkg; imputed coordinates used where original point coordinates were missing)",
     "cdi_raster": "data/cdi_pixel_latest.tif"
@@ -12,9 +12,9 @@
     "census_units": 30708,
     "census_units_no_coverage": 3980,
     "population_by_phase": {
-      "Response threshold": 9481919,
-      "Anticipatory Action": 3167329,
-      "Readiness": 0,
+      "Response threshold": 1213946,
+      "Anticipatory Action": 10841936,
+      "Readiness": 593366,
       "Monitoring": 0,
       "No data": 1968458
     }
@@ -26,9 +26,9 @@
       "census_units": 1340,
       "census_units_no_coverage": 140,
       "population_by_phase": {
-        "Response threshold": 339888,
-        "Anticipatory Action": 69644,
-        "Readiness": 0,
+        "Response threshold": 519,
+        "Anticipatory Action": 406475,
+        "Readiness": 2538,
         "Monitoring": 0,
         "No data": 48275
       }
@@ -39,8 +39,8 @@
       "census_units": 1235,
       "census_units_no_coverage": 173,
       "population_by_phase": {
-        "Response threshold": 385207,
-        "Anticipatory Action": 61665,
+        "Response threshold": 197022,
+        "Anticipatory Action": 249850,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 79970
@@ -52,9 +52,9 @@
       "census_units": 1792,
       "census_units_no_coverage": 176,
       "population_by_phase": {
-        "Response threshold": 407929,
-        "Anticipatory Action": 307703,
-        "Readiness": 0,
+        "Response threshold": 3653,
+        "Anticipatory Action": 710564,
+        "Readiness": 1415,
         "Monitoring": 0,
         "No data": 74344
       }
@@ -65,8 +65,8 @@
       "census_units": 1001,
       "census_units_no_coverage": 238,
       "population_by_phase": {
-        "Response threshold": 374307,
-        "Anticipatory Action": 68228,
+        "Response threshold": 1228,
+        "Anticipatory Action": 441307,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 179369
@@ -78,9 +78,9 @@
       "census_units": 1645,
       "census_units_no_coverage": 189,
       "population_by_phase": {
-        "Response threshold": 661187,
-        "Anticipatory Action": 59767,
-        "Readiness": 0,
+        "Response threshold": 702,
+        "Anticipatory Action": 713128,
+        "Readiness": 7124,
         "Monitoring": 0,
         "No data": 86762
       }
@@ -91,9 +91,9 @@
       "census_units": 3061,
       "census_units_no_coverage": 343,
       "population_by_phase": {
-        "Response threshold": 733559,
-        "Anticipatory Action": 114508,
-        "Readiness": 0,
+        "Response threshold": 6027,
+        "Anticipatory Action": 841459,
+        "Readiness": 581,
         "Monitoring": 0,
         "No data": 123603
       }
@@ -104,9 +104,9 @@
       "census_units": 1043,
       "census_units_no_coverage": 85,
       "population_by_phase": {
-        "Response threshold": 121145,
-        "Anticipatory Action": 488476,
-        "Readiness": 0,
+        "Response threshold": 932,
+        "Anticipatory Action": 331078,
+        "Readiness": 277611,
         "Monitoring": 0,
         "No data": 44131
       }
@@ -117,9 +117,9 @@
       "census_units": 582,
       "census_units_no_coverage": 76,
       "population_by_phase": {
-        "Response threshold": 147892,
-        "Anticipatory Action": 75690,
-        "Readiness": 0,
+        "Response threshold": 67083,
+        "Anticipatory Action": 156298,
+        "Readiness": 201,
         "Monitoring": 0,
         "No data": 47584
       }
@@ -130,9 +130,9 @@
       "census_units": 1959,
       "census_units_no_coverage": 432,
       "population_by_phase": {
-        "Response threshold": 406159,
-        "Anticipatory Action": 107522,
-        "Readiness": 0,
+        "Response threshold": 7420,
+        "Anticipatory Action": 470342,
+        "Readiness": 35919,
         "Monitoring": 0,
         "No data": 148373
       }
@@ -143,9 +143,9 @@
       "census_units": 1139,
       "census_units_no_coverage": 120,
       "population_by_phase": {
-        "Response threshold": 272862,
-        "Anticipatory Action": 205255,
-        "Readiness": 0,
+        "Response threshold": 3282,
+        "Anticipatory Action": 452944,
+        "Readiness": 21891,
         "Monitoring": 0,
         "No data": 52056
       }
@@ -156,9 +156,9 @@
       "census_units": 1785,
       "census_units_no_coverage": 112,
       "population_by_phase": {
-        "Response threshold": 692111,
-        "Anticipatory Action": 100069,
-        "Readiness": 0,
+        "Response threshold": 795,
+        "Anticipatory Action": 766324,
+        "Readiness": 25061,
         "Monitoring": 0,
         "No data": 50505
       }
@@ -169,8 +169,8 @@
       "census_units": 243,
       "census_units_no_coverage": 58,
       "population_by_phase": {
-        "Response threshold": 77152,
-        "Anticipatory Action": 9785,
+        "Response threshold": 30078,
+        "Anticipatory Action": 56859,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 25561
@@ -182,8 +182,8 @@
       "census_units": 1327,
       "census_units_no_coverage": 269,
       "population_by_phase": {
-        "Response threshold": 429652,
-        "Anticipatory Action": 30171,
+        "Response threshold": 176816,
+        "Anticipatory Action": 283007,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 112399
@@ -195,9 +195,9 @@
       "census_units": 2811,
       "census_units_no_coverage": 331,
       "population_by_phase": {
-        "Response threshold": 933833,
-        "Anticipatory Action": 273670,
-        "Readiness": 0,
+        "Response threshold": 195980,
+        "Anticipatory Action": 1007525,
+        "Readiness": 3998,
         "Monitoring": 0,
         "No data": 183322
       }
@@ -208,8 +208,8 @@
       "census_units": 723,
       "census_units_no_coverage": 163,
       "population_by_phase": {
-        "Response threshold": 1151203,
-        "Anticipatory Action": 150525,
+        "Response threshold": 261515,
+        "Anticipatory Action": 1040213,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 227366
@@ -221,8 +221,8 @@
       "census_units": 802,
       "census_units_no_coverage": 162,
       "population_by_phase": {
-        "Response threshold": 227367,
-        "Anticipatory Action": 86683,
+        "Response threshold": 97,
+        "Anticipatory Action": 313953,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 76782
@@ -234,9 +234,9 @@
       "census_units": 991,
       "census_units_no_coverage": 94,
       "population_by_phase": {
-        "Response threshold": 196761,
-        "Anticipatory Action": 92858,
-        "Readiness": 0,
+        "Response threshold": 52465,
+        "Anticipatory Action": 236850,
+        "Readiness": 304,
         "Monitoring": 0,
         "No data": 31810
       }
@@ -247,9 +247,9 @@
       "census_units": 1238,
       "census_units_no_coverage": 155,
       "population_by_phase": {
-        "Response threshold": 402976,
-        "Anticipatory Action": 73623,
-        "Readiness": 0,
+        "Response threshold": 1999,
+        "Anticipatory Action": 459799,
+        "Readiness": 14801,
         "Monitoring": 0,
         "No data": 74293
       }
@@ -260,9 +260,9 @@
       "census_units": 2982,
       "census_units_no_coverage": 414,
       "population_by_phase": {
-        "Response threshold": 540613,
-        "Anticipatory Action": 440254,
-        "Readiness": 0,
+        "Response threshold": 55064,
+        "Anticipatory Action": 917526,
+        "Readiness": 8277,
         "Monitoring": 0,
         "No data": 166982
       }
@@ -273,8 +273,8 @@
       "census_units": 746,
       "census_units_no_coverage": 78,
       "population_by_phase": {
-        "Response threshold": 341710,
-        "Anticipatory Action": 25405,
+        "Response threshold": 1473,
+        "Anticipatory Action": 365642,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 47737
@@ -286,8 +286,8 @@
       "census_units": 916,
       "census_units_no_coverage": 69,
       "population_by_phase": {
-        "Response threshold": 301610,
-        "Anticipatory Action": 20052,
+        "Response threshold": 146070,
+        "Anticipatory Action": 175592,
         "Readiness": 0,
         "Monitoring": 0,
         "No data": 31037
@@ -299,9 +299,9 @@
       "census_units": 1347,
       "census_units_no_coverage": 103,
       "population_by_phase": {
-        "Response threshold": 336796,
-        "Anticipatory Action": 305776,
-        "Readiness": 0,
+        "Response threshold": 3726,
+        "Anticipatory Action": 445201,
+        "Readiness": 193645,
         "Monitoring": 0,
         "No data": 56197
       }
