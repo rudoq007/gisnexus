@@ -65,6 +65,7 @@ EARTHENGINE_PROJECT environment used by the other pipeline scripts.
 """
 import argparse
 import calendar
+import functools
 import json
 import os
 import re
@@ -81,6 +82,11 @@ ASIS_COLLECTION = "projects/UNFAO/ASIS/VHI-D"
 # CHIRPS v3 monthly, so the pixel layer must too. v2 ("UCSB-CHG/CHIRPS/DAILY") is being
 # retired after Dec 2026. Override for testing, e.g. CHIRPS_COLLECTION=UCSB-CHC/CHIRPS/V3/DAILY_RNL
 CHIRPS_COLLECTION = os.environ.get("CHIRPS_COLLECTION", "UCSB-CHC/CHIRPS/V3/DAILY_SAT")
+# Baseline (history) fallback if the main CHIRPS collection is not populated far enough
+# back in Earth Engine. Both v3 dailies split the same CHIRPS-v3 pentad totals into days,
+# so their monthly sums are comparable.
+CHIRPS_BASELINE_FALLBACK = "UCSB-CHC/CHIRPS/V3/DAILY_RNL"
+MIN_BASELINE_YEARS = 10
 ERA5_LAND_COLLECTION = "ECMWF/ERA5_LAND/MONTHLY_AGGR"
 SOIL_MOISTURE_BAND = "volumetric_soil_water_layer_1"
 
@@ -279,6 +285,36 @@ def flag_below(image: ee.Image, alert_threshold: float, declared_threshold: floa
     )
 
 
+@functools.lru_cache(maxsize=None)
+def pick_baseline_collection(obs_year: int, obs_month: int) -> str:
+    """Return the CHIRPS collection to use for the same-calendar-month history.
+
+    An empty history gives the cryptic "Image.subtract: ... Got 1 and 0" error, so
+    count, per year, how many daily images exist in that month and require a
+    usable number of near-complete years (>= 20 days) before trusting a collection."""
+    years = list(range(CLIM_START_YEAR, obs_year))
+    for coll in (CHIRPS_COLLECTION, CHIRPS_BASELINE_FALLBACK):
+        counts = ee.List(years).map(
+            lambda y: ee.ImageCollection(coll).filterDate(
+                ee.Date.fromYMD(y, obs_month, 1),
+                ee.Date.fromYMD(y, obs_month, 1).advance(1, "month"),
+            ).size()
+        ).getInfo()
+        good = [y for y, c in zip(years, counts) if c >= 20]
+        print(
+            f"Baseline check {coll}: {len(good)}/{len(years)} years have >=20 daily images in month "
+            f"{obs_month:02d}" + (f" (first usable year {good[0]})" if good else " (none)")
+        )
+        if len(good) >= MIN_BASELINE_YEARS:
+            if coll != CHIRPS_COLLECTION:
+                print(f"Using {coll} for the rainfall baseline; {CHIRPS_COLLECTION} for the observation month.")
+            return coll
+    raise RuntimeError(
+        f"Pixel-level CDI not built: neither {CHIRPS_COLLECTION} nor {CHIRPS_BASELINE_FALLBACK} has at "
+        f"least {MIN_BASELINE_YEARS} years of daily history for month {obs_month:02d} in Earth Engine."
+    )
+
+
 def build_rainfall_flag(obs_year: int, obs_month: int, boundary) -> ee.Image:
     """SPI-1 approximation: empirical z-score of the observation month's CHIRPS
     total against the same calendar month's history back to CLIM_START_YEAR.
@@ -292,15 +328,16 @@ def build_rainfall_flag(obs_year: int, obs_month: int, boundary) -> ee.Image:
     start, end = month_bounds(obs_year, obs_month)
     current = chirps.filterDate(start, end).sum()
 
+    hist_chirps = ee.ImageCollection(pick_baseline_collection(obs_year, obs_month)).select("precipitation")
     hist_years = ee.List.sequence(CLIM_START_YEAR, obs_year - 1)
     hist_totals = ee.ImageCollection.fromImages(
         hist_years.map(
-            lambda y: chirps.filterDate(
+            lambda y: hist_chirps.filterDate(
                 ee.Date.fromYMD(y, obs_month, 1),
                 ee.Date.fromYMD(y, obs_month, 1).advance(1, "month"),
             ).sum().set("year", y)
         )
-    )
+    ).filter(ee.Filter.listContains("system:band_names", "precipitation"))  # skip years with no data
     hist_mean = hist_totals.mean()
     hist_std = hist_totals.reduce(ee.Reducer.stdDev())
     spi1 = current.subtract(hist_mean).divide(hist_std).rename("SPI1").clip(boundary)
@@ -361,6 +398,8 @@ def check_inputs_available(obs_year: int, obs_month: int) -> None:
         )
     if era5_images == 0:
         problems.append(f"{ERA5_LAND_COLLECTION} has no image for {obs_year}-{obs_month:02d} yet")
+    if not problems:
+        pick_baseline_collection(obs_year, obs_month)  # fails clearly if history is empty
     if problems:
         raise RuntimeError(
             "Pixel-level CDI not built: " + "; ".join(problems) + ". Earth Engine has not ingested this "
