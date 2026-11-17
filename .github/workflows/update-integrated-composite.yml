@@ -20,6 +20,13 @@ on:
 permissions:
   contents: write
 
+# Never run two builds at once: they regenerate the same data files, and
+# overlapping runs produce rebase conflicts at the push step. A newer run
+# waits for the one in progress instead of cancelling it.
+concurrency:
+  group: integrated-composite
+  cancel-in-progress: false
+
 jobs:
   build-integrated-composite:
     runs-on: ubuntu-latest
@@ -147,6 +154,8 @@ jobs:
             fi
             echo "Push rejected (attempt $attempt) -- another workflow likely pushed in the meantime. Rebasing and retrying..."
             git fetch origin main
-            git rebase origin/main
+            # If another run changed the same generated files, keep this run's
+            # fresh outputs ("theirs" during a rebase = the commit being replayed).
+            git rebase -X theirs origin/main || { git rebase --abort; git reset --hard origin/main; echo "Rebase failed; resetting to origin/main and skipping this run's commit."; exit 0; }
             sleep $((attempt * 5))
           done
