@@ -1,125 +1,125 @@
 {
   "source": "projects/UNFAO/ASIS/VHI-D",
-  "generated_utc": "2026-11-22 23:29 UTC",
-  "dekad_label": "2026-11-D31",
+  "generated_utc": "2026-11-24 03:55 UTC",
+  "dekad_label": "2026-11-D32",
   "metadata": {
-    "DEKAD_dekadAlt": 31,
+    "DEKAD_dekadAlt": 32,
     "DEKAD_month": 11,
     "DEKAD_year": 2026,
-    "system:time_end": 1794268800000,
-    "system:time_start": 1793491200000
+    "system:time_end": 1795132800000,
+    "system:time_start": 1794355200000
   },
-  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/6ec4ea755a8a2c5b11fd825e15143ff5-a98d434fac73bf7514beec961c9a759c/tiles/{z}/{x}/{y}",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/trekky675/maps/5ca004ae355ac29efbf56bc30e3c2f8a-547e934f9e2d845a0ff9a22a162ff569/tiles/{z}/{x}/{y}",
   "provinces": [
     {
-      "province": "National Capital District",
-      "mean": 0.2171,
-      "interpretation": "High vegetation stress"
-    },
-    {
       "province": "East Sepik",
-      "mean": 0.2525,
-      "interpretation": "High vegetation stress"
-    },
-    {
-      "province": "Western",
-      "mean": 0.2917,
-      "interpretation": "High vegetation stress"
-    },
-    {
-      "province": "Gulf",
-      "mean": 0.3531,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Southern Highlands",
-      "mean": 0.3563,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Madang",
-      "mean": 0.3649,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Chimbu",
-      "mean": 0.3698,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Western Highlands",
-      "mean": 0.3769,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Jiwaka",
-      "mean": 0.4026,
+      "mean": 0.386,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "Eastern Highlands",
-      "mean": 0.4046,
+      "mean": 0.4109,
       "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Hela",
-      "mean": 0.4126,
+      "province": "Western Highlands",
+      "mean": 0.4188,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "National Capital District",
+      "mean": 0.4205,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Western",
+      "mean": 0.4397,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Chimbu",
+      "mean": 0.441,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Southern Highlands",
+      "mean": 0.4413,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Jiwaka",
+      "mean": 0.4442,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "New Ireland",
-      "mean": 0.4137,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Milne Bay",
-      "mean": 0.4142,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Manus",
-      "mean": 0.4181,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Enga",
-      "mean": 0.4189,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "West New Britain",
-      "mean": 0.4191,
-      "interpretation": "Moderate vegetation stress"
-    },
-    {
-      "province": "Sandaun",
-      "mean": 0.4208,
+      "mean": 0.4452,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "Morobe",
-      "mean": 0.4387,
+      "mean": 0.4462,
       "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Central",
-      "mean": 0.4538,
+      "province": "Hela",
+      "mean": 0.457,
       "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Oro",
-      "mean": 0.465,
+      "province": "Madang",
+      "mean": 0.458,
       "interpretation": "Moderate vegetation stress"
     },
     {
-      "province": "Bougainville",
-      "mean": 0.4917,
+      "province": "Milne Bay",
+      "mean": 0.4605,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "West New Britain",
+      "mean": 0.4674,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Enga",
+      "mean": 0.4868,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Manus",
+      "mean": 0.4879,
+      "interpretation": "Moderate vegetation stress"
+    },
+    {
+      "province": "Sandaun",
+      "mean": 0.496,
       "interpretation": "Moderate vegetation stress"
     },
     {
       "province": "East New Britain",
-      "mean": 0.4955,
-      "interpretation": "Moderate vegetation stress"
+      "mean": 0.5069,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Oro",
+      "mean": 0.5106,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Gulf",
+      "mean": 0.5107,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Bougainville",
+      "mean": 0.5363,
+      "interpretation": "Watch / below-normal vegetation condition"
+    },
+    {
+      "province": "Central",
+      "mean": 0.5399,
+      "interpretation": "Watch / below-normal vegetation condition"
     }
   ],
   "flag_values_masked": [
